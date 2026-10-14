@@ -3,8 +3,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Malta Planner</title>
 <style>
-:root{--bg:#f6f4ef;--card:#fff;--tx:#1f2a2e;--mu:#6b7478;--ac:#1d7a6b;--bd:#e3e0d8}
-@media(prefers-color-scheme:dark){:root{--bg:#171c1e;--card:#222a2d;--tx:#eef1f1;--mu:#98a3a7;--ac:#4fc3ae;--bd:#333d40}}
+:root{--bg:#f6f4ef;--card:#fff;--tx:#1f2a2e;--mu:#6b7478;--ac:#1d7a6b;--bd:#e3e0d8;--rd:#c0392b}
+@media(prefers-color-scheme:dark){:root{--bg:#171c1e;--card:#222a2d;--tx:#eef1f1;--mu:#98a3a7;--ac:#4fc3ae;--bd:#333d40;--rd:#ef7b6e}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,sans-serif}
 main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
 .hd{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px}
@@ -12,10 +12,12 @@ h1{margin:0;font-size:26px}p.s{margin:0 0 20px;color:var(--mu)}
 .c{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
 .c h2{margin:0;font-size:18px}.c p{margin:4px 0 10px;color:var(--mu);font-size:14px}
 .r{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.names{font-size:14px;margin-top:8px}
+.ft{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}.names{font-size:14px}
+.del{width:36px;height:36px;padding:0;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;background:transparent;border:1px solid var(--bd);color:var(--rd)}.del:hover{background:color-mix(in srgb,var(--rd) 14%,transparent);border-color:var(--rd)}.del svg{width:18px;height:18px}
 .day{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:999px;padding:2px 10px;font-size:13px;margin-top:4px}
 button{font:inherit;border:0;border-radius:10px;padding:9px 14px;background:var(--ac);color:#fff;cursor:pointer}
 button.o{background:transparent;color:var(--ac);border:1.5px solid var(--ac)}
+textarea{resize:vertical;max-width:100%;min-height:60px}
 input,textarea,select{width:100%;font:inherit;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);margin-bottom:8px}
 .m{color:var(--mu);text-align:center;padding:20px 0}
 .pf{position:relative}.av{width:40px;height:40px;border-radius:50%;padding:0;font-weight:600;font-size:17px}
@@ -88,8 +90,8 @@ function render() {
     return `<div class="c"><div class="r"><div><h2>${esc(a.title)}</h2>${a.day ? `<span class="day">📅 ${esc(a.day)}</span>` : ''}</div>
       <button class="${mine ? 'o' : ''}" data-a="${esc(a.id)}">${mine ? 'Austragen' : 'Ich bin dabei'}</button></div>
       ${a.desc ? `<p>${esc(a.desc)}</p>` : ''}
-      <div class="names">${s.length ? `👥 ${s.length}: ${esc(n)}` : 'Noch niemand eingetragen'}</div>
-      ${isAdmin() ? `<button class="o" style="margin-top:10px;font-size:14px" data-del="${esc(a.id)}">🗑 Löschen</button>` : ''}</div>`;
+      <div class="ft"><div class="names">${s.length ? `👥 ${s.length}: ${esc(n)}` : 'Noch niemand eingetragen'}</div>
+      ${isAdmin() ? `<button class="del" data-del="${esc(a.id)}" title="Aktivität löschen" aria-label="Aktivität löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg></button>` : ''}</div></div>`;
   }).join('');
 }
 
