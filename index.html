@@ -7,6 +7,8 @@
 <link rel="icon" href="favicon.ico?v=3" sizes="any">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=3">
 <meta name="apple-mobile-web-app-title" content="Malta Planner">
+<meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#171c1e" media="(prefers-color-scheme: dark)">
 <style>
 :root{--bg:#f6f4ef;--card:#fff;--tx:#1f2a2e;--mu:#6b7478;--ac:#1d7a6b;--bd:#e3e0d8;--rd:#c0392b}
 @media(prefers-color-scheme:dark){:root{--bg:#171c1e;--card:#222a2d;--tx:#eef1f1;--mu:#98a3a7;--ac:#4fc3ae;--bd:#333d40;--rd:#ef7b6e}}
@@ -14,7 +16,8 @@
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,sans-serif}
 main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
 .hd{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px}
-h1{margin:0;font-size:26px}p.s{margin:0 0 20px;color:var(--mu)}
+h1{margin:0;font-size:26px;display:flex;align-items:center;gap:10px}p.s{margin:0 0 20px;color:var(--mu)}
+.flag{width:36px;height:24px;border-radius:4px;box-shadow:0 0 0 1px var(--bd);flex-shrink:0}
 .c{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
 .c h2{margin:0;font-size:18px}.c p{margin:4px 0 10px;color:var(--mu);font-size:14px}
 .r{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
@@ -25,14 +28,25 @@ h1{margin:0;font-size:26px}p.s{margin:0 0 20px;color:var(--mu)}
 .pp.me{border-color:var(--ac);font-weight:600}
 .acts{display:flex;gap:8px;flex-shrink:0}.del.edt{color:var(--ac)}.del.edt:hover{background:color-mix(in srgb,var(--ac) 14%,transparent);border-color:var(--ac)}
 .efb{display:flex;gap:8px}.efb button{flex:1}
-.del{width:36px;height:36px;padding:0;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;background:transparent;border:1px solid var(--bd);color:var(--rd)}.del:hover{background:color-mix(in srgb,var(--rd) 14%,transparent);border-color:var(--rd)}.del svg{width:18px;height:18px}
+.del{width:40px;height:40px;padding:0;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;background:transparent;border:1px solid var(--bd);color:var(--rd)}.del:hover{background:color-mix(in srgb,var(--rd) 14%,transparent);border-color:var(--rd)}.del svg{width:18px;height:18px}
 .day{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:999px;padding:2px 10px;font-size:13px;margin:4px 6px 0 0}
 button{font:inherit;border:0;border-radius:10px;padding:9px 14px;background:var(--ac);color:#fff;cursor:pointer}
 button.o{background:transparent;color:var(--ac);border:1.5px solid var(--ac)}
 textarea{resize:vertical;max-width:100%;min-height:60px}
 input,textarea,select{width:100%;font:inherit;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);margin-bottom:8px}
-.tabs{display:flex;gap:6px;margin-bottom:16px}.tb{flex:1;min-width:0;padding:9px 4px;font-size:15px;white-space:nowrap;background:var(--card);color:var(--tx);border:1px solid var(--bd)}.tb.on{background:var(--ac);color:#fff;border-color:var(--ac)}
-.info{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 2px}.info .day{margin:0}.lk{color:var(--ac);text-decoration:none}.ok{border-color:var(--ac)}.sm{font-size:13px;padding:4px 10px}
+.tabs{display:flex;gap:6px;position:sticky;top:0;z-index:4;background:var(--bg);margin:0 -16px 10px;padding:8px 16px;padding-top:max(8px,env(safe-area-inset-top))}
+.tb{flex:1;min-width:0;padding:7px 4px;font-size:14px;line-height:1.25;white-space:nowrap;background:var(--card);color:var(--tx);border:1px solid var(--bd);display:flex;flex-direction:column;align-items:center}
+.tb .ti{font-size:18px}.tb .n{display:inline-block;min-width:20px;margin-left:4px;padding:0 6px;border-radius:999px;background:var(--bg);color:var(--mu);font-size:12px;font-weight:600}
+.tb.on{background:var(--ac);color:#fff;border-color:var(--ac)}.tb.on .n{background:rgba(255,255,255,.25);color:#fff}
+.addb{width:100%;margin-bottom:12px;padding:12px;font-weight:600;font-size:16px}
+.ah{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.x{background:none;color:var(--mu);font-size:22px;line-height:1;padding:6px 10px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.meta{margin-top:4px;font-size:14px;color:var(--mu)}.nw{white-space:nowrap}
+.c.in{border-color:var(--ac);box-shadow:inset 4px 0 0 var(--ac)}
+.info{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;margin:8px 0 2px;font-size:14px}.info .day{margin:0}.lk{color:var(--ac);text-decoration:none;font-weight:500}a.lk:not(.day){padding:6px 0}.ok{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 10%,var(--card))}
+button.tx{background:none;color:var(--ac);padding:8px 2px;font-size:14px;min-height:36px}button.tx.mu{color:var(--mu)}
+.toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;transition:opacity .2s,transform .2s;background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:15px;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:20;max-width:calc(100% - 32px);text-align:center;pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}.toast.err{background:var(--rd);color:#fff}
 .resf{display:flex;flex-wrap:wrap;gap:8px}.info .resf{width:100%;margin-top:4px}.resf input{width:auto;flex:1;min-width:110px;margin:0}
 .chk{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:15px}.chk input{width:auto;margin:0}
 .m{color:var(--mu);text-align:center;padding:20px 0}
@@ -45,10 +59,10 @@ input,textarea,select{width:100%;font:inherit;padding:10px;border:1px solid var(
 .pd h2{margin:0 0 4px}.pr{display:flex;gap:12px;padding:10px 0;border-top:1px solid var(--bd)}.pd h2+.pr{border-top:0}
 .pt{flex:0 0 74px;font-size:13px;color:var(--mu);padding-top:2px}.pr .tl{font-weight:600}.pr .info{margin-top:2px}
 </style></head><body><main>
-<div class="hd"><h1>🧳 Malta Planner</h1><div class="pf" id="me" hidden></div></div>
+<div class="hd"><h1><img class="flag" src="flag.png?v=3" alt="">Malta Planner</h1><div class="pf" id="me" hidden></div></div>
 <p class="s">Schlag Ideen vor und trag dich bei denen ein, auf die du Lust hast.</p>
 <div class="cd" id="cd"></div>
-<div class="tabs" id="tabs" hidden><button class="tb on" data-tab="act">🗺 Aktivitäten</button><button class="tb" data-tab="food">🍽 Essen</button><button class="tb" data-tab="plan">📅 Mein Plan</button></div>
+<div class="tabs" id="tabs" hidden><button class="tb on" data-tab="act"><span class="ti">🗺</span><span>Aktivitäten<b class="n" id="n-act"></b></span></button><button class="tb" data-tab="food"><span class="ti">🍽</span><span>Essen<b class="n" id="n-food"></b></span></button><button class="tb" data-tab="plan"><span class="ti">📅</span><span>Mein Plan<b class="n" id="n-plan"></b></span></button></div>
 
 <div class="c" id="ask" hidden><h2>Wie heißt du?</h2>
 <p>Lege einen PIN fest (4–8 Ziffern). Damit kommst du später mit demselben Namen und PIN wieder in dein Profil, auch nach dem Löschen der Cookies oder auf einem neuen Handy.</p>
@@ -61,20 +75,23 @@ input,textarea,select{width:100%;font:inherit;padding:10px;border:1px solid var(
 <input id="pin2" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN (4–8 Ziffern)" maxlength="8">
 <button id="ps">PIN speichern</button></div>
 
-<div id="list" hidden><div class="m">Lädt…</div></div>
+<button class="addb" id="addOpen" hidden>+ Neue Aktivität vorschlagen</button>
 
-<div class="c" id="add" hidden><h2 id="ah">Neue Aktivität vorschlagen</h2><p></p>
+<div class="c" id="add" hidden><div class="ah"><h2 id="ah">Neue Aktivität vorschlagen</h2><button class="x" id="addClose" aria-label="Schließen">×</button></div>
 <input id="t" placeholder="z. B. Wanderung zum Aussichtspunkt" maxlength="80">
 <select id="k" hidden><option value="">Kochen oder Restaurant?</option><option value="cook">👩‍🍳 Kochen</option><option value="rest">🍴 Restaurant</option></select>
 <input id="lnk" type="url" placeholder="Link (z. B. Google Maps oder Website, optional)" maxlength="300" hidden>
 <input id="pl" placeholder="📍 Ort (optional, z. B. Blaue Grotte)" maxlength="80">
 <textarea id="d" rows="2" placeholder="Kurze Beschreibung (optional)" maxlength="200"></textarea>
-<select id="w"><option value="">Wochentag vorschlagen (optional)</option><option>Montag</option><option>Dienstag</option><option>Mittwoch</option><option>Donnerstag</option><option>Freitag</option><option>Samstag</option><option>Sonntag</option></select>
+<div class="two"><select id="w"><option value="">Tag (optional)</option><option>Montag</option><option>Dienstag</option><option>Mittwoch</option><option>Donnerstag</option><option>Freitag</option><option>Samstag</option><option>Sonntag</option></select>
+<select id="z"><option value="">Tageszeit (optional)</option><option value="Morgens / Vormittags">Vormittags</option><option>Mittags</option><option>Abends</option></select></div>
 <label class="chk" id="rvl" hidden><input type="checkbox" id="rv"> Schon reserviert</label>
 <div class="resf" id="rvf" hidden style="margin-bottom:8px"><input type="time" id="rt"><input type="number" id="rp" min="1" max="99" placeholder="Personen"></div>
-<select id="z"><option value="">Tageszeit (optional)</option><option>Morgens / Vormittags</option><option>Mittags</option><option>Abends</option></select>
-<button id="go">Vorschlagen</button></div>
+<div class="efb"><button id="go">Vorschlagen</button></div></div>
+
+<div id="list" hidden><div class="m">Lädt…</div></div>
 </main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -97,6 +114,10 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>'
 
 const hash = async (name, pin) => { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(name.trim().toLowerCase() + '|' + pin + '|malta')); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); };
 const PIN_OK = p => /^\d{4,8}$/.test(p);
+// Kurzer Hinweis unten am Bildschirm statt alert()
+let toastTimer;
+const toast = (msg, err) => { const t = $('toast'); t.textContent = msg; t.className = 'toast on' + (err ? ' err' : ''); clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.className = 'toast' + (err ? ' err' : ''); }, err ? 3500 : 2200); };
+const FAIL = 'Das hat nicht geklappt. Bitte nochmal versuchen.';
 const hue = nm => { let h = 0; for (const c of nm) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
 
 // Jedes Gerät bekommt eine zufällige ID, der Name wird in der Datenbank gespeichert
@@ -104,7 +125,7 @@ let me = null;
 try { me = localStorage.getItem('uid'); if (!me) { me = 'u' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); localStorage.setItem('uid', me); } }
 catch (e) { me = 'u' + Math.random().toString(36).slice(2, 10); }
 
-let acts = [], sig = [], ppl = {}, pins = {}, editing = false, tab = 'act', editRes = null, editPlace = null, editAct = null;
+let acts = [], sig = [], ppl = {}, pins = {}, editing = false, tab = 'act', editRes = null, editPlace = null, editAct = null, addOpen = false;
 const ADMIN = 'lars';
 const isAdmin = () => (ppl[me] || '').trim().toLowerCase() === ADMIN;
 const canEdit = a => a.by === me || isAdmin();
@@ -112,10 +133,11 @@ const canEdit = a => a.by === me || isAdmin();
 function top() {
   const n = ppl[me];
   const show = !!n && !editing;
-  $('ask').hidden = show; $('add').hidden = !show || tab === 'plan'; $('list').hidden = !show; $('me').hidden = !show; $('tabs').hidden = !show; $('pinCard').hidden = !(show && !pins[me]);
+  $('ask').hidden = show; $('add').hidden = !show || tab === 'plan' || !addOpen; $('addOpen').hidden = !show || tab === 'plan' || addOpen; $('list').hidden = !show; $('me').hidden = !show; $('tabs').hidden = !show; $('pinCard').hidden = !(show && !pins[me]);
   if (show) {
     $('me').innerHTML = '<button class="av" id="avb" aria-label="Profil">' + esc(n.trim()[0].toUpperCase()) + '</button>';
-    $('avb').onclick = () => {
+    $('avb').onclick = e => {
+      e.stopPropagation();
       const m = $('pm'); if (m) { m.remove(); return; }
       $('me').insertAdjacentHTML('beforeend', '<div class="pm" id="pm"><small>Angemeldet als</small><b>' + esc(n) + '</b><button class="o" id="ch">Name ändern</button></div>');
       $('ch').onclick = () => { editing = true; $('n').value = n; top(); };
@@ -123,14 +145,20 @@ function top() {
   }
 }
 
+// Profilmenü schließt beim Tippen daneben
+document.addEventListener('click', e => { const m = $('pm'); if (m && !m.contains(e.target)) m.remove(); });
+
 // Ort öffnet Google Maps (auf dem iPhone die App, falls installiert)
 const mapUrl = p => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(/malta|gozo|comino/i.test(p) ? p : p + ', Malta');
-const placeChip = a => a.place ? `<a class="day lk" href="${esc(mapUrl(a.place))}" target="_blank" rel="noopener noreferrer">📍 ${esc(a.place)}</a>` : '';
-const linkChip = a => { try { const u = new URL(a.link || ''); if (/^https?:$/.test(u.protocol)) return `<a class="day lk" href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">🔗 ${esc(u.hostname.replace(/^www\./, ''))}</a>`; } catch (e) {} return ''; };
+const placeChip = a => a.place ? `<a class="lk" href="${esc(mapUrl(a.place))}" target="_blank" rel="noopener noreferrer">📍 ${esc(a.place)}</a>` : '';
+const linkChip = a => { try { const u = new URL(a.link || ''); if (/^https?:$/.test(u.protocol)) return `<a class="lk" href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">🔗 ${esc(u.hostname.replace(/^www\./, ''))}</a>`; } catch (e) {} return ''; };
+const KIND = { cook: '👩‍🍳 Kochen', rest: '🍴 Restaurant' };
+const TIME = { 'Morgens / Vormittags': '🌅 Vormittags', 'Mittags': '☀️ Mittags', 'Abends': '🌙 Abends' };
+const meta = a => [KIND[a.kind], a.day && '📅 ' + esc(a.day), TIME[a.time] || (a.time && esc(a.time))].filter(Boolean).map(x => `<span class="nw">${x}</span>`).join(' · ');
 
 function placeInfo(a) {
   if (editPlace === a.id) return `<div class="resf"><input id="epl" placeholder="📍 Ort, z. B. Blaue Grotte" maxlength="80" value="${esc(a.place || '')}"><button data-plsave="${esc(a.id)}">Speichern</button>${a.place ? `<button class="o" data-pldel="${esc(a.id)}">Entfernen</button>` : ''}<button class="o" data-plcancel="1">Abbrechen</button></div>`;
-  return a.place ? `${placeChip(a)}<button class="o sm" data-pl="${esc(a.id)}">ändern</button>` : `<button class="o sm" data-pl="${esc(a.id)}">📍 Ort eintragen</button>`;
+  return a.place ? `<span>${placeChip(a)} <button class="tx mu" data-pl="${esc(a.id)}">ändern</button></span>` : `<button class="tx" data-pl="${esc(a.id)}">📍 Ort eintragen</button>`;
 }
 
 function restInfo(a) {
@@ -139,8 +167,8 @@ function restInfo(a) {
     const r = a.res || {};
     rs = `<div class="resf"><input type="time" id="ert" value="${esc(r.t || '')}"><input type="number" id="erp" min="1" max="99" placeholder="Personen" value="${esc(r.p || '')}"><button data-ressave="${esc(a.id)}">Speichern</button>${a.res ? `<button class="o" data-resdel="${esc(a.id)}">Entfernen</button>` : ''}<button class="o" data-rescancel="1">Abbrechen</button></div>`;
   } else if (a.res) {
-    rs = `<span class="day ok">✅ Reserviert · ${esc(a.res.t)} Uhr · ${esc(a.res.p)} Pers.</span><button class="o sm" data-res="${esc(a.id)}">ändern</button>`;
-  } else rs = `<button class="o sm" data-res="${esc(a.id)}">📞 Reservierung eintragen</button>`;
+    rs = `<span><span class="day ok">✅ Reserviert · ${esc(a.res.t)} Uhr · ${esc(a.res.p)} Pers.</span> <button class="tx mu" data-res="${esc(a.id)}">ändern</button></span>`;
+  } else rs = `<button class="tx" data-res="${esc(a.id)}">📞 Reservierung eintragen</button>`;
   return rs;
 }
 
@@ -156,9 +184,9 @@ function renderPlan() {
   const groups = [...DAYS, ''].map(d => ({ d, items: mine.filter(a => (DAYS.includes(a.day) ? a.day : '') === d).sort((x, y) => slotOf(x) - slotOf(y) || ((x.res && x.res.t) || '').localeCompare((y.res && y.res.t) || '')) })).filter(g => g.items.length);
   $('list').innerHTML = `<p class="s" style="margin:-4px 0 12px">Du bist bei ${mine.length} ${mine.length === 1 ? 'Sache' : 'Sachen'} dabei.</p>` + groups.map(g => `<div class="c pd"><h2>${g.d ? esc(g.d) : 'Noch kein Tag festgelegt'}</h2>${g.items.map(a => {
     const n = sig.filter(x => x.act === a.id).length;
-    const kind = a.kind === 'cook' ? '<span class="day">👩‍🍳 Kochen</span>' : a.kind === 'rest' ? '<span class="day">🍴 Restaurant</span>' : '';
-    const res = a.res ? `<span class="day ok">✅ Reserviert · ${esc(a.res.p)} Pers.</span>` : '';
-    return `<div class="pr"><div class="pt">${esc(timeLabel(a))}</div><div><span class="tl">${esc(a.title)}</span><div class="info">${kind}${placeChip(a)}${a.kind === 'rest' ? linkChip(a) : ''}${res}<span class="day">👥 ${n}</span></div></div></div>`;
+    const sub = [KIND[a.kind], `👥 ${n} dabei`, a.res && `✅ Reserviert für ${esc(a.res.p)}`].filter(Boolean).map(x => `<span class="nw">${x}</span>`).join(' · ');
+    const links = placeChip(a) + (a.kind === 'rest' ? linkChip(a) : '');
+    return `<div class="pr"><div class="pt">${esc(timeLabel(a))}</div><div><span class="tl">${esc(a.title)}</span><div class="meta">${sub}</div>${links ? `<div class="info">${links}</div>` : ''}</div></div>`;
   }).join('')}</div>`).join('');
 }
 
@@ -173,8 +201,8 @@ function editCard(a) {
     <input id="elk" type="url" maxlength="300" placeholder="Link (nur bei Restaurant, optional)" value="${esc(a.link || '')}">` : ''}
     <input id="epo" maxlength="80" placeholder="📍 Ort (optional)" value="${esc(a.place || '')}">
     <textarea id="ed" rows="2" maxlength="200" placeholder="Kurze Beschreibung (optional)">${esc(a.desc || '')}</textarea>
-    <select id="ew">${opts(WEEK.map(d => [d, d]), a.day, 'Kein Wochentag')}</select>
-    <select id="ez">${opts(SLOTS.map(s => [s, s]), a.time, 'Keine Tageszeit')}</select>
+    <div class="two"><select id="ew">${opts(WEEK.map(d => [d, d]), a.day, 'Kein Tag')}</select>
+    <select id="ez">${opts(SLOTS.map(s => [s, TIME[s].slice(3)]), a.time, 'Keine Tageszeit')}</select></div>
     <div class="efb"><button data-esave="${esc(a.id)}">Speichern</button><button class="o" data-ecancel="1">Abbrechen</button></div></div>`;
 }
 
@@ -182,15 +210,19 @@ function render() {
   if (!ppl[me]) return;
   const ae = document.activeElement;
   if ((editRes || editPlace || editAct) && ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && $('list').contains(ae)) return;
+  $('n-act').textContent = acts.filter(a => (a.cat || 'act') === 'act').length;
+  $('n-food').textContent = acts.filter(a => a.cat === 'food').length;
+  $('n-plan').textContent = acts.filter(a => sig.some(x => x.act === a.id && x.uid === me)).length;
   if (tab === 'plan') { renderPlan(); return; }
   const items = acts.filter(a => (a.cat || 'act') === tab);
-  if (!items.length) { $('list').innerHTML = '<div class="m">Noch keine Vorschläge. Mach den ersten! 👇</div>'; return; }
+  if (!items.length) { $('list').innerHTML = '<div class="m">Noch keine Vorschläge. Mach den ersten mit „+“ oben! ☝️</div>'; return; }
   $('list').innerHTML = items.map(a => {
     if (editAct === a.id && canEdit(a)) return editCard(a);
     const s = sig.filter(x => x.act === a.id), mine = s.some(x => x.uid === me);
     const chips = s.map(x => { const nm = ppl[x.uid] || 'Jemand', you = x.uid === me;
       return `<span class="pp${you ? ' me' : ''}"><i style="background:hsl(${hue(nm)},45%,42%)">${esc(nm.trim()[0].toUpperCase())}</i>${you ? 'Du' : esc(nm)}</span>`; }).join('');
-    return `<div class="c"><div class="r"><div><h2>${esc(a.title)}</h2>${a.kind === 'cook' ? '<span class="day">👩‍🍳 Kochen</span>' : a.kind === 'rest' ? '<span class="day">🍴 Restaurant</span>' : ''}${a.day ? `<span class="day">📅 ${esc(a.day)}</span>` : ''}${a.time ? `<span class="day">🕒 ${esc(a.time)}</span>` : ''}</div>
+    const m = meta(a);
+    return `<div class="c${mine ? ' in' : ''}"><div class="r"><div><h2>${esc(a.title)}</h2>${m ? `<div class="meta">${m}</div>` : ''}</div>
       <button class="${mine ? 'o' : ''}" data-a="${esc(a.id)}">${mine ? 'Austragen' : 'Ich bin dabei'}</button></div>
       ${a.desc ? `<p>${esc(a.desc)}</p>` : ''}
       <div class="info">${a.kind === 'rest' ? linkChip(a) : ''}${placeInfo(a)}${a.kind === 'rest' ? restInfo(a) : ''}</div>
@@ -206,7 +238,7 @@ onSnapshot(collection(db, 'signups'), q => { sig = q.docs.map(d => d.data()); re
 
 $('ns').onclick = async () => {
   const v = $('n').value.trim(), pin = $('pin').value.trim(); if (!v) return;
-  if (!PIN_OK(pin)) { alert('Bitte gib einen PIN mit 4 bis 8 Ziffern ein.'); return; }
+  if (!PIN_OK(pin)) { toast('Bitte gib einen PIN mit 4 bis 8 Ziffern ein.', 1); return; }
   try {
     const h = await hash(v, pin);
     const other = Object.entries(ppl).find(([k, n]) => k !== me && n && n.trim().toLowerCase() === v.toLowerCase());
@@ -216,19 +248,19 @@ $('ns').onclick = async () => {
         me = oid; try { localStorage.setItem('uid', oid); } catch (e) {}
         editing = false; $('pin').value = ''; top(); render(); return;
       }
-      alert(pins[oid] ? 'Der Name ist vergeben und der PIN passt nicht. Bist du es? Dann prüfe deinen PIN. Sonst nimm einen anderen Namen.' : 'Dieser Name ist schon vergeben. Nimm einen anderen.');
+      toast(pins[oid] ? 'Der Name ist vergeben und der PIN passt nicht. Bist du es? Dann prüfe deinen PIN, sonst nimm einen anderen Namen.' : 'Dieser Name ist schon vergeben. Nimm einen anderen.', 1);
       return;
     }
     await setDoc(doc(db, 'people', me), { name: v, ph: h });
     ppl[me] = v; pins[me] = h; editing = false; $('pin').value = ''; top(); render();
-  } catch (e) { alert('Das hat nicht geklappt.'); }
+  } catch (e) { toast(FAIL, 1); }
 };
 
 $('ps').onclick = async () => {
   const pin = $('pin2').value.trim();
-  if (!PIN_OK(pin)) { alert('Bitte gib einen PIN mit 4 bis 8 Ziffern ein.'); return; }
-  try { const h = await hash(ppl[me], pin); await setDoc(doc(db, 'people', me), { name: ppl[me], ph: h }); pins[me] = h; $('pin2').value = ''; top(); }
-  catch (e) { alert('Das hat nicht geklappt.'); }
+  if (!PIN_OK(pin)) { toast('Bitte gib einen PIN mit 4 bis 8 Ziffern ein.', 1); return; }
+  try { const h = await hash(ppl[me], pin); await setDoc(doc(db, 'people', me), { name: ppl[me], ph: h }); pins[me] = h; $('pin2').value = ''; top(); toast('PIN gespeichert ✓'); }
+  catch (e) { toast(FAIL, 1); }
 };
 
 $('list').onclick = async e => {
@@ -239,50 +271,51 @@ $('list').onclick = async e => {
     try {
       await Promise.all(sig.filter(x => x.act === id).map(x => deleteDoc(doc(db, 'signups', id + '_' + x.uid))));
       await deleteDoc(doc(db, 'activities', id));
-    } catch (err) { alert('Löschen hat nicht geklappt.'); b.disabled = false; }
+      toast('Vorschlag gelöscht');
+    } catch (err) { toast('Löschen hat nicht geklappt.', 1); b.disabled = false; }
     return;
   }
   if (b.dataset.edit) { editAct = b.dataset.edit; editRes = null; editPlace = null; render(); const i = $('et'); if (i) i.focus(); return; }
   if (b.dataset.ecancel) { editAct = null; render(); return; }
   if (b.dataset.esave) {
     const a = acts.find(x => x.id === b.dataset.esave); if (!a || !canEdit(a)) return;
-    const title = $('et').value.trim(); if (!title) { alert('Bitte gib einen Titel ein.'); return; }
+    const title = $('et').value.trim(); if (!title) { toast('Bitte gib einen Titel ein.', 1); return; }
     const data = { title, desc: $('ed').value.trim(), day: $('ew').value, time: $('ez').value, place: $('epo').value.trim() };
     if ((a.cat || 'act') === 'food') {
-      data.kind = $('ek').value; if (!data.kind) { alert('Bitte wähle: Kochen oder Restaurant.'); return; }
+      data.kind = $('ek').value; if (!data.kind) { toast('Bitte wähle: Kochen oder Restaurant.', 1); return; }
       const lk = data.kind === 'rest' ? normLink($('elk').value) : '';
-      if (lk === false) { alert('Der Link ist ungültig.'); return; }
+      if (lk === false) { toast('Der Link ist ungültig.', 1); return; }
       data.link = lk;
     }
     b.disabled = true;
-    try { await setDoc(doc(db, 'activities', a.id), data, { merge: true }); editAct = null; render(); }
-    catch (err) { alert('Das hat nicht geklappt.'); b.disabled = false; }
+    try { await setDoc(doc(db, 'activities', a.id), data, { merge: true }); editAct = null; render(); toast('Änderungen gespeichert ✓'); }
+    catch (err) { toast(FAIL, 1); b.disabled = false; }
     return;
   }
   if (b.dataset.pl) { editPlace = b.dataset.pl; editRes = null; render(); const i = $('epl'); if (i) i.focus(); return; }
   if (b.dataset.plcancel) { editPlace = null; render(); return; }
   if (b.dataset.pldel || b.dataset.plsave) {
     const id = b.dataset.pldel || b.dataset.plsave, place = b.dataset.plsave ? $('epl').value.trim() : '';
-    try { await setDoc(doc(db, 'activities', id), { place }, { merge: true }); editPlace = null; render(); }
-    catch (err) { alert('Das hat nicht geklappt.'); }
+    try { await setDoc(doc(db, 'activities', id), { place }, { merge: true }); editPlace = null; render(); toast(place ? 'Ort gespeichert ✓' : 'Ort entfernt'); }
+    catch (err) { toast(FAIL, 1); }
     return;
   }
   if (b.dataset.res) { editRes = b.dataset.res; editPlace = null; render(); return; }
   if (b.dataset.rescancel) { editRes = null; render(); return; }
   if (b.dataset.resdel) {
-    try { await setDoc(doc(db, 'activities', b.dataset.resdel), { res: null }, { merge: true }); } catch (err) { alert('Das hat nicht geklappt.'); }
+    try { await setDoc(doc(db, 'activities', b.dataset.resdel), { res: null }, { merge: true }); toast('Reservierung entfernt'); } catch (err) { toast(FAIL, 1); }
     editRes = null; render(); return;
   }
   if (b.dataset.ressave) {
     const t = $('ert').value, p = parseInt($('erp').value, 10);
-    if (!t || !(p >= 1 && p <= 99)) { alert('Bitte Uhrzeit und Personenanzahl angeben.'); return; }
-    try { await setDoc(doc(db, 'activities', b.dataset.ressave), { res: { t, p } }, { merge: true }); editRes = null; render(); }
-    catch (err) { alert('Das hat nicht geklappt.'); }
+    if (!t || !(p >= 1 && p <= 99)) { toast('Bitte Uhrzeit und Personenanzahl angeben.', 1); return; }
+    try { await setDoc(doc(db, 'activities', b.dataset.ressave), { res: { t, p } }, { merge: true }); editRes = null; render(); toast('Reservierung gespeichert ✓'); }
+    catch (err) { toast(FAIL, 1); }
     return;
   }
   const a = b.dataset.a, ref = doc(db, 'signups', a + '_' + me); b.disabled = true;
   try { sig.some(x => x.act === a && x.uid === me) ? await deleteDoc(ref) : await setDoc(ref, { act: a, uid: me }); }
-  catch (err) { alert('Das hat nicht geklappt.'); }
+  catch (err) { toast(FAIL, 1); }
   b.disabled = false;
 };
 
@@ -300,32 +333,36 @@ function setTab(t) {
   $('ah').textContent = food ? 'Neuen Essensvorschlag machen' : 'Neue Aktivität vorschlagen';
   $('t').placeholder = food ? 'z. B. Pasta für alle / Pizzeria am Hafen' : 'z. B. Wanderung zum Aussichtspunkt';
   $('k').hidden = !food;
-  editRes = null; editPlace = null; editAct = null;
+  editRes = null; editPlace = null; editAct = null; addOpen = false;
+  $('addOpen').textContent = food ? '+ Neuen Essensvorschlag machen' : '+ Neue Aktivität vorschlagen';
   formFields();
   top();
   render();
 }
 $('tabs').onclick = e => { const b = e.target.closest('.tb'); if (b) setTab(b.dataset.tab); };
+$('addOpen').onclick = () => { addOpen = true; top(); $('t').focus(); };
+$('addClose').onclick = () => { addOpen = false; top(); };
 
 $('go').onclick = async () => {
-  const t = $('t'), d = $('d'), w = $('w'), z = $('z'), k = $('k'); if (!t.value.trim()) return;
-  if (tab === 'food' && !k.value) { alert('Bitte wähle: Kochen oder Restaurant.'); return; }
+  const t = $('t'), d = $('d'), w = $('w'), z = $('z'), k = $('k'); if (!t.value.trim()) { toast('Bitte gib einen Titel ein.', 1); t.focus(); return; }
+  if (tab === 'food' && !k.value) { toast('Bitte wähle: Kochen oder Restaurant.', 1); return; }
   const data = { title: t.value.trim(), desc: d.value.trim(), day: w.value, time: z.value, cat: tab, kind: tab === 'food' ? k.value : '', ts: Date.now(), by: me };
   if ($('pl').value.trim()) data.place = $('pl').value.trim();
   if (tab === 'food' && k.value === 'rest') {
     const lk = normLink($('lnk').value);
-    if (lk === false) { alert('Der Link ist ungültig.'); return; }
+    if (lk === false) { toast('Der Link ist ungültig.', 1); return; }
     if (lk) data.link = lk;
     if ($('rv').checked) {
       const rt = $('rt').value, rp = parseInt($('rp').value, 10);
-      if (!rt || !(rp >= 1 && rp <= 99)) { alert('Bitte Uhrzeit und Personenanzahl der Reservierung angeben.'); return; }
+      if (!rt || !(rp >= 1 && rp <= 99)) { toast('Bitte Uhrzeit und Personenanzahl der Reservierung angeben.', 1); return; }
       data.res = { t: rt, p: rp };
     }
   }
   try {
     await setDoc(doc(db, 'activities', 'a' + Date.now()), data);
     t.value = ''; d.value = ''; w.value = ''; z.value = ''; k.value = ''; $('pl').value = ''; $('lnk').value = ''; $('rv').checked = false; $('rt').value = ''; $('rp').value = ''; formFields();
-  } catch (err) { alert('Das hat nicht geklappt.'); }
+    addOpen = false; top(); toast('Vorschlag gespeichert ✓');
+  } catch (err) { toast(FAIL, 1); }
 };
 
 // Countdown bis zum Abflug (31.10.2026, 11:10 Uhr deutscher Zeit, Winterzeit = +01:00)
