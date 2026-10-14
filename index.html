@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Malta Planner</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--tx:#1f2a2e;--mu:#6b7478;--ac:#1d7a6b;--bd:#e3e0d8}
+@media(prefers-color-scheme:dark){:root{--bg:#171c1e;--card:#222a2d;--tx:#eef1f1;--mu:#98a3a7;--ac:#4fc3ae;--bd:#333d40}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,sans-serif}
+main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+.hd{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px}
+h1{margin:0;font-size:26px}p.s{margin:0 0 20px;color:var(--mu)}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+.c h2{margin:0;font-size:18px}.c p{margin:4px 0 10px;color:var(--mu);font-size:14px}
+.r{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.names{font-size:14px;margin-top:8px}
+.day{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:999px;padding:2px 10px;font-size:13px;margin-top:4px}
+button{font:inherit;border:0;border-radius:10px;padding:9px 14px;background:var(--ac);color:#fff;cursor:pointer}
+button.o{background:transparent;color:var(--ac);border:1.5px solid var(--ac)}
+input,textarea,select{width:100%;font:inherit;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);margin-bottom:8px}
+.m{color:var(--mu);text-align:center;padding:20px 0}
+.pf{position:relative}.av{width:40px;height:40px;border-radius:50%;padding:0;font-weight:600;font-size:17px}
+.pm{position:absolute;right:0;top:48px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;min-width:170px;box-shadow:0 6px 20px rgba(0,0,0,.15);z-index:5}
+.pm small{color:var(--mu)}.pm b{display:block;margin-bottom:8px}.pm button{width:100%}
+</style></head><body><main>
+<div class="hd"><h1>🧳 Malta Planner</h1><div class="pf" id="me" hidden></div></div>
+<p class="s">Schlag Aktivitäten vor und trag dich bei denen ein, auf die du Lust hast.</p>
+
+<div class="c" id="ask" hidden><h2>Wie heißt du?</h2><p>Damit die anderen sehen, wer sich einträgt.</p>
+<input id="n" placeholder="Dein Name" maxlength="30"><button id="ns">Los geht's</button></div>
+
+<div id="list" hidden><div class="m">Lädt…</div></div>
+
+<div class="c" id="add" hidden><h2>Neue Aktivität vorschlagen</h2><p></p>
+<input id="t" placeholder="z. B. Wanderung zum Aussichtspunkt" maxlength="80">
+<textarea id="d" rows="2" placeholder="Kurze Beschreibung (optional)" maxlength="200"></textarea>
+<select id="w"><option value="">Wochentag vorschlagen (optional)</option><option>Montag</option><option>Dienstag</option><option>Mittwoch</option><option>Donnerstag</option><option>Freitag</option><option>Samstag</option><option>Sonntag</option></select>
+<button id="go">Vorschlagen</button></div>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// ====== HIER DEINE FIREBASE-DATEN EINFÜGEN (siehe Anleitung) ======
+const firebaseConfig = {
+  apiKey: "AIzaSyDwQGEQiMdUcchxfXtQTZfexW3XRW8sxxY",
+  authDomain: "malta-planner-2b437.firebaseapp.com",
+  projectId: "malta-planner-2b437",
+  storageBucket: "malta-planner-2b437.firebasestorage.app",
+  messagingSenderId: "672352387270",
+  appId: "1:672352387270:web:a9b9d3f0c8d6e2e0d457c7"
+};
+// ===================================================================
+
+const db = getFirestore(initializeApp(firebaseConfig));
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// Jedes Gerät bekommt eine zufällige ID, der Name wird in der Datenbank gespeichert
+let me = null;
+try { me = localStorage.getItem('uid'); if (!me) { me = 'u' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); localStorage.setItem('uid', me); } }
+catch (e) { me = 'u' + Math.random().toString(36).slice(2, 10); }
+
+let acts = [], sig = [], ppl = {}, editing = false;
+
+function top() {
+  const n = ppl[me];
+  const show = !!n && !editing;
+  $('ask').hidden = show; $('add').hidden = !show; $('list').hidden = !show; $('me').hidden = !show;
+  if (show) {
+    $('me').innerHTML = '<button class="av" id="avb" aria-label="Profil">' + esc(n.trim()[0].toUpperCase()) + '</button>';
+    $('avb').onclick = () => {
+      const m = $('pm'); if (m) { m.remove(); return; }
+      $('me').insertAdjacentHTML('beforeend', '<div class="pm" id="pm"><small>Angemeldet als</small><b>' + esc(n) + '</b><button class="o" id="ch">Name ändern</button></div>');
+      $('ch').onclick = () => { editing = true; $('n').value = n; top(); };
+    };
+  }
+}
+
+function render() {
+  if (!ppl[me]) return;
+  if (!acts.length) { $('list').innerHTML = '<div class="m">Noch keine Vorschläge. Mach den ersten! 👇</div>'; return; }
+  $('list').innerHTML = acts.map(a => {
+    const s = sig.filter(x => x.act === a.id), mine = s.some(x => x.uid === me);
+    const n = s.map(x => x.uid === me ? 'Du' : (ppl[x.uid] || 'Jemand')).join(', ');
+    return `<div class="c"><div class="r"><div><h2>${esc(a.title)}</h2>${a.day ? `<span class="day">📅 ${esc(a.day)}</span>` : ''}</div>
+      <button class="${mine ? 'o' : ''}" data-a="${esc(a.id)}">${mine ? 'Austragen' : 'Ich bin dabei'}</button></div>
+      ${a.desc ? `<p>${esc(a.desc)}</p>` : ''}
+      <div class="names">${s.length ? `👥 ${s.length}: ${esc(n)}` : 'Noch niemand eingetragen'}</div></div>`;
+  }).join('');
+}
+
+onSnapshot(collection(db, 'people'), q => { q.docs.forEach(d => ppl[d.id] = d.data().name); top(); render(); },
+  e => { $('list').hidden = false; $('list').innerHTML = '<div class="m">Verbindung zur Datenbank fehlgeschlagen. Prüfe Config und Regeln.</div>'; console.error(e); });
+onSnapshot(collection(db, 'activities'), q => { acts = q.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.ts || 0) - (b.ts || 0)); render(); });
+onSnapshot(collection(db, 'signups'), q => { sig = q.docs.map(d => d.data()); render(); });
+
+$('ns').onclick = async () => {
+  const v = $('n').value.trim(); if (!v) return;
+  try { await setDoc(doc(db, 'people', me), { name: v }); ppl[me] = v; editing = false; top(); render(); }
+  catch (e) { alert('Das hat nicht geklappt.'); }
+};
+
+$('list').onclick = async e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const a = b.dataset.a, ref = doc(db, 'signups', a + '_' + me); b.disabled = true;
+  try { sig.some(x => x.act === a && x.uid === me) ? await deleteDoc(ref) : await setDoc(ref, { act: a, uid: me }); }
+  catch (err) { alert('Das hat nicht geklappt.'); }
+  b.disabled = false;
+};
+
+$('go').onclick = async () => {
+  const t = $('t'), d = $('d'), w = $('w'); if (!t.value.trim()) return;
+  try {
+    await setDoc(doc(db, 'activities', 'a' + Date.now()), { title: t.value.trim(), desc: d.value.trim(), day: w.value, ts: Date.now(), by: me });
+    t.value = ''; d.value = ''; w.value = '';
+  } catch (err) { alert('Das hat nicht geklappt.'); }
+};
+</script></body></html>
