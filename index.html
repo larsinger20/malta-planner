@@ -2,9 +2,11 @@
 <html lang="de"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Malta Planner</title>
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-<link rel="icon" href="favicon.ico" sizes="any">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3">
+<link rel="icon" type="image/png" sizes="180x180" href="apple-touch-icon.png?v=3">
+<link rel="icon" href="favicon.ico?v=3" sizes="any">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=3">
+<meta name="apple-mobile-web-app-title" content="Malta Planner">
 <style>
 :root{--bg:#f6f4ef;--card:#fff;--tx:#1f2a2e;--mu:#6b7478;--ac:#1d7a6b;--bd:#e3e0d8;--rd:#c0392b}
 @media(prefers-color-scheme:dark){:root{--bg:#171c1e;--card:#222a2d;--tx:#eef1f1;--mu:#98a3a7;--ac:#4fc3ae;--bd:#333d40;--rd:#ef7b6e}}
@@ -21,13 +23,15 @@ h1{margin:0;font-size:26px}p.s{margin:0 0 20px;color:var(--mu)}
 .pp{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--bd);border-radius:999px;padding:2px 10px 2px 3px;font-size:13px}
 .pp i{width:20px;height:20px;border-radius:50%;color:#fff;font-style:normal;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center}
 .pp.me{border-color:var(--ac);font-weight:600}
+.acts{display:flex;gap:8px;flex-shrink:0}.del.edt{color:var(--ac)}.del.edt:hover{background:color-mix(in srgb,var(--ac) 14%,transparent);border-color:var(--ac)}
+.efb{display:flex;gap:8px}.efb button{flex:1}
 .del{width:36px;height:36px;padding:0;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;background:transparent;border:1px solid var(--bd);color:var(--rd)}.del:hover{background:color-mix(in srgb,var(--rd) 14%,transparent);border-color:var(--rd)}.del svg{width:18px;height:18px}
 .day{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:999px;padding:2px 10px;font-size:13px;margin:4px 6px 0 0}
 button{font:inherit;border:0;border-radius:10px;padding:9px 14px;background:var(--ac);color:#fff;cursor:pointer}
 button.o{background:transparent;color:var(--ac);border:1.5px solid var(--ac)}
 textarea{resize:vertical;max-width:100%;min-height:60px}
 input,textarea,select{width:100%;font:inherit;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);margin-bottom:8px}
-.tabs{display:flex;gap:8px;margin-bottom:16px}.tb{flex:1;background:var(--card);color:var(--tx);border:1px solid var(--bd)}.tb.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.tabs{display:flex;gap:6px;margin-bottom:16px}.tb{flex:1;min-width:0;padding:9px 4px;font-size:15px;white-space:nowrap;background:var(--card);color:var(--tx);border:1px solid var(--bd)}.tb.on{background:var(--ac);color:#fff;border-color:var(--ac)}
 .info{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 2px}.info .day{margin:0}.lk{color:var(--ac);text-decoration:none}.ok{border-color:var(--ac)}.sm{font-size:13px;padding:4px 10px}
 .resf{display:flex;flex-wrap:wrap;gap:8px}.info .resf{width:100%;margin-top:4px}.resf input{width:auto;flex:1;min-width:110px;margin:0}
 .chk{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:15px}.chk input{width:auto;margin:0}
@@ -35,10 +39,16 @@ input,textarea,select{width:100%;font:inherit;padding:10px;border:1px solid var(
 .pf{position:relative}.av{width:40px;height:40px;border-radius:50%;padding:0;font-weight:600;font-size:17px}
 .pm{position:absolute;right:0;top:48px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;min-width:170px;box-shadow:0 6px 20px rgba(0,0,0,.15);z-index:5}
 .pm small{color:var(--mu)}.pm b{display:block;margin-bottom:8px}.pm button{width:100%}
+.cd{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#1d7a6b;color:#fff;border-radius:14px;padding:12px 14px;margin:0 0 16px}
+.cd small{display:block;font-size:13px;opacity:.85}.cd .ut{display:flex;gap:6px}
+.cd .u{text-align:center;min-width:46px;background:rgba(255,255,255,.16);border-radius:10px;padding:4px 6px}.cd .u b{display:block;font-size:20px;line-height:1.2;font-variant-numeric:tabular-nums}.cd .u small{font-size:11px}
+.pd h2{margin:0 0 4px}.pr{display:flex;gap:12px;padding:10px 0;border-top:1px solid var(--bd)}.pd h2+.pr{border-top:0}
+.pt{flex:0 0 74px;font-size:13px;color:var(--mu);padding-top:2px}.pr .tl{font-weight:600}.pr .info{margin-top:2px}
 </style></head><body><main>
 <div class="hd"><h1>🧳 Malta Planner</h1><div class="pf" id="me" hidden></div></div>
 <p class="s">Schlag Ideen vor und trag dich bei denen ein, auf die du Lust hast.</p>
-<div class="tabs" id="tabs" hidden><button class="tb on" data-tab="act">🗺 Aktivitäten</button><button class="tb" data-tab="food">🍽 Essen</button></div>
+<div class="cd" id="cd"></div>
+<div class="tabs" id="tabs" hidden><button class="tb on" data-tab="act">🗺 Aktivitäten</button><button class="tb" data-tab="food">🍽 Essen</button><button class="tb" data-tab="plan">📅 Mein Plan</button></div>
 
 <div class="c" id="ask" hidden><h2>Wie heißt du?</h2>
 <p>Lege einen PIN fest (4–8 Ziffern). Damit kommst du später mit demselben Namen und PIN wieder in dein Profil, auch nach dem Löschen der Cookies oder auf einem neuen Handy.</p>
@@ -57,6 +67,7 @@ input,textarea,select{width:100%;font:inherit;padding:10px;border:1px solid var(
 <input id="t" placeholder="z. B. Wanderung zum Aussichtspunkt" maxlength="80">
 <select id="k" hidden><option value="">Kochen oder Restaurant?</option><option value="cook">👩‍🍳 Kochen</option><option value="rest">🍴 Restaurant</option></select>
 <input id="lnk" type="url" placeholder="Link (z. B. Google Maps oder Website, optional)" maxlength="300" hidden>
+<input id="pl" placeholder="📍 Ort (optional, z. B. Blaue Grotte)" maxlength="80">
 <textarea id="d" rows="2" placeholder="Kurze Beschreibung (optional)" maxlength="200"></textarea>
 <select id="w"><option value="">Wochentag vorschlagen (optional)</option><option>Montag</option><option>Dienstag</option><option>Mittwoch</option><option>Donnerstag</option><option>Freitag</option><option>Samstag</option><option>Sonntag</option></select>
 <label class="chk" id="rvl" hidden><input type="checkbox" id="rv"> Schon reserviert</label>
@@ -93,14 +104,15 @@ let me = null;
 try { me = localStorage.getItem('uid'); if (!me) { me = 'u' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); localStorage.setItem('uid', me); } }
 catch (e) { me = 'u' + Math.random().toString(36).slice(2, 10); }
 
-let acts = [], sig = [], ppl = {}, pins = {}, editing = false, tab = 'act', editRes = null;
+let acts = [], sig = [], ppl = {}, pins = {}, editing = false, tab = 'act', editRes = null, editPlace = null, editAct = null;
 const ADMIN = 'lars';
 const isAdmin = () => (ppl[me] || '').trim().toLowerCase() === ADMIN;
+const canEdit = a => a.by === me || isAdmin();
 
 function top() {
   const n = ppl[me];
   const show = !!n && !editing;
-  $('ask').hidden = show; $('add').hidden = !show; $('list').hidden = !show; $('me').hidden = !show; $('tabs').hidden = !show; $('pinCard').hidden = !(show && !pins[me]);
+  $('ask').hidden = show; $('add').hidden = !show || tab === 'plan'; $('list').hidden = !show; $('me').hidden = !show; $('tabs').hidden = !show; $('pinCard').hidden = !(show && !pins[me]);
   if (show) {
     $('me').innerHTML = '<button class="av" id="avb" aria-label="Profil">' + esc(n.trim()[0].toUpperCase()) + '</button>';
     $('avb').onclick = () => {
@@ -111,9 +123,17 @@ function top() {
   }
 }
 
+// Ort öffnet Google Maps (auf dem iPhone die App, falls installiert)
+const mapUrl = p => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(/malta|gozo|comino/i.test(p) ? p : p + ', Malta');
+const placeChip = a => a.place ? `<a class="day lk" href="${esc(mapUrl(a.place))}" target="_blank" rel="noopener noreferrer">📍 ${esc(a.place)}</a>` : '';
+const linkChip = a => { try { const u = new URL(a.link || ''); if (/^https?:$/.test(u.protocol)) return `<a class="day lk" href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">🔗 ${esc(u.hostname.replace(/^www\./, ''))}</a>`; } catch (e) {} return ''; };
+
+function placeInfo(a) {
+  if (editPlace === a.id) return `<div class="resf"><input id="epl" placeholder="📍 Ort, z. B. Blaue Grotte" maxlength="80" value="${esc(a.place || '')}"><button data-plsave="${esc(a.id)}">Speichern</button>${a.place ? `<button class="o" data-pldel="${esc(a.id)}">Entfernen</button>` : ''}<button class="o" data-plcancel="1">Abbrechen</button></div>`;
+  return a.place ? `${placeChip(a)}<button class="o sm" data-pl="${esc(a.id)}">ändern</button>` : `<button class="o sm" data-pl="${esc(a.id)}">📍 Ort eintragen</button>`;
+}
+
 function restInfo(a) {
-  let lk = '';
-  try { const u = new URL(a.link || ''); if (/^https?:$/.test(u.protocol)) lk = `<a class="day lk" href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">🔗 ${esc(u.hostname.replace(/^www\./, ''))}</a>`; } catch (e) {}
   let rs;
   if (editRes === a.id) {
     const r = a.res || {};
@@ -121,25 +141,61 @@ function restInfo(a) {
   } else if (a.res) {
     rs = `<span class="day ok">✅ Reserviert · ${esc(a.res.t)} Uhr · ${esc(a.res.p)} Pers.</span><button class="o sm" data-res="${esc(a.id)}">ändern</button>`;
   } else rs = `<button class="o sm" data-res="${esc(a.id)}">📞 Reservierung eintragen</button>`;
-  return `<div class="info">${lk}${rs}</div>`;
+  return rs;
+}
+
+// "Mein Plan": nur die eigenen Eintragungen, nach Tag und Tageszeit sortiert (Reise beginnt Samstag)
+const DAYS = ['Samstag', 'Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'];
+const SLOTS = ['Morgens / Vormittags', 'Mittags', 'Abends'];
+const slotOf = a => { if (a.res && a.res.t) { const h = parseInt(a.res.t, 10); return h < 11 ? 0 : h < 16 ? 1 : 2; } const i = SLOTS.indexOf(a.time); return i < 0 ? 3 : i; };
+const timeLabel = a => a.res && a.res.t ? `${a.res.t} Uhr` : a.time === 'Morgens / Vormittags' ? '🌅 Vormittags' : a.time === 'Mittags' ? '☀️ Mittags' : a.time === 'Abends' ? '🌙 Abends' : 'Ohne Uhrzeit';
+
+function renderPlan() {
+  const mine = acts.filter(a => sig.some(x => x.act === a.id && x.uid === me));
+  if (!mine.length) { $('list').innerHTML = '<div class="m">Du hast dich noch nirgends eingetragen.<br>Schau bei 🗺 Aktivitäten und 🍽 Essen vorbei und tipp auf „Ich bin dabei“.</div>'; return; }
+  const groups = [...DAYS, ''].map(d => ({ d, items: mine.filter(a => (DAYS.includes(a.day) ? a.day : '') === d).sort((x, y) => slotOf(x) - slotOf(y) || ((x.res && x.res.t) || '').localeCompare((y.res && y.res.t) || '')) })).filter(g => g.items.length);
+  $('list').innerHTML = `<p class="s" style="margin:-4px 0 12px">Du bist bei ${mine.length} ${mine.length === 1 ? 'Sache' : 'Sachen'} dabei.</p>` + groups.map(g => `<div class="c pd"><h2>${g.d ? esc(g.d) : 'Noch kein Tag festgelegt'}</h2>${g.items.map(a => {
+    const n = sig.filter(x => x.act === a.id).length;
+    const kind = a.kind === 'cook' ? '<span class="day">👩‍🍳 Kochen</span>' : a.kind === 'rest' ? '<span class="day">🍴 Restaurant</span>' : '';
+    const res = a.res ? `<span class="day ok">✅ Reserviert · ${esc(a.res.p)} Pers.</span>` : '';
+    return `<div class="pr"><div class="pt">${esc(timeLabel(a))}</div><div><span class="tl">${esc(a.title)}</span><div class="info">${kind}${placeChip(a)}${a.kind === 'rest' ? linkChip(a) : ''}${res}<span class="day">👥 ${n}</span></div></div></div>`;
+  }).join('')}</div>`).join('');
+}
+
+// Bearbeiten-Formular direkt in der Karte (nur Ersteller und Admin)
+const WEEK = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
+const opts = (list, val, ph) => `<option value="">${ph}</option>` + list.map(([v, l]) => `<option value="${esc(v)}"${v === val ? ' selected' : ''}>${esc(l)}</option>`).join('');
+function editCard(a) {
+  const food = (a.cat || 'act') === 'food';
+  return `<div class="c"><h2 style="margin-bottom:10px">✏️ Vorschlag bearbeiten</h2>
+    <input id="et" maxlength="80" placeholder="Titel" value="${esc(a.title || '')}">
+    ${food ? `<select id="ek">${opts([['cook', '👩‍🍳 Kochen'], ['rest', '🍴 Restaurant']], a.kind, 'Kochen oder Restaurant?')}</select>
+    <input id="elk" type="url" maxlength="300" placeholder="Link (nur bei Restaurant, optional)" value="${esc(a.link || '')}">` : ''}
+    <input id="epo" maxlength="80" placeholder="📍 Ort (optional)" value="${esc(a.place || '')}">
+    <textarea id="ed" rows="2" maxlength="200" placeholder="Kurze Beschreibung (optional)">${esc(a.desc || '')}</textarea>
+    <select id="ew">${opts(WEEK.map(d => [d, d]), a.day, 'Kein Wochentag')}</select>
+    <select id="ez">${opts(SLOTS.map(s => [s, s]), a.time, 'Keine Tageszeit')}</select>
+    <div class="efb"><button data-esave="${esc(a.id)}">Speichern</button><button class="o" data-ecancel="1">Abbrechen</button></div></div>`;
 }
 
 function render() {
   if (!ppl[me]) return;
   const ae = document.activeElement;
-  if (editRes && ae && ae.tagName === 'INPUT' && $('list').contains(ae)) return;
+  if ((editRes || editPlace || editAct) && ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && $('list').contains(ae)) return;
+  if (tab === 'plan') { renderPlan(); return; }
   const items = acts.filter(a => (a.cat || 'act') === tab);
   if (!items.length) { $('list').innerHTML = '<div class="m">Noch keine Vorschläge. Mach den ersten! 👇</div>'; return; }
   $('list').innerHTML = items.map(a => {
+    if (editAct === a.id && canEdit(a)) return editCard(a);
     const s = sig.filter(x => x.act === a.id), mine = s.some(x => x.uid === me);
     const chips = s.map(x => { const nm = ppl[x.uid] || 'Jemand', you = x.uid === me;
       return `<span class="pp${you ? ' me' : ''}"><i style="background:hsl(${hue(nm)},45%,42%)">${esc(nm.trim()[0].toUpperCase())}</i>${you ? 'Du' : esc(nm)}</span>`; }).join('');
     return `<div class="c"><div class="r"><div><h2>${esc(a.title)}</h2>${a.kind === 'cook' ? '<span class="day">👩‍🍳 Kochen</span>' : a.kind === 'rest' ? '<span class="day">🍴 Restaurant</span>' : ''}${a.day ? `<span class="day">📅 ${esc(a.day)}</span>` : ''}${a.time ? `<span class="day">🕒 ${esc(a.time)}</span>` : ''}</div>
       <button class="${mine ? 'o' : ''}" data-a="${esc(a.id)}">${mine ? 'Austragen' : 'Ich bin dabei'}</button></div>
       ${a.desc ? `<p>${esc(a.desc)}</p>` : ''}
-      ${a.kind === 'rest' ? restInfo(a) : ''}
+      <div class="info">${a.kind === 'rest' ? linkChip(a) : ''}${placeInfo(a)}${a.kind === 'rest' ? restInfo(a) : ''}</div>
       <div class="ft"><div class="names">${s.length ? `<div class="cnt">👥 ${s.length} dabei</div><div class="ppl">${chips}</div>` : '<div class="none">Noch niemand eingetragen</div>'}</div>
-      ${isAdmin() ? `<button class="del" data-del="${esc(a.id)}" title="Löschen" aria-label="Löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg></button>` : ''}</div></div>`;
+      <div class="acts">${canEdit(a) ? `<button class="del edt" data-edit="${esc(a.id)}" title="Bearbeiten" aria-label="Bearbeiten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>` : ''}${isAdmin() ? `<button class="del" data-del="${esc(a.id)}" title="Löschen" aria-label="Löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg></button>` : ''}</div></div></div>`;
   }).join('');
 }
 
@@ -186,7 +242,32 @@ $('list').onclick = async e => {
     } catch (err) { alert('Löschen hat nicht geklappt.'); b.disabled = false; }
     return;
   }
-  if (b.dataset.res) { editRes = b.dataset.res; render(); return; }
+  if (b.dataset.edit) { editAct = b.dataset.edit; editRes = null; editPlace = null; render(); const i = $('et'); if (i) i.focus(); return; }
+  if (b.dataset.ecancel) { editAct = null; render(); return; }
+  if (b.dataset.esave) {
+    const a = acts.find(x => x.id === b.dataset.esave); if (!a || !canEdit(a)) return;
+    const title = $('et').value.trim(); if (!title) { alert('Bitte gib einen Titel ein.'); return; }
+    const data = { title, desc: $('ed').value.trim(), day: $('ew').value, time: $('ez').value, place: $('epo').value.trim() };
+    if ((a.cat || 'act') === 'food') {
+      data.kind = $('ek').value; if (!data.kind) { alert('Bitte wähle: Kochen oder Restaurant.'); return; }
+      const lk = data.kind === 'rest' ? normLink($('elk').value) : '';
+      if (lk === false) { alert('Der Link ist ungültig.'); return; }
+      data.link = lk;
+    }
+    b.disabled = true;
+    try { await setDoc(doc(db, 'activities', a.id), data, { merge: true }); editAct = null; render(); }
+    catch (err) { alert('Das hat nicht geklappt.'); b.disabled = false; }
+    return;
+  }
+  if (b.dataset.pl) { editPlace = b.dataset.pl; editRes = null; render(); const i = $('epl'); if (i) i.focus(); return; }
+  if (b.dataset.plcancel) { editPlace = null; render(); return; }
+  if (b.dataset.pldel || b.dataset.plsave) {
+    const id = b.dataset.pldel || b.dataset.plsave, place = b.dataset.plsave ? $('epl').value.trim() : '';
+    try { await setDoc(doc(db, 'activities', id), { place }, { merge: true }); editPlace = null; render(); }
+    catch (err) { alert('Das hat nicht geklappt.'); }
+    return;
+  }
+  if (b.dataset.res) { editRes = b.dataset.res; editPlace = null; render(); return; }
   if (b.dataset.rescancel) { editRes = null; render(); return; }
   if (b.dataset.resdel) {
     try { await setDoc(doc(db, 'activities', b.dataset.resdel), { res: null }, { merge: true }); } catch (err) { alert('Das hat nicht geklappt.'); }
@@ -219,7 +300,9 @@ function setTab(t) {
   $('ah').textContent = food ? 'Neuen Essensvorschlag machen' : 'Neue Aktivität vorschlagen';
   $('t').placeholder = food ? 'z. B. Pasta für alle / Pizzeria am Hafen' : 'z. B. Wanderung zum Aussichtspunkt';
   $('k').hidden = !food;
+  editRes = null; editPlace = null; editAct = null;
   formFields();
+  top();
   render();
 }
 $('tabs').onclick = e => { const b = e.target.closest('.tb'); if (b) setTab(b.dataset.tab); };
@@ -228,6 +311,7 @@ $('go').onclick = async () => {
   const t = $('t'), d = $('d'), w = $('w'), z = $('z'), k = $('k'); if (!t.value.trim()) return;
   if (tab === 'food' && !k.value) { alert('Bitte wähle: Kochen oder Restaurant.'); return; }
   const data = { title: t.value.trim(), desc: d.value.trim(), day: w.value, time: z.value, cat: tab, kind: tab === 'food' ? k.value : '', ts: Date.now(), by: me };
+  if ($('pl').value.trim()) data.place = $('pl').value.trim();
   if (tab === 'food' && k.value === 'rest') {
     const lk = normLink($('lnk').value);
     if (lk === false) { alert('Der Link ist ungültig.'); return; }
@@ -240,7 +324,18 @@ $('go').onclick = async () => {
   }
   try {
     await setDoc(doc(db, 'activities', 'a' + Date.now()), data);
-    t.value = ''; d.value = ''; w.value = ''; z.value = ''; k.value = ''; $('lnk').value = ''; $('rv').checked = false; $('rt').value = ''; $('rp').value = ''; formFields();
+    t.value = ''; d.value = ''; w.value = ''; z.value = ''; k.value = ''; $('pl').value = ''; $('lnk').value = ''; $('rv').checked = false; $('rt').value = ''; $('rp').value = ''; formFields();
   } catch (err) { alert('Das hat nicht geklappt.'); }
 };
+
+// Countdown bis zum Abflug (31.10.2026, 11:10 Uhr deutscher Zeit, Winterzeit = +01:00)
+const DEPART = new Date('2026-10-31T11:10:00+01:00');
+function countdown() {
+  const ms = DEPART - Date.now();
+  if (ms <= 0) { $('cd').innerHTML = '<div><b>🌴 Wir sind auf Malta!</b><small>Viel Spaß euch allen</small></div>'; return; }
+  const m = Math.floor(ms / 60000), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), mi = m % 60;
+  const u = (n, l) => `<div class="u"><b>${n}</b><small>${l}</small></div>`;
+  $('cd').innerHTML = `<div><b>✈️ Abflug</b><small>Sa, 31.10. · 11:10 Uhr</small></div><div class="ut">${u(d, d === 1 ? 'Tag' : 'Tage')}${u(h, 'Std.')}${u(mi, 'Min.')}</div>`;
+}
+countdown(); setInterval(countdown, 15000);
 </script></body></html>
