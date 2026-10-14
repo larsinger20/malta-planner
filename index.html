@@ -2,9 +2,11 @@
 <html lang="de"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Malta Planner</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect y='6' width='16' height='20' fill='%23fff'/><rect x='16' y='6' width='16' height='20' fill='%23cf142b'/><rect x='.5' y='6.5' width='31' height='19' fill='none' stroke='%23999'/><path d='M5 8.2v5.6M2.2 11h5.6' stroke='%238a8d91' stroke-width='2.2'/></svg>">
 <style>
 :root{--bg:#f6f4ef;--card:#fff;--tx:#1f2a2e;--mu:#6b7478;--ac:#1d7a6b;--bd:#e3e0d8;--rd:#c0392b}
 @media(prefers-color-scheme:dark){:root{--bg:#171c1e;--card:#222a2d;--tx:#eef1f1;--mu:#98a3a7;--ac:#4fc3ae;--bd:#333d40;--rd:#ef7b6e}}
+[hidden]{display:none!important}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,sans-serif}
 main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
 .hd{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px}
@@ -24,6 +26,9 @@ button.o{background:transparent;color:var(--ac);border:1.5px solid var(--ac)}
 textarea{resize:vertical;max-width:100%;min-height:60px}
 input,textarea,select{width:100%;font:inherit;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);margin-bottom:8px}
 .tabs{display:flex;gap:8px;margin-bottom:16px}.tb{flex:1;background:var(--card);color:var(--tx);border:1px solid var(--bd)}.tb.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.info{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 2px}.info .day{margin:0}.lk{color:var(--ac);text-decoration:none}.ok{border-color:var(--ac)}.sm{font-size:13px;padding:4px 10px}
+.resf{display:flex;flex-wrap:wrap;gap:8px}.info .resf{width:100%;margin-top:4px}.resf input{width:auto;flex:1;min-width:110px;margin:0}
+.chk{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:15px}.chk input{width:auto;margin:0}
 .m{color:var(--mu);text-align:center;padding:20px 0}
 .pf{position:relative}.av{width:40px;height:40px;border-radius:50%;padding:0;font-weight:600;font-size:17px}
 .pm{position:absolute;right:0;top:48px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;min-width:170px;box-shadow:0 6px 20px rgba(0,0,0,.15);z-index:5}
@@ -49,8 +54,11 @@ input,textarea,select{width:100%;font:inherit;padding:10px;border:1px solid var(
 <div class="c" id="add" hidden><h2 id="ah">Neue Aktivität vorschlagen</h2><p></p>
 <input id="t" placeholder="z. B. Wanderung zum Aussichtspunkt" maxlength="80">
 <select id="k" hidden><option value="">Kochen oder Restaurant?</option><option value="cook">👩‍🍳 Kochen</option><option value="rest">🍴 Restaurant</option></select>
+<input id="lnk" type="url" placeholder="Link (z. B. Google Maps oder Website, optional)" maxlength="300" hidden>
 <textarea id="d" rows="2" placeholder="Kurze Beschreibung (optional)" maxlength="200"></textarea>
 <select id="w"><option value="">Wochentag vorschlagen (optional)</option><option>Montag</option><option>Dienstag</option><option>Mittwoch</option><option>Donnerstag</option><option>Freitag</option><option>Samstag</option><option>Sonntag</option></select>
+<label class="chk" id="rvl" hidden><input type="checkbox" id="rv"> Schon reserviert</label>
+<div class="resf" id="rvf" hidden style="margin-bottom:8px"><input type="time" id="rt"><input type="number" id="rp" min="1" max="99" placeholder="Personen"></div>
 <select id="z"><option value="">Tageszeit (optional)</option><option>Morgens / Vormittags</option><option>Mittags</option><option>Abends</option></select>
 <button id="go">Vorschlagen</button></div>
 </main>
@@ -83,7 +91,7 @@ let me = null;
 try { me = localStorage.getItem('uid'); if (!me) { me = 'u' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); localStorage.setItem('uid', me); } }
 catch (e) { me = 'u' + Math.random().toString(36).slice(2, 10); }
 
-let acts = [], sig = [], ppl = {}, pins = {}, editing = false, tab = 'act';
+let acts = [], sig = [], ppl = {}, pins = {}, editing = false, tab = 'act', editRes = null;
 const ADMIN = 'lars';
 const isAdmin = () => (ppl[me] || '').trim().toLowerCase() === ADMIN;
 
@@ -101,8 +109,23 @@ function top() {
   }
 }
 
+function restInfo(a) {
+  let lk = '';
+  try { const u = new URL(a.link || ''); if (/^https?:$/.test(u.protocol)) lk = `<a class="day lk" href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">🔗 ${esc(u.hostname.replace(/^www\./, ''))}</a>`; } catch (e) {}
+  let rs;
+  if (editRes === a.id) {
+    const r = a.res || {};
+    rs = `<div class="resf"><input type="time" id="ert" value="${esc(r.t || '')}"><input type="number" id="erp" min="1" max="99" placeholder="Personen" value="${esc(r.p || '')}"><button data-ressave="${esc(a.id)}">Speichern</button>${a.res ? `<button class="o" data-resdel="${esc(a.id)}">Entfernen</button>` : ''}<button class="o" data-rescancel="1">Abbrechen</button></div>`;
+  } else if (a.res) {
+    rs = `<span class="day ok">✅ Reserviert · ${esc(a.res.t)} Uhr · ${esc(a.res.p)} Pers.</span><button class="o sm" data-res="${esc(a.id)}">ändern</button>`;
+  } else rs = `<button class="o sm" data-res="${esc(a.id)}">📞 Reservierung eintragen</button>`;
+  return `<div class="info">${lk}${rs}</div>`;
+}
+
 function render() {
   if (!ppl[me]) return;
+  const ae = document.activeElement;
+  if (editRes && ae && ae.tagName === 'INPUT' && $('list').contains(ae)) return;
   const items = acts.filter(a => (a.cat || 'act') === tab);
   if (!items.length) { $('list').innerHTML = '<div class="m">Noch keine Vorschläge. Mach den ersten! 👇</div>'; return; }
   $('list').innerHTML = items.map(a => {
@@ -112,6 +135,7 @@ function render() {
     return `<div class="c"><div class="r"><div><h2>${esc(a.title)}</h2>${a.kind === 'cook' ? '<span class="day">👩‍🍳 Kochen</span>' : a.kind === 'rest' ? '<span class="day">🍴 Restaurant</span>' : ''}${a.day ? `<span class="day">📅 ${esc(a.day)}</span>` : ''}${a.time ? `<span class="day">🕒 ${esc(a.time)}</span>` : ''}</div>
       <button class="${mine ? 'o' : ''}" data-a="${esc(a.id)}">${mine ? 'Austragen' : 'Ich bin dabei'}</button></div>
       ${a.desc ? `<p>${esc(a.desc)}</p>` : ''}
+      ${a.kind === 'rest' ? restInfo(a) : ''}
       <div class="ft"><div class="names">${s.length ? `<div class="cnt">👥 ${s.length} dabei</div><div class="ppl">${chips}</div>` : '<div class="none">Noch niemand eingetragen</div>'}</div>
       ${isAdmin() ? `<button class="del" data-del="${esc(a.id)}" title="Löschen" aria-label="Löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg></button>` : ''}</div></div>`;
   }).join('');
@@ -160,11 +184,31 @@ $('list').onclick = async e => {
     } catch (err) { alert('Löschen hat nicht geklappt.'); b.disabled = false; }
     return;
   }
+  if (b.dataset.res) { editRes = b.dataset.res; render(); return; }
+  if (b.dataset.rescancel) { editRes = null; render(); return; }
+  if (b.dataset.resdel) {
+    try { await setDoc(doc(db, 'activities', b.dataset.resdel), { res: null }, { merge: true }); } catch (err) { alert('Das hat nicht geklappt.'); }
+    editRes = null; render(); return;
+  }
+  if (b.dataset.ressave) {
+    const t = $('ert').value, p = parseInt($('erp').value, 10);
+    if (!t || !(p >= 1 && p <= 99)) { alert('Bitte Uhrzeit und Personenanzahl angeben.'); return; }
+    try { await setDoc(doc(db, 'activities', b.dataset.ressave), { res: { t, p } }, { merge: true }); editRes = null; render(); }
+    catch (err) { alert('Das hat nicht geklappt.'); }
+    return;
+  }
   const a = b.dataset.a, ref = doc(db, 'signups', a + '_' + me); b.disabled = true;
   try { sig.some(x => x.act === a && x.uid === me) ? await deleteDoc(ref) : await setDoc(ref, { act: a, uid: me }); }
   catch (err) { alert('Das hat nicht geklappt.'); }
   b.disabled = false;
 };
+
+function formFields() {
+  const rest = tab === 'food' && $('k').value === 'rest';
+  $('lnk').hidden = !rest; $('rvl').hidden = !rest; $('rvf').hidden = !(rest && $('rv').checked);
+}
+$('k').onchange = formFields; $('rv').onchange = formFields;
+const normLink = v => { v = v.trim(); if (!v) return ''; if (!/^https?:\/\//i.test(v)) v = 'https://' + v; try { const u = new URL(v); return /^https?:$/.test(u.protocol) ? u.href : false; } catch (e) { return false; } };
 
 function setTab(t) {
   tab = t;
@@ -173,6 +217,7 @@ function setTab(t) {
   $('ah').textContent = food ? 'Neuen Essensvorschlag machen' : 'Neue Aktivität vorschlagen';
   $('t').placeholder = food ? 'z. B. Pasta für alle / Pizzeria am Hafen' : 'z. B. Wanderung zum Aussichtspunkt';
   $('k').hidden = !food;
+  formFields();
   render();
 }
 $('tabs').onclick = e => { const b = e.target.closest('.tb'); if (b) setTab(b.dataset.tab); };
@@ -180,9 +225,20 @@ $('tabs').onclick = e => { const b = e.target.closest('.tb'); if (b) setTab(b.da
 $('go').onclick = async () => {
   const t = $('t'), d = $('d'), w = $('w'), z = $('z'), k = $('k'); if (!t.value.trim()) return;
   if (tab === 'food' && !k.value) { alert('Bitte wähle: Kochen oder Restaurant.'); return; }
+  const data = { title: t.value.trim(), desc: d.value.trim(), day: w.value, time: z.value, cat: tab, kind: tab === 'food' ? k.value : '', ts: Date.now(), by: me };
+  if (tab === 'food' && k.value === 'rest') {
+    const lk = normLink($('lnk').value);
+    if (lk === false) { alert('Der Link ist ungültig.'); return; }
+    if (lk) data.link = lk;
+    if ($('rv').checked) {
+      const rt = $('rt').value, rp = parseInt($('rp').value, 10);
+      if (!rt || !(rp >= 1 && rp <= 99)) { alert('Bitte Uhrzeit und Personenanzahl der Reservierung angeben.'); return; }
+      data.res = { t: rt, p: rp };
+    }
+  }
   try {
-    await setDoc(doc(db, 'activities', 'a' + Date.now()), { title: t.value.trim(), desc: d.value.trim(), day: w.value, time: z.value, cat: tab, kind: tab === 'food' ? k.value : '', ts: Date.now(), by: me });
-    t.value = ''; d.value = ''; w.value = ''; z.value = ''; k.value = '';
+    await setDoc(doc(db, 'activities', 'a' + Date.now()), data);
+    t.value = ''; d.value = ''; w.value = ''; z.value = ''; k.value = ''; $('lnk').value = ''; $('rv').checked = false; $('rt').value = ''; $('rp').value = ''; formFields();
   } catch (err) { alert('Das hat nicht geklappt.'); }
 };
 </script></body></html>
