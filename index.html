@@ -14,28 +14,32 @@ h1{margin:0;font-size:26px}p.s{margin:0 0 20px;color:var(--mu)}
 .r{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .ft{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}.names{font-size:14px}
 .del{width:36px;height:36px;padding:0;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;background:transparent;border:1px solid var(--bd);color:var(--rd)}.del:hover{background:color-mix(in srgb,var(--rd) 14%,transparent);border-color:var(--rd)}.del svg{width:18px;height:18px}
-.day{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:999px;padding:2px 10px;font-size:13px;margin-top:4px}
+.day{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:999px;padding:2px 10px;font-size:13px;margin:4px 6px 0 0}
 button{font:inherit;border:0;border-radius:10px;padding:9px 14px;background:var(--ac);color:#fff;cursor:pointer}
 button.o{background:transparent;color:var(--ac);border:1.5px solid var(--ac)}
 textarea{resize:vertical;max-width:100%;min-height:60px}
 input,textarea,select{width:100%;font:inherit;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);margin-bottom:8px}
+.tabs{display:flex;gap:8px;margin-bottom:16px}.tb{flex:1;background:var(--card);color:var(--tx);border:1px solid var(--bd)}.tb.on{background:var(--ac);color:#fff;border-color:var(--ac)}
 .m{color:var(--mu);text-align:center;padding:20px 0}
 .pf{position:relative}.av{width:40px;height:40px;border-radius:50%;padding:0;font-weight:600;font-size:17px}
 .pm{position:absolute;right:0;top:48px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;min-width:170px;box-shadow:0 6px 20px rgba(0,0,0,.15);z-index:5}
 .pm small{color:var(--mu)}.pm b{display:block;margin-bottom:8px}.pm button{width:100%}
 </style></head><body><main>
 <div class="hd"><h1>🧳 Malta Planner</h1><div class="pf" id="me" hidden></div></div>
-<p class="s">Schlag Aktivitäten vor und trag dich bei denen ein, auf die du Lust hast.</p>
+<p class="s">Schlag Ideen vor und trag dich bei denen ein, auf die du Lust hast.</p>
+<div class="tabs" id="tabs" hidden><button class="tb on" data-tab="act">🗺 Aktivitäten</button><button class="tb" data-tab="food">🍽 Essen</button></div>
 
 <div class="c" id="ask" hidden><h2>Wie heißt du?</h2><p>Damit die anderen sehen, wer sich einträgt.</p>
 <input id="n" placeholder="Dein Name" maxlength="30"><button id="ns">Los geht's</button></div>
 
 <div id="list" hidden><div class="m">Lädt…</div></div>
 
-<div class="c" id="add" hidden><h2>Neue Aktivität vorschlagen</h2><p></p>
+<div class="c" id="add" hidden><h2 id="ah">Neue Aktivität vorschlagen</h2><p></p>
 <input id="t" placeholder="z. B. Wanderung zum Aussichtspunkt" maxlength="80">
+<select id="k" hidden><option value="">Kochen oder Restaurant?</option><option value="cook">👩‍🍳 Kochen</option><option value="rest">🍴 Restaurant</option></select>
 <textarea id="d" rows="2" placeholder="Kurze Beschreibung (optional)" maxlength="200"></textarea>
 <select id="w"><option value="">Wochentag vorschlagen (optional)</option><option>Montag</option><option>Dienstag</option><option>Mittwoch</option><option>Donnerstag</option><option>Freitag</option><option>Samstag</option><option>Sonntag</option></select>
+<select id="z"><option value="">Tageszeit (optional)</option><option>Morgens / Vormittags</option><option>Mittags</option><option>Abends</option></select>
 <button id="go">Vorschlagen</button></div>
 </main>
 
@@ -63,14 +67,14 @@ let me = null;
 try { me = localStorage.getItem('uid'); if (!me) { me = 'u' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); localStorage.setItem('uid', me); } }
 catch (e) { me = 'u' + Math.random().toString(36).slice(2, 10); }
 
-let acts = [], sig = [], ppl = {}, editing = false;
+let acts = [], sig = [], ppl = {}, editing = false, tab = 'act';
 const ADMIN = 'lars';
 const isAdmin = () => (ppl[me] || '').trim().toLowerCase() === ADMIN;
 
 function top() {
   const n = ppl[me];
   const show = !!n && !editing;
-  $('ask').hidden = show; $('add').hidden = !show; $('list').hidden = !show; $('me').hidden = !show;
+  $('ask').hidden = show; $('add').hidden = !show; $('list').hidden = !show; $('me').hidden = !show; $('tabs').hidden = !show;
   if (show) {
     $('me').innerHTML = '<button class="av" id="avb" aria-label="Profil">' + esc(n.trim()[0].toUpperCase()) + '</button>';
     $('avb').onclick = () => {
@@ -83,15 +87,16 @@ function top() {
 
 function render() {
   if (!ppl[me]) return;
-  if (!acts.length) { $('list').innerHTML = '<div class="m">Noch keine Vorschläge. Mach den ersten! 👇</div>'; return; }
-  $('list').innerHTML = acts.map(a => {
+  const items = acts.filter(a => (a.cat || 'act') === tab);
+  if (!items.length) { $('list').innerHTML = '<div class="m">Noch keine Vorschläge. Mach den ersten! 👇</div>'; return; }
+  $('list').innerHTML = items.map(a => {
     const s = sig.filter(x => x.act === a.id), mine = s.some(x => x.uid === me);
     const n = s.map(x => x.uid === me ? 'Du' : (ppl[x.uid] || 'Jemand')).join(', ');
-    return `<div class="c"><div class="r"><div><h2>${esc(a.title)}</h2>${a.day ? `<span class="day">📅 ${esc(a.day)}</span>` : ''}</div>
+    return `<div class="c"><div class="r"><div><h2>${esc(a.title)}</h2>${a.kind === 'cook' ? '<span class="day">👩‍🍳 Kochen</span>' : a.kind === 'rest' ? '<span class="day">🍴 Restaurant</span>' : ''}${a.day ? `<span class="day">📅 ${esc(a.day)}</span>` : ''}${a.time ? `<span class="day">🕒 ${esc(a.time)}</span>` : ''}</div>
       <button class="${mine ? 'o' : ''}" data-a="${esc(a.id)}">${mine ? 'Austragen' : 'Ich bin dabei'}</button></div>
       ${a.desc ? `<p>${esc(a.desc)}</p>` : ''}
       <div class="ft"><div class="names">${s.length ? `👥 ${s.length}: ${esc(n)}` : 'Noch niemand eingetragen'}</div>
-      ${isAdmin() ? `<button class="del" data-del="${esc(a.id)}" title="Aktivität löschen" aria-label="Aktivität löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg></button>` : ''}</div></div>`;
+      ${isAdmin() ? `<button class="del" data-del="${esc(a.id)}" title="Löschen" aria-label="Löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg></button>` : ''}</div></div>`;
   }).join('');
 }
 
@@ -110,7 +115,7 @@ $('ns').onclick = async () => {
 $('list').onclick = async e => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.dataset.del) {
-    if (!isAdmin() || !confirm('Diese Aktivität wirklich löschen?')) return;
+    if (!isAdmin() || !confirm('Diesen Vorschlag wirklich löschen?')) return;
     const id = b.dataset.del; b.disabled = true;
     try {
       await Promise.all(sig.filter(x => x.act === id).map(x => deleteDoc(doc(db, 'signups', id + '_' + x.uid))));
@@ -124,11 +129,23 @@ $('list').onclick = async e => {
   b.disabled = false;
 };
 
+function setTab(t) {
+  tab = t;
+  document.querySelectorAll('.tb').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  const food = t === 'food';
+  $('ah').textContent = food ? 'Neuen Essensvorschlag machen' : 'Neue Aktivität vorschlagen';
+  $('t').placeholder = food ? 'z. B. Pasta für alle / Pizzeria am Hafen' : 'z. B. Wanderung zum Aussichtspunkt';
+  $('k').hidden = !food;
+  render();
+}
+$('tabs').onclick = e => { const b = e.target.closest('.tb'); if (b) setTab(b.dataset.tab); };
+
 $('go').onclick = async () => {
-  const t = $('t'), d = $('d'), w = $('w'); if (!t.value.trim()) return;
+  const t = $('t'), d = $('d'), w = $('w'), z = $('z'), k = $('k'); if (!t.value.trim()) return;
+  if (tab === 'food' && !k.value) { alert('Bitte wähle: Kochen oder Restaurant.'); return; }
   try {
-    await setDoc(doc(db, 'activities', 'a' + Date.now()), { title: t.value.trim(), desc: d.value.trim(), day: w.value, ts: Date.now(), by: me });
-    t.value = ''; d.value = ''; w.value = '';
+    await setDoc(doc(db, 'activities', 'a' + Date.now()), { title: t.value.trim(), desc: d.value.trim(), day: w.value, time: z.value, cat: tab, kind: tab === 'food' ? k.value : '', ts: Date.now(), by: me });
+    t.value = ''; d.value = ''; w.value = ''; z.value = ''; k.value = '';
   } catch (err) { alert('Das hat nicht geklappt.'); }
 };
 </script></body></html>
