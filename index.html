@@ -12,7 +12,11 @@ h1{margin:0;font-size:26px}p.s{margin:0 0 20px;color:var(--mu)}
 .c{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
 .c h2{margin:0;font-size:18px}.c p{margin:4px 0 10px;color:var(--mu);font-size:14px}
 .r{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.ft{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}.names{font-size:14px}
+.ft{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}.names{min-width:0}.cnt{font-size:13px;color:var(--mu);margin-bottom:6px}.none{font-size:13px;color:var(--mu)}
+.ppl{display:flex;flex-wrap:wrap;gap:6px}
+.pp{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--bd);border-radius:999px;padding:2px 10px 2px 3px;font-size:13px}
+.pp i{width:20px;height:20px;border-radius:50%;color:#fff;font-style:normal;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.pp.me{border-color:var(--ac);font-weight:600}
 .del{width:36px;height:36px;padding:0;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;background:transparent;border:1px solid var(--bd);color:var(--rd)}.del:hover{background:color-mix(in srgb,var(--rd) 14%,transparent);border-color:var(--rd)}.del svg{width:18px;height:18px}
 .day{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:999px;padding:2px 10px;font-size:13px;margin:4px 6px 0 0}
 button{font:inherit;border:0;border-radius:10px;padding:9px 14px;background:var(--ac);color:#fff;cursor:pointer}
@@ -62,6 +66,8 @@ const db = getFirestore(initializeApp(firebaseConfig));
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+const hue = nm => { let h = 0; for (const c of nm) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
+
 // Jedes Gerät bekommt eine zufällige ID, der Name wird in der Datenbank gespeichert
 let me = null;
 try { me = localStorage.getItem('uid'); if (!me) { me = 'u' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); localStorage.setItem('uid', me); } }
@@ -91,11 +97,12 @@ function render() {
   if (!items.length) { $('list').innerHTML = '<div class="m">Noch keine Vorschläge. Mach den ersten! 👇</div>'; return; }
   $('list').innerHTML = items.map(a => {
     const s = sig.filter(x => x.act === a.id), mine = s.some(x => x.uid === me);
-    const n = s.map(x => x.uid === me ? 'Du' : (ppl[x.uid] || 'Jemand')).join(', ');
+    const chips = s.map(x => { const nm = ppl[x.uid] || 'Jemand', you = x.uid === me;
+      return `<span class="pp${you ? ' me' : ''}"><i style="background:hsl(${hue(nm)},45%,42%)">${esc(nm.trim()[0].toUpperCase())}</i>${you ? 'Du' : esc(nm)}</span>`; }).join('');
     return `<div class="c"><div class="r"><div><h2>${esc(a.title)}</h2>${a.kind === 'cook' ? '<span class="day">👩‍🍳 Kochen</span>' : a.kind === 'rest' ? '<span class="day">🍴 Restaurant</span>' : ''}${a.day ? `<span class="day">📅 ${esc(a.day)}</span>` : ''}${a.time ? `<span class="day">🕒 ${esc(a.time)}</span>` : ''}</div>
       <button class="${mine ? 'o' : ''}" data-a="${esc(a.id)}">${mine ? 'Austragen' : 'Ich bin dabei'}</button></div>
       ${a.desc ? `<p>${esc(a.desc)}</p>` : ''}
-      <div class="ft"><div class="names">${s.length ? `👥 ${s.length}: ${esc(n)}` : 'Noch niemand eingetragen'}</div>
+      <div class="ft"><div class="names">${s.length ? `<div class="cnt">👥 ${s.length} dabei</div><div class="ppl">${chips}</div>` : '<div class="none">Noch niemand eingetragen</div>'}</div>
       ${isAdmin() ? `<button class="del" data-del="${esc(a.id)}" title="Löschen" aria-label="Löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg></button>` : ''}</div></div>`;
   }).join('');
 }
