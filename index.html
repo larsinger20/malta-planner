@@ -33,8 +33,16 @@ input,textarea,select{width:100%;font:inherit;padding:10px;border:1px solid var(
 <p class="s">Schlag Ideen vor und trag dich bei denen ein, auf die du Lust hast.</p>
 <div class="tabs" id="tabs" hidden><button class="tb on" data-tab="act">🗺 Aktivitäten</button><button class="tb" data-tab="food">🍽 Essen</button></div>
 
-<div class="c" id="ask" hidden><h2>Wie heißt du?</h2><p>Damit die anderen sehen, wer sich einträgt.</p>
-<input id="n" placeholder="Dein Name" maxlength="30"><button id="ns">Los geht's</button></div>
+<div class="c" id="ask" hidden><h2>Wie heißt du?</h2>
+<p>Lege einen PIN fest (4–8 Ziffern). Damit kommst du später mit demselben Namen und PIN wieder in dein Profil, auch nach dem Löschen der Cookies oder auf einem neuen Handy.</p>
+<input id="n" placeholder="Dein Name" maxlength="30">
+<input id="pin" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN (4–8 Ziffern)" maxlength="8">
+<button id="ns">Los geht's</button></div>
+
+<div class="c" id="pinCard" hidden><h2>PIN festlegen</h2>
+<p>Damit du dein Profil später wiederherstellen kannst (z. B. nach dem Löschen der Cookies), lege jetzt einen PIN fest.</p>
+<input id="pin2" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN (4–8 Ziffern)" maxlength="8">
+<button id="ps">PIN speichern</button></div>
 
 <div id="list" hidden><div class="m">Lädt…</div></div>
 
@@ -66,6 +74,8 @@ const db = getFirestore(initializeApp(firebaseConfig));
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+const hash = async (name, pin) => { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(name.trim().toLowerCase() + '|' + pin + '|malta')); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); };
+const PIN_OK = p => /^\d{4,8}$/.test(p);
 const hue = nm => { let h = 0; for (const c of nm) h = (h * 31 + c.charCodeAt(0)) % 360; return h; };
 
 // Jedes Gerät bekommt eine zufällige ID, der Name wird in der Datenbank gespeichert
@@ -73,14 +83,14 @@ let me = null;
 try { me = localStorage.getItem('uid'); if (!me) { me = 'u' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); localStorage.setItem('uid', me); } }
 catch (e) { me = 'u' + Math.random().toString(36).slice(2, 10); }
 
-let acts = [], sig = [], ppl = {}, editing = false, tab = 'act';
+let acts = [], sig = [], ppl = {}, pins = {}, editing = false, tab = 'act';
 const ADMIN = 'lars';
 const isAdmin = () => (ppl[me] || '').trim().toLowerCase() === ADMIN;
 
 function top() {
   const n = ppl[me];
   const show = !!n && !editing;
-  $('ask').hidden = show; $('add').hidden = !show; $('list').hidden = !show; $('me').hidden = !show; $('tabs').hidden = !show;
+  $('ask').hidden = show; $('add').hidden = !show; $('list').hidden = !show; $('me').hidden = !show; $('tabs').hidden = !show; $('pinCard').hidden = !(show && !pins[me]);
   if (show) {
     $('me').innerHTML = '<button class="av" id="avb" aria-label="Profil">' + esc(n.trim()[0].toUpperCase()) + '</button>';
     $('avb').onclick = () => {
@@ -107,15 +117,35 @@ function render() {
   }).join('');
 }
 
-onSnapshot(collection(db, 'people'), q => { q.docs.forEach(d => ppl[d.id] = d.data().name); top(); render(); },
+onSnapshot(collection(db, 'people'), q => { ppl = {}; pins = {}; q.docs.forEach(d => { ppl[d.id] = d.data().name; pins[d.id] = d.data().ph || ''; }); top(); render(); },
   e => { $('list').hidden = false; $('list').innerHTML = '<div class="m">Verbindung zur Datenbank fehlgeschlagen. Prüfe Config und Regeln.</div>'; console.error(e); });
 onSnapshot(collection(db, 'activities'), q => { acts = q.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.ts || 0) - (b.ts || 0)); render(); });
 onSnapshot(collection(db, 'signups'), q => { sig = q.docs.map(d => d.data()); render(); });
 
 $('ns').onclick = async () => {
-  const v = $('n').value.trim(); if (!v) return;
-  if (Object.entries(ppl).some(([k, n]) => k !== me && n && n.trim().toLowerCase() === v.toLowerCase())) { alert('Dieser Name ist schon vergeben. Nimm einen anderen.'); return; }
-  try { await setDoc(doc(db, 'people', me), { name: v }); ppl[me] = v; editing = false; top(); render(); }
+  const v = $('n').value.trim(), pin = $('pin').value.trim(); if (!v) return;
+  if (!PIN_OK(pin)) { alert('Bitte gib einen PIN mit 4 bis 8 Ziffern ein.'); return; }
+  try {
+    const h = await hash(v, pin);
+    const other = Object.entries(ppl).find(([k, n]) => k !== me && n && n.trim().toLowerCase() === v.toLowerCase());
+    if (other) {
+      const oid = other[0];
+      if (pins[oid] && pins[oid] === h) {
+        me = oid; try { localStorage.setItem('uid', oid); } catch (e) {}
+        editing = false; $('pin').value = ''; top(); render(); return;
+      }
+      alert(pins[oid] ? 'Der Name ist vergeben und der PIN passt nicht. Bist du es? Dann prüfe deinen PIN. Sonst nimm einen anderen Namen.' : 'Dieser Name ist schon vergeben. Nimm einen anderen.');
+      return;
+    }
+    await setDoc(doc(db, 'people', me), { name: v, ph: h });
+    ppl[me] = v; pins[me] = h; editing = false; $('pin').value = ''; top(); render();
+  } catch (e) { alert('Das hat nicht geklappt.'); }
+};
+
+$('ps').onclick = async () => {
+  const pin = $('pin2').value.trim();
+  if (!PIN_OK(pin)) { alert('Bitte gib einen PIN mit 4 bis 8 Ziffern ein.'); return; }
+  try { const h = await hash(ppl[me], pin); await setDoc(doc(db, 'people', me), { name: ppl[me], ph: h }); pins[me] = h; $('pin2').value = ''; top(); }
   catch (e) { alert('Das hat nicht geklappt.'); }
 };
 
