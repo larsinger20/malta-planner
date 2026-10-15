@@ -104,6 +104,11 @@ button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-heigh
 .acl{margin:-6px 0 10px;background:var(--card);border:1px solid var(--bd);border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.12);animation:pop .18s ease-out;transform-origin:top center}.resf .acl{flex-basis:100%;margin:0}
 .aci{display:block;width:100%;text-align:left;background:none;color:var(--tx);border-radius:0;padding:10px 14px;font-size:16px}.aci+.aci{box-shadow:inset 0 .5px 0 var(--bd)}.aci:active{transform:none;background:var(--fill)}.aci b{font-weight:500}.aci small{display:block;color:var(--mu);font-size:13px;margin-top:1px}
 .acg{font-size:11px;color:var(--mu);text-align:right;padding:4px 12px 6px}
+.stats .ah{margin-bottom:8px}.sgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+.sn{background:var(--fill);border-radius:14px;padding:10px 12px}.sn b{display:block;font-family:var(--disp);font-size:26px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}.sn small{color:var(--mu);font-size:13px}
+.bars{display:flex;align-items:flex-end;gap:4px;height:90px;margin-bottom:4px}.bar{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px}
+.bar i{display:block;width:100%;min-height:2px;border-radius:4px 4px 2px 2px;background:color-mix(in srgb,var(--acb) 45%,var(--fill))}.bar.tod i{background:var(--acb)}.bar small{font-size:10px;color:var(--mu)}
+.sh3{font-size:17px;margin:16px 0 4px;font-family:var(--disp)}.srow{display:flex;align-items:center;gap:12px;padding:8px 0;box-shadow:inset 0 .5px 0 var(--bd)}.sname{flex:1;min-width:0;line-height:1.25}.sname b{display:block;font-weight:600}.sname small{color:var(--mu);font-size:13px}.sago{font-size:13px;color:var(--mu);white-space:nowrap}
 .shc{padding:16px 18px}.shh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px}.shh h2{font-size:20px}.shh .meta{margin:0;font-size:15px;white-space:nowrap}
 
 /* Countdown: Türkis-Kachel, Text links, Zahlen-Kästchen rechts */
@@ -150,6 +155,7 @@ button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-heigh
 <div class="hd"><h1><img class="flag" src="flag.png?v=3" alt="">Malta Planner</h1><div class="pf" id="me" hidden></div></div>
 <p class="s">Schlag Ideen vor und trag dich bei denen ein, auf die du Lust hast.</p>
 <div class="cd" id="cd"><div class="cdt" id="cdt" role="button" tabindex="0" aria-expanded="false" aria-controls="trip"></div><div class="cdx"><div class="cdi"><div class="cdin" id="trip"></div></div></div></div>
+<div class="c stats" id="stats" hidden></div>
 <div class="tabs" id="tabs" hidden><div class="seg"><span class="ind" id="ind"></span><button class="tb on" data-tab="act"><span class="ti">🗺</span><span>Aktivitäten<b class="n" id="n-act"></b></span></button><button class="tb" data-tab="food"><span class="ti">🍽</span><span>Essen<b class="n" id="n-food"></b></span></button><button class="tb" data-tab="shop"><span class="ti">🛒</span><span>Einkauf<b class="n" id="n-shop"></b></span></button><button class="tb" data-tab="plan"><span class="ti">📅</span><span>Mein Plan<b class="n" id="n-plan"></b></span></button></div></div>
 
 <div class="c" id="ask" hidden><h2>Wie heißt du?</h2>
@@ -182,7 +188,7 @@ button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-heigh
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, deleteField, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, deleteField, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ====== HIER DEINE FIREBASE-DATEN EINFÜGEN (siehe Anleitung) ======
 const firebaseConfig = {
@@ -230,8 +236,9 @@ function top() {
     $('avb').onclick = e => {
       e.stopPropagation();
       const m = $('pm'); if (m) { m.remove(); return; }
-      $('me').insertAdjacentHTML('beforeend', '<div class="pm" id="pm"><small>Angemeldet als</small><b>' + esc(n) + '</b><button class="o" id="ch">Name ändern</button></div>');
+      $('me').insertAdjacentHTML('beforeend', '<div class="pm" id="pm"><small>Angemeldet als</small><b>' + esc(n) + '</b><button class="o" id="ch">Name ändern</button>' + (isAdmin() ? '<button class="o" id="stb" style="margin-top:8px">📊 Statistik</button>' : '') + '</div>');
       $('ch').onclick = () => { editing = true; $('n').value = n; top(); };
+      if ($('stb')) $('stb').onclick = () => { $('pm').remove(); statsOpen = true; renderStats(); $('stats').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
     };
   }
 }
@@ -475,9 +482,9 @@ function render(force) {
   }).join('');
 }
 
-onSnapshot(collection(db, 'people'), q => { ppl = {}; pins = {}; q.docs.forEach(d => { ppl[d.id] = d.data().name; pins[d.id] = d.data().ph || ''; }); top(); render(); },
+onSnapshot(collection(db, 'people'), q => { ppl = {}; pins = {}; seen = {}; q.docs.forEach(d => { ppl[d.id] = d.data().name; pins[d.id] = d.data().ph || ''; seen[d.id] = d.data().seen || 0; }); top(); render(); countVisit(); markSeen(); renderStats(); },
   e => { $('list').hidden = false; $('list').innerHTML = '<div class="m">Verbindung zur Datenbank fehlgeschlagen. Prüfe Config und Regeln.</div>'; console.error(e); });
-onSnapshot(collection(db, 'activities'), q => { acts = q.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.ts || 0) - (b.ts || 0)); render(); renderTrip(); });
+onSnapshot(collection(db, 'activities'), q => { acts = q.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.ts || 0) - (b.ts || 0)); render(); renderTrip(); renderStats(); });
 onSnapshot(collection(db, 'signups'), q => { sig = q.docs.map(d => d.data()); render(); });
 
 $('ns').onclick = async () => {
@@ -727,6 +734,48 @@ function party() {
   }
 }
 document.querySelector('h1').addEventListener('click', party);
+
+// ===== Statistik (nur für den Admin sichtbar) =====
+// Zähler im Sonder-Dokument activities/stats (cat 'stats'): total, days{JJJJ-MM-TT}, devs{JJJJ-MM-TT} (verschiedene Geräte pro Tag).
+// Aufrufe des Admins zählen nicht mit. "Zuletzt aktiv" steht als Feld seen in people/{uid}.
+let seen = {}, statsOpen = false, counted = false, lastSeenWrite = 0;
+const STATS = 'stats';
+const dayKey = (t = Date.now()) => new Date(t).toLocaleDateString('sv-SE');
+function countVisit() {
+  if (counted || isAdmin()) return; counted = true;
+  const d = dayKey(), data = { cat: 'stats', title: 'Statistik', ts: 0, total: increment(1), days: { [d]: increment(1) } };
+  try { if (localStorage.getItem('seenDay') !== d) { data.devs = { [d]: increment(1) }; localStorage.setItem('seenDay', d); } } catch (e) {}
+  setDoc(doc(db, 'activities', STATS), data, { merge: true }).catch(() => {});
+}
+function markSeen() {
+  // nur bestehende Profile aktualisieren (nie ein namenloses Profil anlegen), höchstens alle 5 Minuten
+  if (!ppl[me] || Date.now() - lastSeenWrite < 300000) return;
+  lastSeenWrite = Date.now();
+  setDoc(doc(db, 'people', me), { seen: Date.now() }, { merge: true }).catch(() => {});
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') markSeen(); });
+const ago = t => { if (!t) return '–'; const m = Math.floor((Date.now() - t) / 60000);
+  if (m < 2) return 'gerade eben'; if (m < 60) return `vor ${m} Min.`; if (m < 24 * 60 && dayKey(t) === dayKey()) return `heute ${new Date(t).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`;
+  if (dayKey(t) === dayKey(Date.now() - 864e5)) return `gestern ${new Date(t).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`;
+  return new Date(t).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); };
+function renderStats() {
+  const box = $('stats'); box.hidden = !(statsOpen && isAdmin()); if (box.hidden) return;
+  const S = acts.find(a => a.id === STATS) || {}, days = S.days || {}, devs = S.devs || {};
+  const last = [...Array(14)].map((_, i) => dayKey(Date.now() - (13 - i) * 864e5)), max = Math.max(1, ...last.map(d => days[d] || 0));
+  const week = last.slice(7).reduce((n, d) => n + (days[d] || 0), 0), today = dayKey();
+  const props = acts.filter(a => a.cat === 'food' || (a.cat || 'act') === 'act');
+  const people = Object.keys(ppl).sort((a, b) => (seen[b] || 0) - (seen[a] || 0));
+  const num = (n, l) => `<div class="sn"><b>${n}</b><small>${l}</small></div>`;
+  box.innerHTML = `<div class="ah"><h2>📊 Statistik</h2><button class="x" id="stx" aria-label="Schließen">×</button></div>
+    <div class="sgrid">${num(days[today] || 0, 'Aufrufe heute')}${num(devs[today] || 0, 'Geräte heute')}${num(week, 'Aufrufe 7 Tage')}${num(S.total || 0, 'Aufrufe gesamt')}</div>
+    <div class="bars">${last.map(d => `<div class="bar${d === today ? ' tod' : ''}" title="${d}: ${days[d] || 0}"><i style="height:${Math.round((days[d] || 0) / max * 100)}%"></i><small>${+d.slice(8)}</small></div>`).join('')}</div>
+    <small class="none">Letzte 14 Tage · deine eigenen Aufrufe zählen nicht mit</small>
+    <h3 class="sh3">👥 Wer war wann da?</h3>
+    ${people.map(id => { const np = props.filter(a => a.by === id).length, ns = sig.filter(x => x.uid === id).length;
+      return `<div class="srow"><span class="stack">${avatar(id)}</span><div class="sname"><b>${id === me ? 'Du' : esc(ppl[id])}</b><small>${np} ${np === 1 ? 'Vorschlag' : 'Vorschläge'} · ${ns}× 🙋/👍</small></div><span class="sago">${id === me ? 'jetzt' : ago(seen[id])}</span></div>`; }).join('')}
+    <small class="none">„Zuletzt aktiv“ wird ab heute erfasst.</small>`;
+  $('stx').onclick = () => { statsOpen = false; renderStats(); };
+}
 
 // ===== Reise-Info: Tipp auf die Countdown-Kachel klappt Villa, Check-in/-out und Flüge auf =====
 // Gespeichert im Sonder-Dokument activities/tripinfo (cat 'info'), bearbeiten darf nur der Admin.
