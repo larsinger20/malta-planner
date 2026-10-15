@@ -21,14 +21,7 @@ h1{margin:0;font-size:26px;display:flex;align-items:center;gap:10px}p.s{margin:0
 .c{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
 .c h2{margin:0;font-size:18px}.c p{margin:4px 0 10px;color:var(--mu);font-size:14px}
 .r{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.r>button{white-space:nowrap;flex-shrink:0}
-.ft{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}.names{min-width:0}.cnt{font-size:13px;color:var(--mu);margin-bottom:6px}.none{font-size:13px;color:var(--mu)}
-.ppl{display:flex;flex-wrap:wrap;gap:6px}
-.pp{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--bd);border-radius:999px;padding:2px 10px 2px 3px;font-size:13px}
-.pp i{width:20px;height:20px;border-radius:50%;color:#fff;font-style:normal;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center}
-.pp.me{border-color:var(--ac);font-weight:600}
-.acts{display:flex;gap:8px;flex-shrink:0}.del.edt{color:var(--ac)}.del.edt:hover{background:color-mix(in srgb,var(--ac) 14%,transparent);border-color:var(--ac)}
 .efb{display:flex;gap:8px}.efb button{flex:1}
-.del{width:40px;height:40px;padding:0;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;background:transparent;border:1px solid var(--bd);color:var(--rd)}.del:hover{background:color-mix(in srgb,var(--rd) 14%,transparent);border-color:var(--rd)}.del svg{width:18px;height:18px}
 .day{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:999px;padding:2px 10px;font-size:13px;margin:4px 6px 0 0}
 button{font:inherit;border:0;border-radius:10px;padding:9px 14px;background:var(--ac);color:#fff;cursor:pointer}
 button.o{background:transparent;color:var(--ac);border:1.5px solid var(--ac)}
@@ -42,7 +35,20 @@ input,textarea,select{width:100%;font:inherit;padding:10px;border:1px solid var(
 .ah{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.x{background:none;color:var(--mu);font-size:22px;line-height:1;padding:6px 10px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .meta{margin-top:4px;font-size:14px;color:var(--mu)}.nw{white-space:nowrap}
-.by{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:13px;color:var(--mu)}.by i{width:18px;height:18px;border-radius:50%;color:#fff;font-style:normal;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card{position:relative;padding:16px}
+.hd2{display:flex;align-items:flex-start;gap:8px;position:relative}.tt{flex:1;min-width:0}.tt h2{font-size:18px;line-height:1.3}
+.mn{width:34px;height:34px;margin:-6px -8px 0 0;padding:0;flex-shrink:0;border-radius:50%;background:transparent;color:var(--mu);font-size:20px;line-height:1;letter-spacing:1px}.mn:hover{background:var(--bg)}
+.menu{position:absolute;right:-6px;top:32px;z-index:6;min-width:220px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.menu button{display:block;width:100%;text-align:left;background:none;color:var(--tx);padding:11px 12px;border-radius:9px;font-size:15px}.menu button:hover{background:var(--bg)}.menu .dz{color:var(--rd)}
+.card .meta{margin-top:2px}.ds{margin:8px 0 0!important;color:var(--tx)!important;opacity:.8;font-size:14px}
+.card .info{margin-top:10px}.card>.tx{margin-top:4px}
+.none{font-size:13px;color:var(--mu)}
+.ft2{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid var(--bd)}
+.who{display:flex;align-items:center;gap:10px;min-width:0}
+.stack{display:flex;flex-shrink:0}.stack i{width:26px;height:26px;border-radius:50%;color:#fff;font-style:normal;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px var(--card);margin-left:-7px}.stack i:first-child{margin-left:0}.stack i.me{box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--ac)}
+.wt{display:flex;flex-direction:column;min-width:0;line-height:1.3}.wc{font-size:13px;font-weight:600}.wn{font-size:13px;color:var(--mu);overflow-wrap:anywhere}.wn b{color:var(--tx);font-weight:600}
+.mb{flex-shrink:0;white-space:nowrap;padding:9px 14px;font-size:15px}.mb.th{min-width:56px;padding:7px 16px;font-size:20px;line-height:1.2}
+.fav{display:inline-block;margin:0 0 4px}
 .fav{display:inline-block;font-size:12px;font-weight:600;color:#8a5a00;background:#fdf0cf;border-radius:999px;padding:1px 8px;margin-bottom:4px}
 @media(prefers-color-scheme:dark){.fav{color:#f5d27a;background:#3d3420}}
 .shop{margin-top:6px;padding:4px 12px 10px;border:1px solid var(--bd);border-radius:12px;background:var(--bg)}
@@ -133,7 +139,7 @@ let me = null;
 try { me = localStorage.getItem('uid'); if (!me) { me = 'u' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); localStorage.setItem('uid', me); } }
 catch (e) { me = 'u' + Math.random().toString(36).slice(2, 10); }
 
-let acts = [], sig = [], ppl = {}, pins = {}, editing = false, tab = 'act', editRes = null, editPlace = null, editAct = null, addOpen = false, pending = false;
+let acts = [], sig = [], ppl = {}, pins = {}, editing = false, tab = 'act', editRes = null, editPlace = null, editAct = null, addOpen = false, pending = false, menuOpen = null;
 const shopOpen = new Set();
 const ADMIN = 'lars';
 const isAdmin = () => (ppl[me] || '').trim().toLowerCase() === ADMIN;
@@ -154,8 +160,11 @@ function top() {
   }
 }
 
-// Profilmenü schließt beim Tippen daneben
-document.addEventListener('click', e => { const m = $('pm'); if (m && !m.contains(e.target)) m.remove(); });
+// Profilmenü und ⋯-Menü schließen beim Tippen daneben
+document.addEventListener('click', e => {
+  const m = $('pm'); if (m && !m.contains(e.target)) m.remove();
+  if (menuOpen && !e.target.closest('.menu, [data-menu]')) { menuOpen = null; render(true); }
+});
 
 // Ort öffnet Google Maps (auf dem iPhone die App, falls installiert)
 const mapUrl = p => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(/malta|gozo|comino/i.test(p) ? p : p + ', Malta');
@@ -163,24 +172,25 @@ const placeChip = a => a.place ? `<a class="lk" href="${esc(mapUrl(a.place))}" t
 const linkChip = a => { try { const u = new URL(a.link || ''); if (/^https?:$/.test(u.protocol)) return `<a class="lk" href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">🔗 ${esc(u.hostname.replace(/^www\./, ''))}</a>`; } catch (e) {} return ''; };
 const KIND = { cook: '👩‍🍳 Kochen', rest: '🍴 Restaurant' };
 const TIME = { 'Morgens / Vormittags': '🌅 Vormittags', 'Mittags': '☀️ Mittags', 'Abends': '🌙 Abends' };
-// Wer hat's vorgeschlagen? (alte Vorschläge ohne bekannten Ersteller zeigen nichts)
-const byLine = a => { const nm = ppl[a.by]; if (!nm) return ''; return `<div class="by"><i style="background:hsl(${hue(nm)},45%,42%)">${esc(nm.trim()[0].toUpperCase())}</i>Vorgeschlagen von ${a.by === me ? 'dir' : esc(nm)}</div>`; };
-const meta = a => [KIND[a.kind], a.day && '📅 ' + esc(a.day), TIME[a.time] || (a.time && esc(a.time))].filter(Boolean).map(x => `<span class="nw">${x}</span>`).join(' · ');
+// Karten-Infozeile: Typ · Tag · Tageszeit · Ersteller (alte Vorschläge ohne bekannten Ersteller zeigen keinen)
+const PLAIN = { cook: 'Kochen', rest: 'Restaurant' };
+const meta = a => { const nm = ppl[a.by];
+  return [PLAIN[a.kind], a.day && esc(a.day), a.time && esc(TIME[a.time] ? TIME[a.time].slice(3) : a.time), nm && 'von ' + (a.by === me ? 'dir' : esc(nm))].filter(Boolean).map(x => `<span class="nw">${x}</span>`).join(' · '); };
+const avatar = uid => { const nm = ppl[uid] || 'Jemand'; return `<i class="${uid === me ? 'me' : ''}" style="background:hsl(${hue(nm)},45%,42%)">${esc(nm.trim()[0].toUpperCase())}</i>`; };
 
-function placeInfo(a) {
-  if (editPlace === a.id) return `<div class="resf"><input id="epl" placeholder="📍 Ort, z. B. Blaue Grotte" maxlength="80" value="${esc(a.place || '')}"><button data-plsave="${esc(a.id)}">Speichern</button>${a.place ? `<button class="o" data-pldel="${esc(a.id)}">Entfernen</button>` : ''}<button class="o" data-plcancel="1">Abbrechen</button></div>`;
-  return a.place ? `<span>${placeChip(a)} <button class="tx mu" data-pl="${esc(a.id)}">ändern</button></span>` : `<button class="tx" data-pl="${esc(a.id)}">📍 Ort eintragen</button>`;
-}
+// Inline-Formulare für Ort und Reservierung (geöffnet über das ⋯-Menü)
+const placeForm = a => `<div class="resf"><input id="epl" placeholder="📍 Ort, z. B. Blaue Grotte" maxlength="80" value="${esc(a.place || '')}"><button data-plsave="${esc(a.id)}">Speichern</button>${a.place ? `<button class="o" data-pldel="${esc(a.id)}">Entfernen</button>` : ''}<button class="o" data-plcancel="1">Abbrechen</button></div>`;
+const resForm = a => { const r = a.res || {}; return `<div class="resf"><input type="time" id="ert" value="${esc(r.t || '')}"><input type="number" id="erp" min="1" max="99" placeholder="Personen" value="${esc(r.p || '')}"><button data-ressave="${esc(a.id)}">Speichern</button>${a.res ? `<button class="o" data-resdel="${esc(a.id)}">Entfernen</button>` : ''}<button class="o" data-rescancel="1">Abbrechen</button></div>`; };
 
-function restInfo(a) {
-  let rs;
-  if (editRes === a.id) {
-    const r = a.res || {};
-    rs = `<div class="resf"><input type="time" id="ert" value="${esc(r.t || '')}"><input type="number" id="erp" min="1" max="99" placeholder="Personen" value="${esc(r.p || '')}"><button data-ressave="${esc(a.id)}">Speichern</button>${a.res ? `<button class="o" data-resdel="${esc(a.id)}">Entfernen</button>` : ''}<button class="o" data-rescancel="1">Abbrechen</button></div>`;
-  } else if (a.res) {
-    rs = `<span><span class="day ok">✅ Reserviert · ${esc(a.res.t)} Uhr · ${esc(a.res.p)} Pers.</span> <button class="tx mu" data-res="${esc(a.id)}">ändern</button></span>`;
-  } else rs = `<button class="tx" data-res="${esc(a.id)}">📞 Reservierung eintragen</button>`;
-  return rs;
+// ⋯-Menü pro Karte: seltene Aktionen gebündelt
+function cardMenu(a) {
+  if (menuOpen !== a.id) return '';
+  const id = esc(a.id), it = [];
+  if (canEdit(a)) it.push(`<button data-edit="${id}">✏️ Bearbeiten</button>`);
+  it.push(`<button data-pl="${id}">📍 ${a.place ? 'Ort ändern' : 'Ort eintragen'}</button>`);
+  if (a.kind === 'rest') it.push(`<button data-res="${id}">📞 ${a.res ? 'Reservierung ändern' : 'Reservierung eintragen'}</button>`);
+  if (isAdmin()) it.push(`<button class="dz" data-del="${id}">🗑 Löschen</button>`);
+  return `<div class="menu" role="menu">${it.join('')}</div>`;
 }
 
 // "Mein Plan": nur die eigenen Eintragungen, nach Tag und Tageszeit sortiert (Reise beginnt Samstag)
@@ -196,7 +206,7 @@ function renderPlan() {
   const mine = myActs();
   if (!mine.length) { $('list').innerHTML = '<div class="m">Du hast dich noch nirgends eingetragen.<br>Schau bei 🗺 Aktivitäten vorbei und tipp auf „🙋 Ich bin dabei“.</div>'; return; }
   const groups = [...DAYS, ''].map(d => ({ d, items: mine.filter(a => (DAYS.includes(a.day) ? a.day : '') === d).sort((x, y) => slotOf(x) - slotOf(y) || ((x.res && x.res.t) || '').localeCompare((y.res && y.res.t) || '')) })).filter(g => g.items.length);
-  $('list').innerHTML = `<p class="s" style="margin:-4px 0 12px">Du bist bei ${mine.length} ${mine.length === 1 ? 'Sache' : 'Sachen'} dabei.</p>` + groups.map(g => `<div class="c pd"><h2>${g.d ? esc(g.d) : 'Noch kein Tag festgelegt'}</h2>${g.items.map(a => {
+  $('list').innerHTML = `<p class="s" style="margin:-4px 0 12px">Du hast ${mine.length === 1 ? 'eine Aktivität' : mine.length + ' Aktivitäten'} eingeplant.</p>` + groups.map(g => `<div class="c pd"><h2>${g.d ? esc(g.d) : 'Noch kein Tag festgelegt'}</h2>${g.items.map(a => {
     const n = sig.filter(x => x.act === a.id).length;
     const sub = [KIND[a.kind], `👥 ${n} dabei`, a.res && `✅ Reserviert für ${esc(a.res.p)}`].filter(Boolean).map(x => `<span class="nw">${x}</span>`).join(' · ');
     const links = placeChip(a) + (a.kind === 'rest' ? linkChip(a) : '');
@@ -250,22 +260,25 @@ function render(force) {
   const soloTop = items.filter(a => votes(a) === top1).length === 1;
   $('list').innerHTML = items.map(a => {
     if (editAct === a.id && canEdit(a)) return editCard(a);
-    const s = sig.filter(x => x.act === a.id), mine = s.some(x => x.uid === me);
-    const chips = s.map(x => { const nm = ppl[x.uid] || 'Jemand', you = x.uid === me;
-      return `<span class="pp${you ? ' me' : ''}"><i style="background:hsl(${hue(nm)},45%,42%)">${esc(nm.trim()[0].toUpperCase())}</i>${you ? 'Du' : esc(nm)}</span>`; }).join('');
+    const s = sig.filter(x => x.act === a.id).sort((x, y) => (y.uid === me) - (x.uid === me)), mine = s.some(x => x.uid === me);
     const m = meta(a), fav = food && top1 > 0 && soloTop && s.length === top1;
-    const btn = food ? `<button class="${mine ? '' : 'o'}" data-a="${esc(a.id)}">${mine ? '👍 Abgestimmt' : '👍 Lecker'}</button>`
-      : `<button class="${mine ? 'o' : ''}" data-a="${esc(a.id)}">${mine ? '👋 Austragen' : '🙋 Ich bin dabei'}</button>`;
-    const who = food ? (s.length ? `<div class="cnt">👍 ${s.length} ${s.length === 1 ? 'Stimme' : 'Stimmen'}</div><div class="ppl">${chips}</div>` : '<div class="none">Noch keine Stimmen</div>')
-      : (s.length ? `<div class="cnt">👥 ${s.length} dabei</div><div class="ppl">${chips}</div>` : '<div class="none">Noch niemand eingetragen</div>');
-    return `<div class="c${mine ? ' in' : ''}"><div class="r"><div>${fav ? '<div class="fav">🏆 Favorit</div>' : ''}<h2>${esc(a.title)}</h2></div>
-      ${btn}</div>
-      ${m ? `<div class="meta">${m}</div>` : ''}${byLine(a)}
-      ${a.desc ? `<p>${esc(a.desc)}</p>` : ''}
-      <div class="info">${a.kind === 'rest' ? linkChip(a) : ''}${placeInfo(a)}${a.kind === 'rest' ? restInfo(a) : ''}</div>
+    // Einheitlich: vorher hell mit Rahmen, nach dem Mitmachen/Abstimmen grün gefüllt
+    const btn = food ? `<button class="mb th${mine ? '' : ' o'}" data-a="${esc(a.id)}" aria-pressed="${mine}" aria-label="${mine ? 'Stimme zurücknehmen' : 'Dafür stimmen'}" title="${mine ? 'Stimme zurücknehmen' : 'Dafür stimmen'}">👍</button>`
+      : `<button class="mb${mine ? '' : ' o'}" data-a="${esc(a.id)}">${mine ? '👋 Austragen' : '🙋 Ich bin dabei'}</button>`;
+    const names = s.map(x => x.uid === me ? '<b>Du</b>' : esc(ppl[x.uid] || 'Jemand')).join(', ');
+    const count = food ? `${s.length} ${s.length === 1 ? 'Stimme' : 'Stimmen'}` : `${s.length} dabei`;
+    const who = s.length ? `<div class="stack">${s.slice(0, 4).map(x => avatar(x.uid)).join('')}</div><div class="wt"><span class="wc">${count}</span><span class="wn">${names}</span></div>`
+      : `<div class="wt"><span class="wn">${food ? 'Noch keine Stimmen' : 'Noch niemand dabei'}</span></div>`;
+    // Details nur, wenn es etwas zu zeigen gibt
+    const det = [a.kind === 'rest' ? linkChip(a) : '', editPlace === a.id ? placeForm(a) : placeChip(a),
+      a.kind === 'rest' ? (editRes === a.id ? resForm(a) : a.res ? `<span class="day ok">✅ Reserviert · ${esc(a.res.t)} Uhr · ${esc(a.res.p)} Pers.</span>` : '') : ''].join('');
+    return `<div class="c card${mine ? ' in' : ''}">
+      <div class="hd2"><div class="tt">${fav ? '<span class="fav">🏆 Favorit</span>' : ''}<h2>${esc(a.title)}</h2></div><button class="mn" data-menu="${esc(a.id)}" aria-label="Mehr Optionen">⋯</button>${cardMenu(a)}</div>
+      ${m ? `<div class="meta">${m}</div>` : ''}
+      ${a.desc ? `<p class="ds">${esc(a.desc)}</p>` : ''}
+      ${det ? `<div class="info">${det}</div>` : ''}
       ${a.kind === 'cook' ? shopList(a) : ''}
-      <div class="ft"><div class="names">${who}</div>
-      <div class="acts">${canEdit(a) ? `<button class="del edt" data-edit="${esc(a.id)}" title="Bearbeiten" aria-label="Bearbeiten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>` : ''}${isAdmin() ? `<button class="del" data-del="${esc(a.id)}" title="Löschen" aria-label="Löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg></button>` : ''}</div></div></div>`;
+      <div class="ft2"><div class="who">${who}</div>${btn}</div></div>`;
   }).join('');
 }
 
@@ -303,8 +316,10 @@ $('ps').onclick = async () => {
 
 $('list').onclick = async e => {
   const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.menu) { menuOpen = menuOpen === b.dataset.menu ? null : b.dataset.menu; render(true); return; }
+  if (b.closest('.menu')) menuOpen = null;
   if (b.dataset.del) {
-    if (!isAdmin() || !confirm('Diesen Vorschlag wirklich löschen?')) return;
+    if (!isAdmin() || !confirm('Diesen Vorschlag wirklich löschen?')) { render(true); return; }
     const id = b.dataset.del; b.disabled = true;
     try {
       await Promise.all(sig.filter(x => x.act === id).map(x => deleteDoc(doc(db, 'signups', id + '_' + x.uid))));
@@ -394,7 +409,7 @@ function setTab(t) {
   $('ah').textContent = food ? 'Neuen Essensvorschlag machen' : 'Neue Aktivität vorschlagen';
   $('t').placeholder = food ? 'z. B. Pasta für alle / Pizzeria am Hafen' : 'z. B. Wanderung zum Aussichtspunkt';
   $('k').hidden = !food;
-  editRes = null; editPlace = null; editAct = null; addOpen = false;
+  editRes = null; editPlace = null; editAct = null; addOpen = false; menuOpen = null;
   $('addOpen').textContent = food ? '+ Neuen Essensvorschlag machen' : '+ Neue Aktivität vorschlagen';
   formFields();
   top();
