@@ -108,6 +108,12 @@ button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-heigh
 
 /* Countdown: Türkis-Kachel, Text links, Zahlen-Kästchen rechts */
 .cd{display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(135deg,#1d7a6b,#22917e);color:#fff;border-radius:20px;padding:16px 18px;margin:0 0 18px;box-shadow:0 6px 18px rgba(29,122,107,.22)}
+.cd{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .15s}.cd:active{transform:scale(.985)}
+.cd .rih{display:inline-block;margin-top:8px;padding:2px 10px;border-radius:999px;background:rgba(255,255,255,.18);font-size:12px;font-weight:600;opacity:1}
+.trip{margin-top:-8px;animation:rise .3s ease-out}.trip .ah{margin-bottom:4px}.trip h2{font-size:20px}
+.trow{display:flex;gap:12px;padding:10px 0;box-shadow:inset 0 .5px 0 var(--bd)}.trip .ah+.trow,.trip .none+.trow{box-shadow:none}
+.tic{font-size:20px;width:26px;text-align:center;flex-shrink:0;line-height:1.3}.trow small{display:block;font-size:13px;color:var(--mu)}.tv{font-size:16px;overflow-wrap:anywhere}.tv .tx{min-height:0;padding:0 0 0 8px}
+.tlb{display:block;font-size:13px;color:var(--mu);margin:4px 0 4px 4px}
 .cd b{font-family:var(--disp);font-size:18px;font-weight:600;letter-spacing:-.01em}.cd small{display:block;font-size:14px;opacity:.85;margin-top:2px}
 .cd .ut{display:flex;gap:6px}
 .cd .u{text-align:center;min-width:52px;background:rgba(255,255,255,.16);border-radius:12px;padding:6px 6px 5px}
@@ -135,7 +141,8 @@ button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-heigh
 </style></head><body><main>
 <div class="hd"><h1><img class="flag" src="flag.png?v=3" alt="">Malta Planner</h1><div class="pf" id="me" hidden></div></div>
 <p class="s">Schlag Ideen vor und trag dich bei denen ein, auf die du Lust hast.</p>
-<div class="cd" id="cd"></div>
+<div class="cd" id="cd" role="button" tabindex="0" aria-expanded="false" aria-controls="trip"></div>
+<div class="c trip" id="trip" hidden></div>
 <div class="tabs" id="tabs" hidden><div class="seg"><span class="ind" id="ind"></span><button class="tb on" data-tab="act"><span class="ti">🗺</span><span>Aktivitäten<b class="n" id="n-act"></b></span></button><button class="tb" data-tab="food"><span class="ti">🍽</span><span>Essen<b class="n" id="n-food"></b></span></button><button class="tb" data-tab="shop"><span class="ti">🛒</span><span>Einkauf<b class="n" id="n-shop"></b></span></button><button class="tb" data-tab="plan"><span class="ti">📅</span><span>Mein Plan<b class="n" id="n-plan"></b></span></button></div></div>
 
 <div class="c" id="ask" hidden><h2>Wie heißt du?</h2>
@@ -154,11 +161,10 @@ button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-heigh
 <div class="c" id="add" hidden><div class="ah"><h2 id="ah">Neue Aktivität vorschlagen</h2><button class="x" id="addClose" aria-label="Schließen">×</button></div>
 <input id="t" placeholder="z. B. Wanderung zum Aussichtspunkt" maxlength="80">
 <select id="k" hidden><option value="">Kochen oder Restaurant?</option><option value="cook">👩‍🍳 Kochen</option><option value="rest">🍴 Restaurant</option></select>
-<input id="lnk" type="url" placeholder="Link (z. B. Google Maps oder Website, optional)" maxlength="300" hidden>
 <input id="pl" data-place="1" autocomplete="off" placeholder="📍 Ort (optional, z. B. Blaue Grotte)" maxlength="80">
 <textarea id="d" rows="2" placeholder="Kurze Beschreibung (optional)" maxlength="200"></textarea>
 <div class="two"><select id="w"><option value="">Tag (optional)</option><option>Montag</option><option>Dienstag</option><option>Mittwoch</option><option>Donnerstag</option><option>Freitag</option><option>Samstag</option><option>Sonntag</option></select>
-<select id="z"><option value="">Tageszeit (optional)</option><option>Ganztags</option><option value="Morgens / Vormittags">Vormittags</option><option>Mittags</option><option>Abends</option></select></div>
+<select id="z"><option value="">Tageszeit (optional)</option><option>Ganztags</option><option value="Morgens / Vormittags">Vormittags</option><option>Mittags</option><option>Nachmittags</option><option>Abends</option><option>Nachts</option></select></div>
 <label class="chk" id="rvl" hidden><input type="checkbox" id="rv"> Schon reserviert</label>
 <div class="resf" id="rvf" hidden style="margin-bottom:8px"><input type="time" id="rt"><input type="number" id="rp" min="1" max="99" placeholder="Personen"></div>
 <div class="efb"><button id="go">Vorschlagen</button></div></div>
@@ -211,6 +217,7 @@ function top() {
   $('ask').hidden = show; const noAdd = tab === 'plan' || tab === 'shop';
   $('add').hidden = !show || noAdd || !addOpen; $('addOpen').hidden = !show || noAdd || addOpen; $('list').hidden = !show; $('me').hidden = !show; $('tabs').hidden = !show; $('pinCard').hidden = !(show && !pins[me]);
   if (show) requestAnimationFrame(moveInd);
+  countdown(); renderTrip();
   if (show) {
     $('me').innerHTML = '<button class="av" id="avb" aria-label="Profil">' + esc(n.trim()[0].toUpperCase()) + '</button>';
     $('avb').onclick = e => {
@@ -234,11 +241,12 @@ const mapUrl = a => 'https://www.google.com/maps/search/?api=1&query=' + encodeU
 const placeChip = a => a.place ? `<a class="lk" href="${esc(mapUrl(a))}" target="_blank" rel="noopener noreferrer">📍 ${esc(a.place)}</a>` : '';
 const linkChip = a => { try { const u = new URL(a.link || ''); if (/^https?:$/.test(u.protocol)) return `<a class="lk" href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">🔗 ${esc(u.hostname.replace(/^www\./, ''))}</a>`; } catch (e) {} return ''; };
 const KIND = { cook: '👩‍🍳 Kochen', rest: '🍴 Restaurant' };
-const TIME = { 'Ganztags': '🌞 Ganztags', 'Morgens / Vormittags': '🌅 Vormittags', 'Mittags': '☀️ Mittags', 'Abends': '🌙 Abends' };
+const TIME = { 'Ganztags': '🌞 Ganztags', 'Morgens / Vormittags': '🌅 Vormittags', 'Mittags': '☀️ Mittags', 'Nachmittags': '🌇 Nachmittags', 'Abends': '🌙 Abends', 'Nachts': '🌃 Nachts' };
+const TIME_TXT = t => TIME[t] ? TIME[t].replace(/^\S+\s/, '') : t;
 // Karten-Infozeile: Typ · Tag · Tageszeit · Ersteller (alte Vorschläge ohne bekannten Ersteller zeigen keinen)
 const PLAIN = { cook: 'Kochen', rest: 'Restaurant' };
 const meta = a => { const nm = ppl[a.by];
-  return [PLAIN[a.kind], a.day && esc(a.day), a.time && esc(TIME[a.time] ? TIME[a.time].slice(3) : a.time), nm && 'von ' + (a.by === me ? 'dir' : esc(nm))].filter(Boolean).map(x => `<span class="nw">${x}</span>`).join(' · '); };
+  return [PLAIN[a.kind], a.day && esc(a.day), a.time && esc(TIME_TXT(a.time)), nm && 'von ' + (a.by === me ? 'dir' : esc(nm))].filter(Boolean).map(x => `<span class="nw">${x}</span>`).join(' · '); };
 const avatar = uid => { const nm = ppl[uid] || 'Jemand'; return `<i class="${uid === me ? 'me' : ''}" style="background:hsl(${hue(nm)},45%,42%)">${esc(nm.trim()[0].toUpperCase())}</i>`; };
 
 // Inline-Formulare für Ort und Reservierung (geöffnet über das ⋯-Menü)
@@ -258,8 +266,8 @@ function cardMenu(a) {
 
 // "Mein Plan": nur die eigenen Eintragungen, nach Tag und Tageszeit sortiert (Reise beginnt Samstag)
 const DAYS = ['Samstag', 'Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'];
-const SLOTS = ['Ganztags', 'Morgens / Vormittags', 'Mittags', 'Abends'];
-const slotOf = a => { if (a.res && a.res.t) { const h = parseInt(a.res.t, 10); return h < 11 ? 1 : h < 16 ? 2 : 3; } const i = SLOTS.indexOf(a.time); return i < 0 ? 4 : i; };
+const SLOTS = ['Ganztags', 'Morgens / Vormittags', 'Mittags', 'Nachmittags', 'Abends', 'Nachts'];
+const slotOf = a => { if (a.res && a.res.t) { const h = parseInt(a.res.t, 10); return h < 4 ? 5 : h < 11 ? 1 : h < 14 ? 2 : h < 17 ? 3 : h < 22 ? 4 : 5; } const i = SLOTS.indexOf(a.time); return i < 0 ? 6 : i; };
 const timeLabel = a => a.res && a.res.t ? `${a.res.t} Uhr` : TIME[a.time] || 'Ohne Uhrzeit';
 
 // Beim Essen wird abgestimmt statt eingetragen, deshalb zählen für den Plan nur Aktivitäten
@@ -284,12 +292,11 @@ function editCard(a) {
   const food = (a.cat || 'act') === 'food';
   return `<div class="c"><h2 style="margin-bottom:10px">✏️ Vorschlag bearbeiten</h2>
     <input id="et" maxlength="80" placeholder="Titel" value="${esc(a.title || '')}">
-    ${food ? `<select id="ek">${opts([['cook', '👩‍🍳 Kochen'], ['rest', '🍴 Restaurant']], a.kind, 'Kochen oder Restaurant?')}</select>
-    <input id="elk" type="url" maxlength="300" placeholder="Link (nur bei Restaurant, optional)" value="${esc(a.link || '')}">` : ''}
+    ${food ? `<select id="ek">${opts([['cook', '👩‍🍳 Kochen'], ['rest', '🍴 Restaurant']], a.kind, 'Kochen oder Restaurant?')}</select>` : ''}
     <input id="epo" data-place="1" data-pid="${esc(a.pid || '')}" autocomplete="off" maxlength="80" placeholder="📍 Ort (optional)" value="${esc(a.place || '')}">
     <textarea id="ed" rows="2" maxlength="200" placeholder="Kurze Beschreibung (optional)">${esc(a.desc || '')}</textarea>
     <div class="two"><select id="ew">${opts(WEEK.map(d => [d, d]), a.day, 'Kein Tag')}</select>
-    <select id="ez">${opts(SLOTS.map(s => [s, TIME[s].slice(3)]), a.time, 'Keine Tageszeit')}</select></div>
+    <select id="ez">${opts(SLOTS.map(s => [s, TIME_TXT(s)]), a.time, 'Keine Tageszeit')}</select></div>
     <div class="efb"><button data-esave="${esc(a.id)}">Speichern</button><button class="o" data-ecancel="1">Abbrechen</button></div></div>`;
 }
 
@@ -448,7 +455,7 @@ function render(force) {
     const who = s.length ? `<div class="stack">${s.slice(0, 4).map(x => avatar(x.uid)).join('')}</div><div class="wt"><span class="wc">${count}</span><span class="wn">${names}</span></div>`
       : `<div class="wt"><span class="wn">${food ? 'Noch keine Stimmen' : 'Noch niemand dabei'}</span></div>`;
     // Details nur, wenn es etwas zu zeigen gibt
-    const det = [a.kind === 'rest' ? linkChip(a) : '', editPlace === a.id ? placeForm(a) : placeChip(a),
+    const det = [a.kind === 'rest' ? linkChip(a) : '', editPlace === a.id ? placeForm(a) : (placeChip(a) || villaChip(a)),
       a.kind === 'rest' ? (editRes === a.id ? resForm(a) : a.res ? `<span class="day ok">✅ Reserviert · ${esc(a.res.t)} Uhr · ${esc(a.res.p)} Pers.</span>` : '') : ''].join('');
     return `<div class="c card${mine ? ' in' : ''}">
       <div class="hd2"><div class="tt">${fav ? '<span class="fav">🏆 Favorit</span>' : ''}<h2>${esc(a.title)}</h2></div><button class="mn" data-menu="${esc(a.id)}" aria-label="Mehr Optionen">⋯</button>${cardMenu(a)}</div>
@@ -462,7 +469,7 @@ function render(force) {
 
 onSnapshot(collection(db, 'people'), q => { ppl = {}; pins = {}; q.docs.forEach(d => { ppl[d.id] = d.data().name; pins[d.id] = d.data().ph || ''; }); top(); render(); },
   e => { $('list').hidden = false; $('list').innerHTML = '<div class="m">Verbindung zur Datenbank fehlgeschlagen. Prüfe Config und Regeln.</div>'; console.error(e); });
-onSnapshot(collection(db, 'activities'), q => { acts = q.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.ts || 0) - (b.ts || 0)); render(); });
+onSnapshot(collection(db, 'activities'), q => { acts = q.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.ts || 0) - (b.ts || 0)); render(); renderTrip(); });
 onSnapshot(collection(db, 'signups'), q => { sig = q.docs.map(d => d.data()); render(); });
 
 $('ns').onclick = async () => {
@@ -529,9 +536,6 @@ $('list').onclick = async e => {
     const data = { title, desc: $('ed').value.trim(), day: $('ew').value, time: $('ez').value, place: $('epo').value.trim(), pid: $('epo').value.trim() ? ($('epo').dataset.pid || '') : '' };
     if ((a.cat || 'act') === 'food') {
       data.kind = $('ek').value; if (!data.kind) { toast('Bitte wähle: Kochen oder Restaurant.', 1); return; }
-      const lk = data.kind === 'rest' ? normLink($('elk').value) : '';
-      if (lk === false) { toast('Der Link ist ungültig.', 1); return; }
-      data.link = lk;
     }
     b.disabled = true;
     try { await setDoc(doc(db, 'activities', a.id), data, { merge: true }); editAct = null; render(true); toast('Änderungen gespeichert ✓'); }
@@ -589,7 +593,7 @@ $('list').addEventListener('focusout', () => setTimeout(() => { if (pending) ren
 
 function formFields() {
   const rest = tab === 'food' && $('k').value === 'rest';
-  $('lnk').hidden = !rest; $('rvl').hidden = !rest; $('rvf').hidden = !(rest && $('rv').checked);
+  $('rvl').hidden = !rest; $('rvf').hidden = !(rest && $('rv').checked);
 }
 $('k').onchange = formFields; $('rv').onchange = formFields;
 const normLink = v => { v = v.trim(); if (!v) return ''; if (!/^https?:\/\//i.test(v)) v = 'https://' + v; try { const u = new URL(v); return /^https?:$/.test(u.protocol) ? u.href : false; } catch (e) { return false; } };
@@ -628,9 +632,6 @@ $('go').onclick = async () => {
   const data = { title: t.value.trim(), desc: d.value.trim(), day: w.value, time: z.value, cat: tab, kind: tab === 'food' ? k.value : '', ts: Date.now(), by: me };
   if ($('pl').value.trim()) { data.place = $('pl').value.trim(); if ($('pl').dataset.pid) data.pid = $('pl').dataset.pid; }
   if (tab === 'food' && k.value === 'rest') {
-    const lk = normLink($('lnk').value);
-    if (lk === false) { toast('Der Link ist ungültig.', 1); return; }
-    if (lk) data.link = lk;
     if ($('rv').checked) {
       const rt = $('rt').value, rp = parseInt($('rp').value, 10);
       if (!rt || !(rp >= 1 && rp <= 99)) { toast('Bitte Uhrzeit und Personenanzahl der Reservierung angeben.', 1); return; }
@@ -639,7 +640,7 @@ $('go').onclick = async () => {
   }
   try {
     await setDoc(doc(db, 'activities', 'a' + Date.now()), data);
-    t.value = ''; d.value = ''; w.value = ''; z.value = ''; k.value = ''; $('pl').value = ''; $('pl').dataset.pid = ''; $('lnk').value = ''; $('rv').checked = false; $('rt').value = ''; $('rp').value = ''; formFields();
+    t.value = ''; d.value = ''; w.value = ''; z.value = ''; k.value = ''; $('pl').value = ''; $('pl').dataset.pid = ''; $('rv').checked = false; $('rt').value = ''; $('rp').value = ''; formFields();
     addOpen = false; top(); toast('Vorschlag gespeichert ✓');
   } catch (err) { toast(FAIL, 1); }
 };
@@ -717,14 +718,61 @@ function party() {
 }
 document.querySelector('h1').addEventListener('click', party);
 
+// ===== Reise-Info: Tipp auf die Countdown-Kachel klappt Villa, Check-in/-out und Flüge auf =====
+// Gespeichert im Sonder-Dokument activities/tripinfo (cat 'info'), bearbeiten darf nur der Admin.
+const TRIP = 'tripinfo';
+let tripOpen = false, tripEdit = false;
+const trip = () => acts.find(a => a.id === TRIP) || {};
+const rih = () => ppl[me] ? `<small class="rih">ℹ️ Reise-Info ${tripOpen ? '▴' : '▾'}</small>` : '';
+const villaUrl = T => mapUrl({ place: T.vaddr, pid: T.vpid });
+const TF = [['vname', '🏡 Name der Unterkunft', 'z. B. Villa Bella Vista'], ['vaddr', '📍 Adresse', 'Adresse der Villa'], ['cin', '🔑 Check-in', 'z. B. Sa 31.10. ab 15 Uhr'], ['cout', '🧳 Check-out', 'z. B. Sa 7.11. bis 10 Uhr'],
+  ['fout', '✈️ Hinflug', 'z. B. FR 1234 · 11:10 Uhr ab FMM'], ['fback', '🛬 Rückflug', 'z. B. FR 1235 · 14:30 Uhr ab MLA']];
+function renderTrip() {
+  const box = $('trip'), show = tripOpen && !!ppl[me];
+  box.hidden = !show; $('cd').setAttribute('aria-expanded', show);
+  if (!show || (tripEdit && box.contains(document.activeElement))) return;
+  const T = trip();
+  if (tripEdit && isAdmin()) {
+    box.innerHTML = `<div class="ah"><h2>✏️ Reise-Info bearbeiten</h2></div>` + TF.map(([k, l, ph]) => `<label class="tlb">${l}</label>` +
+      `<input id="tf-${k}" maxlength="${k === 'vaddr' ? 120 : 80}" placeholder="${ph}" value="${esc(T[k] || '')}"${k === 'vaddr' ? ` data-place="1" data-pid="${esc(T.vpid || '')}" autocomplete="off"` : ''}>`).join('') +
+      `<div class="efb"><button data-tsave="1">Speichern</button><button class="o" data-tcancel="1">Abbrechen</button></div>`;
+    return;
+  }
+  const row = (icon, label, val) => val ? `<div class="trow"><span class="tic">${icon}</span><div><small>${label}</small><div class="tv">${val}</div></div></div>` : '';
+  const rows = [
+    row('🏡', T.vname ? esc(T.vname) : 'Unterkunft', T.vaddr ? `<a class="lk" href="${esc(villaUrl(T))}" target="_blank" rel="noopener noreferrer">${esc(T.vaddr)}</a>` : (T.vname ? '–' : '')),
+    row('🔑', 'Check-in', esc(T.cin || '')), row('🧳', 'Check-out', esc(T.cout || '')),
+    row('✈️', 'Hinflug', esc(T.fout || '')), row('🛬', 'Rückflug', esc(T.fback || ''))].join('');
+  const empty = !TF.some(([k]) => T[k]);
+  box.innerHTML = `<div class="ah"><h2>Reise-Info</h2>${isAdmin() ? '<button class="tx" data-tedit="1">✏️ Bearbeiten</button>' : ''}</div>`
+    + (empty ? `<p class="none" style="margin:0 0 6px">${isAdmin() ? 'Trag hier Villa und Flüge ein.' : 'Lars trägt hier bald Villa und Flüge ein.'}</p>` : '') + rows;
+}
+const toggleTrip = () => { tripOpen = !tripOpen; if (!tripOpen) tripEdit = false; countdown(); renderTrip(); };
+$('cd').addEventListener('click', toggleTrip);
+$('cd').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleTrip(); } });
+$('trip').addEventListener('click', async e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.tedit) { tripEdit = true; renderTrip(); return; }
+  if (b.dataset.tcancel) { tripEdit = false; renderTrip(); return; }
+  if (b.dataset.tsave && isAdmin()) {
+    const data = { cat: 'info', title: 'Reise-Info', ts: 0 };
+    TF.forEach(([k]) => { data[k] = $('tf-' + k).value.trim(); });
+    data.vpid = data.vaddr ? ($('tf-vaddr').dataset.pid || '') : '';
+    try { await setDoc(doc(db, 'activities', TRIP), data, { merge: true }); tripEdit = false; document.activeElement.blur(); renderTrip(); render(true); toast('Reise-Info gespeichert ✓'); }
+    catch (err) { toast(FAIL, 1); }
+  }
+});
+// Kochvorschläge ohne eigenen Ort spielen automatisch in der Villa
+const villaChip = a => { const T = trip(); return a.kind === 'cook' && !a.place && T.vaddr ? `<a class="lk" href="${esc(villaUrl(T))}" target="_blank" rel="noopener noreferrer">🏡 ${esc(T.vname || 'Villa')}</a>` : ''; };
+
 // Countdown bis zum Abflug (31.10.2026, 11:10 Uhr deutscher Zeit, Winterzeit = +01:00)
 const DEPART = new Date('2026-10-31T11:10:00+01:00');
 function countdown() {
   const ms = DEPART - Date.now();
-  if (ms <= 0) { $('cd').innerHTML = '<div><b>🌴 Wir sind auf Malta!</b><small>Viel Spaß euch allen</small></div>'; return; }
+  if (ms <= 0) { $('cd').innerHTML = `<div><b>🌴 Wir sind auf Malta!</b><small>Viel Spaß euch allen</small>${rih()}</div>`; return; }
   const m = Math.floor(ms / 60000), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), mi = m % 60;
   const u = (n, l) => `<div class="u"><b>${n}</b><small>${l}</small></div>`;
-  $('cd').innerHTML = `<div><b>✈️ Abflug</b><small>Sa, 31.10. · 11:10 Uhr</small></div><div class="ut">${u(d, d === 1 ? 'Tag' : 'Tage')}${u(h, 'Std.')}${u(mi, 'Min.')}</div>`;
+  $('cd').innerHTML = `<div><b>✈️ Abflug</b><small>Sa, 31.10. · 11:10 Uhr</small>${rih()}</div><div class="ut">${u(d, d === 1 ? 'Tag' : 'Tage')}${u(h, 'Std.')}${u(mi, 'Min.')}</div>`;
 }
 countdown(); setInterval(countdown, 15000);
 </script></body></html>
