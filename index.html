@@ -656,7 +656,8 @@ $('go').onclick = async () => {
 // Schlüssel ist auf larsinger20.github.io und auf Maps JavaScript API + Places API (New) beschränkt.
 // Kosten: Tippen läuft in einer "Sitzung", am Ende wird nur die Orts-ID abgerufen (bei Google unbegrenzt kostenlos).
 const MAPS_KEY = 'AIzaSyC3PGB_MNnTcbf5M8KrI2Hwjr5Uygw5bEM';
-const MALTA = { north: 36.09, south: 35.78, east: 14.58, west: 14.17 };
+// Keine Sperre auf Malta, nur Vorrang: Orte rund um Malta werden zuerst vorgeschlagen, alles andere geht auch
+const MALTA = { center: { lat: 35.94, lng: 14.38 }, radius: 50000 };
 let acTimer, acToken = null, acList = [], acInput = null;
 function loadPlaces() {
   if (!(window.google && google.maps && google.maps.importLibrary)) {
@@ -682,7 +683,7 @@ document.addEventListener('input', e => {
     try {
       const lib = await loadPlaces();
       if (!acToken) acToken = new lib.AutocompleteSessionToken();
-      const { suggestions } = await lib.AutocompleteSuggestion.fetchAutocompleteSuggestions({ input: q, sessionToken: acToken, language: 'de', region: 'mt', includedRegionCodes: ['mt'], locationRestriction: MALTA });
+      const { suggestions } = await lib.AutocompleteSuggestion.fetchAutocompleteSuggestions({ input: q, sessionToken: acToken, language: 'de', locationBias: MALTA });
       if (i.value.trim() === q) acShow(i, suggestions.filter(sg => sg.placePrediction).slice(0, 5));
     } catch (err) { console.warn(err); acClose(); }
   }, 250);
