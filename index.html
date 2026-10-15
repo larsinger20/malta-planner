@@ -267,7 +267,8 @@ function cardMenu(a) {
   if (canEdit(a)) it.push(`<button data-edit="${id}">✏️ Bearbeiten</button>`);
   it.push(`<button data-pl="${id}">📍 ${a.place ? 'Ort ändern' : 'Ort eintragen'}</button>`);
   if (a.kind === 'rest') it.push(`<button data-res="${id}">📞 ${a.res ? 'Reservierung ändern' : 'Reservierung eintragen'}</button>`);
-  if (isAdmin()) it.push(`<button class="dz" data-del="${id}">🗑 Löschen</button>`);
+  // Löschen dürfen der Ersteller und der Admin (wie Bearbeiten)
+  if (canEdit(a)) it.push(`<button class="dz" data-del="${id}">🗑 Löschen</button>`);
   return `<div class="menu" role="menu">${it.join('')}</div>`;
 }
 
@@ -511,7 +512,8 @@ $('list').onclick = async e => {
   if (b.dataset.menu) { menuOpen = menuOpen === b.dataset.menu ? null : b.dataset.menu; render(true); return; }
   if (b.closest('.menu')) menuOpen = null;
   if (b.dataset.del) {
-    if (!isAdmin() || !confirm('Diesen Vorschlag wirklich löschen?')) { render(true); return; }
+    const da = acts.find(x => x.id === b.dataset.del);
+    if (!da || !canEdit(da) || !confirm('Diesen Vorschlag wirklich löschen?')) { render(true); return; }
     const id = b.dataset.del; b.disabled = true;
     try {
       await Promise.all(sig.filter(x => x.act === id).map(x => deleteDoc(doc(db, 'signups', id + '_' + x.uid))));
