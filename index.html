@@ -7,15 +7,15 @@
 <link rel="icon" href="favicon.ico?v=3" sizes="any">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=3">
 <meta name="apple-mobile-web-app-title" content="Malta Planner">
-<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#171c1e" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* Apple-inspiriertes Design: SF Pro (auf Apple-Geräten) bzw. Inter, Apple-Grau, Apple-Blau, randlose Karten, Pillen-Knöpfe */
-:root{--bg:#f5f5f7;--card:#fff;--tx:#1d1d1f;--tx2:#424245;--mu:#6e6e73;--ac:#0066cc;--acb:#0071e3;--bd:rgba(0,0,0,.09);--fill:rgba(118,118,128,.12);--seg:rgba(118,118,128,.12);--segon:#fff;--rd:#d70015;--glass:rgba(245,245,247,.72);--pop:rgba(255,255,255,.82);--sh:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(0,0,0,.05);--chk:#c7c7cc;--fav:#b64400;
+/* Apple-inspirierte Formen (SF Pro bzw. Inter, Pillen-Knöpfe, iOS-Reiter) mit Urlaubsfarben: Sand + Meerestürkis */
+:root{--bg:#f6f4ef;--card:#fff;--tx:#1f2a2e;--tx2:#3d4a4e;--mu:#6b7478;--ac:#1d7a6b;--acb:#1d7a6b;--bd:#e3e0d8;--fill:rgba(120,105,80,.09);--seg:rgba(120,105,80,.10);--segon:#fff;--rd:#c0392b;--glass:rgba(246,244,239,.78);--pop:rgba(255,255,255,.88);--sh:0 1px 2px rgba(60,50,30,.04);--chk:#c9c4b8;--fav:#b45309;
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",system-ui,sans-serif;--disp:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Segoe UI",system-ui,sans-serif}
-@media(prefers-color-scheme:dark){:root{--bg:#000;--card:#1c1c1e;--tx:#f5f5f7;--tx2:#d1d1d6;--mu:#98989d;--ac:#2997ff;--acb:#0071e3;--bd:rgba(255,255,255,.12);--fill:rgba(118,118,128,.24);--seg:rgba(118,118,128,.24);--segon:#636366;--rd:#ff453a;--glass:rgba(0,0,0,.72);--pop:rgba(44,44,46,.82);--sh:none;--chk:#48484a;--fav:#ff9f0a}}
+@media(prefers-color-scheme:dark){:root{--bg:#171c1e;--card:#222a2d;--tx:#eef1f1;--tx2:#cfd6d8;--mu:#98a3a7;--ac:#4fc3ae;--acb:#1f8c7a;--bd:#333d40;--fill:rgba(255,255,255,.07);--seg:rgba(255,255,255,.08);--segon:#3a4548;--rd:#ef7b6e;--glass:rgba(23,28,30,.78);--pop:rgba(34,42,45,.9);--sh:none;--chk:#4a5558;--fav:#f5b544}}
 [hidden]{display:none!important}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font:17px/1.47 var(--font);letter-spacing:-.012em;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
@@ -26,8 +26,8 @@ h1{margin:0;font-size:32px;font-weight:700;line-height:1.1;display:flex;align-it
 p.s{margin:4px 0 22px;color:var(--mu);font-size:17px}
 .flag{width:39px;height:26px;border-radius:5px;box-shadow:0 0 0 .5px var(--bd),0 1px 3px rgba(0,0,0,.12);flex-shrink:0;transition:transform .2s cubic-bezier(.3,1.6,.6,1)}h1:active .flag{transform:scale(.88) rotate(-6deg)}
 
-/* Karten: randlos, groß gerundet, weicher Schatten */
-.c{background:var(--card);border:0;border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:var(--sh)}
+/* Karten: gerundet, feiner Rahmen */
+.c{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:var(--sh)}
 .c h2{margin:0;font-size:19px;font-weight:600;line-height:1.25}.c p{margin:4px 0 12px;color:var(--mu);font-size:15px}
 .r{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.r>button{white-space:nowrap;flex-shrink:0}
 .efb{display:flex;gap:10px}.efb button{flex:1}
@@ -71,7 +71,7 @@ textarea{resize:vertical;max-width:100%;min-height:70px}
 .card .info{margin-top:12px}.card>.tx{margin-top:6px}
 .none{font-size:15px;color:var(--mu)}
 .fav{display:block;font-size:12px;font-weight:600;color:var(--fav);margin:0 0 2px;letter-spacing:0}
-.c.in{box-shadow:var(--sh),0 0 0 1.5px var(--acb)}
+.c.in{border-color:color-mix(in srgb,var(--ac) 45%,var(--bd));background:linear-gradient(180deg,color-mix(in srgb,var(--ac) 7%,var(--card)),var(--card) 70%);box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 18px color-mix(in srgb,var(--ac) 14%,transparent)}
 .c.in::after{content:"✓";position:absolute;top:-8px;left:16px;width:22px;height:22px;border-radius:50%;background:var(--acb);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px var(--bg)}
 
 /* Infozeile, Links, Reservierung */
@@ -101,14 +101,12 @@ button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-heigh
 .sa{display:flex;gap:8px;margin-top:8px}.sa input{margin:0}.sa button{padding:0;width:46px;flex-shrink:0;font-size:22px;font-weight:400}
 .shc{padding:16px 18px}.shh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px}.shh h2{font-size:20px}.shh .meta{margin:0;font-size:15px;white-space:nowrap}
 
-/* Countdown wie eine Apple-Produktkachel */
-.cd{display:flex;flex-direction:column;gap:2px;background:#1d1d1f;color:#f5f5f7;border-radius:22px;padding:20px 22px 18px;margin:0 0 18px}
-@media(prefers-color-scheme:dark){.cd{background:#1c1c1e}}
-.cd .ey{font-size:14px;font-weight:600;color:#2997ff;letter-spacing:-.01em}
-.cd .ut{display:flex;gap:22px;margin:4px 0 2px}
-.cd .u b{display:block;font-family:var(--disp);font-size:46px;font-weight:200;line-height:1.05;letter-spacing:-.03em;font-variant-numeric:tabular-nums;background:linear-gradient(180deg,#fff 30%,#a1a1a6);-webkit-background-clip:text;background-clip:text;color:transparent}
-.cd .u small{font-size:13px;color:#a1a1a6}.cd .wh{font-size:15px;color:#a1a1a6}
-.cd .big{font-family:var(--disp);font-size:28px;font-weight:600;letter-spacing:-.02em}
+/* Countdown: Türkis-Kachel, Text links, Zahlen-Kästchen rechts */
+.cd{display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(135deg,#1d7a6b,#22917e);color:#fff;border-radius:20px;padding:16px 18px;margin:0 0 18px;box-shadow:0 6px 18px rgba(29,122,107,.22)}
+.cd b{font-family:var(--disp);font-size:18px;font-weight:600;letter-spacing:-.01em}.cd small{display:block;font-size:14px;opacity:.85;margin-top:2px}
+.cd .ut{display:flex;gap:6px}
+.cd .u{text-align:center;min-width:52px;background:rgba(255,255,255,.16);border-radius:12px;padding:6px 6px 5px}
+.cd .u b{display:block;font-size:24px;font-weight:600;line-height:1.15;font-variant-numeric:tabular-nums;letter-spacing:-.02em}.cd .u small{font-size:11px;margin:0;opacity:.85}
 
 /* Mein Plan: gruppierte Liste */
 .pd h2{margin:0 0 2px;font-size:22px;font-weight:700}.pr{display:flex;gap:14px;padding:12px 0;box-shadow:inset 0 .5px 0 var(--bd)}.pd h2+.pr{box-shadow:none}
@@ -340,7 +338,7 @@ function render(force) {
     const m = meta(a), fav = food && top1 > 0 && soloTop && s.length === top1;
     // Einheitlich: vorher hell mit Rahmen, nach dem Mitmachen/Abstimmen grün gefüllt
     const btn = food ? `<button class="mb th${mine ? '' : ' o'}" data-a="${esc(a.id)}" aria-pressed="${mine}" aria-label="${mine ? 'Stimme zurücknehmen' : 'Dafür stimmen'}" title="${mine ? 'Stimme zurücknehmen' : 'Dafür stimmen'}">👍</button>`
-      : `<button class="mb${mine ? '' : ' o'}" data-a="${esc(a.id)}">${mine ? '👋 Austragen' : '🙋 Ich bin dabei'}</button>`;
+      : `<button class="mb${mine ? '' : ' o'}" data-a="${esc(a.id)}" aria-pressed="${mine}" title="${mine ? 'Nochmal tippen zum Austragen' : 'Mitmachen'}">🙋 Ich bin dabei</button>`;
     const names = s.map(x => x.uid === me ? '<b>Du</b>' : esc(ppl[x.uid] || 'Jemand')).join(', ');
     const count = food ? `${s.length} ${s.length === 1 ? 'Stimme' : 'Stimmen'}` : `${s.length} dabei`;
     const who = s.length ? `<div class="stack">${s.slice(0, 4).map(x => avatar(x.uid)).join('')}</div><div class="wt"><span class="wc">${count}</span><span class="wn">${names}</span></div>`
@@ -560,10 +558,10 @@ document.querySelector('h1').addEventListener('click', party);
 const DEPART = new Date('2026-10-31T11:10:00+01:00');
 function countdown() {
   const ms = DEPART - Date.now();
-  if (ms <= 0) { $('cd').innerHTML = '<span class="ey">Malta</span><span class="big">🌴 Wir sind auf Malta!</span><span class="wh">Viel Spaß euch allen.</span>'; return; }
+  if (ms <= 0) { $('cd').innerHTML = '<div><b>🌴 Wir sind auf Malta!</b><small>Viel Spaß euch allen</small></div>'; return; }
   const m = Math.floor(ms / 60000), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), mi = m % 60;
   const u = (n, l) => `<div class="u"><b>${n}</b><small>${l}</small></div>`;
-  $('cd').innerHTML = `<span class="ey">✈️ Abflug nach Malta</span><div class="ut">${u(d, d === 1 ? 'Tag' : 'Tage')}${u(h, 'Std.')}${u(mi, 'Min.')}</div><span class="wh">Samstag, 31. Oktober · 11:10 Uhr</span>`;
+  $('cd').innerHTML = `<div><b>✈️ Abflug</b><small>Sa, 31.10. · 11:10 Uhr</small></div><div class="ut">${u(d, d === 1 ? 'Tag' : 'Tage')}${u(h, 'Std.')}${u(mi, 'Min.')}</div>`;
 }
 countdown(); setInterval(countdown, 15000);
 </script></body></html>
