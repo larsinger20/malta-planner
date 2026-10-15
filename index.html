@@ -99,6 +99,11 @@ button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-heigh
 @keyframes tick{from{transform:scale(.6)}}
 .si .x{background:none;width:30px;height:30px;font-size:20px;color:var(--mu)}
 .sa{display:flex;gap:8px;margin-top:8px}.sa input{margin:0}.sa button{padding:0;width:46px;flex-shrink:0;font-size:22px;font-weight:400}
+.sug{margin-top:10px}.sgt{display:block}.chips{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 4px}
+.chip{background:var(--fill);color:var(--tx);padding:7px 12px;font-size:14px;border-radius:999px}.chip:active{background:color-mix(in srgb,var(--ac) 20%,var(--fill))}
+.acl{margin:-6px 0 10px;background:var(--card);border:1px solid var(--bd);border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.12);animation:pop .18s ease-out;transform-origin:top center}.resf .acl{flex-basis:100%;margin:0}
+.aci{display:block;width:100%;text-align:left;background:none;color:var(--tx);border-radius:0;padding:10px 14px;font-size:16px}.aci+.aci{box-shadow:inset 0 .5px 0 var(--bd)}.aci:active{transform:none;background:var(--fill)}.aci b{font-weight:500}.aci small{display:block;color:var(--mu);font-size:13px;margin-top:1px}
+.acg{font-size:11px;color:var(--mu);text-align:right;padding:4px 12px 6px}
 .shc{padding:16px 18px}.shh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px}.shh h2{font-size:20px}.shh .meta{margin:0;font-size:15px;white-space:nowrap}
 
 /* Countdown: Türkis-Kachel, Text links, Zahlen-Kästchen rechts */
@@ -150,10 +155,10 @@ button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-heigh
 <input id="t" placeholder="z. B. Wanderung zum Aussichtspunkt" maxlength="80">
 <select id="k" hidden><option value="">Kochen oder Restaurant?</option><option value="cook">👩‍🍳 Kochen</option><option value="rest">🍴 Restaurant</option></select>
 <input id="lnk" type="url" placeholder="Link (z. B. Google Maps oder Website, optional)" maxlength="300" hidden>
-<input id="pl" placeholder="📍 Ort (optional, z. B. Blaue Grotte)" maxlength="80">
+<input id="pl" data-place="1" autocomplete="off" placeholder="📍 Ort (optional, z. B. Blaue Grotte)" maxlength="80">
 <textarea id="d" rows="2" placeholder="Kurze Beschreibung (optional)" maxlength="200"></textarea>
 <div class="two"><select id="w"><option value="">Tag (optional)</option><option>Montag</option><option>Dienstag</option><option>Mittwoch</option><option>Donnerstag</option><option>Freitag</option><option>Samstag</option><option>Sonntag</option></select>
-<select id="z"><option value="">Tageszeit (optional)</option><option value="Morgens / Vormittags">Vormittags</option><option>Mittags</option><option>Abends</option></select></div>
+<select id="z"><option value="">Tageszeit (optional)</option><option>Ganztags</option><option value="Morgens / Vormittags">Vormittags</option><option>Mittags</option><option>Abends</option></select></div>
 <label class="chk" id="rvl" hidden><input type="checkbox" id="rv"> Schon reserviert</label>
 <div class="resf" id="rvf" hidden style="margin-bottom:8px"><input type="time" id="rt"><input type="number" id="rp" min="1" max="99" placeholder="Personen"></div>
 <div class="efb"><button id="go">Vorschlagen</button></div></div>
@@ -224,11 +229,12 @@ document.addEventListener('click', e => {
 });
 
 // Ort öffnet Google Maps (auf dem iPhone die App, falls installiert)
-const mapUrl = p => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(/malta|gozo|comino/i.test(p) ? p : p + ', Malta');
-const placeChip = a => a.place ? `<a class="lk" href="${esc(mapUrl(a.place))}" target="_blank" rel="noopener noreferrer">📍 ${esc(a.place)}</a>` : '';
+// Mit Google-Orts-ID (pid, aus den Vorschlägen) öffnet Maps exakt den gewählten Ort, sonst Textsuche
+const mapUrl = a => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(a.pid ? a.place : /malta|gozo|comino/i.test(a.place) ? a.place : a.place + ', Malta') + (a.pid ? '&query_place_id=' + encodeURIComponent(a.pid) : '');
+const placeChip = a => a.place ? `<a class="lk" href="${esc(mapUrl(a))}" target="_blank" rel="noopener noreferrer">📍 ${esc(a.place)}</a>` : '';
 const linkChip = a => { try { const u = new URL(a.link || ''); if (/^https?:$/.test(u.protocol)) return `<a class="lk" href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">🔗 ${esc(u.hostname.replace(/^www\./, ''))}</a>`; } catch (e) {} return ''; };
 const KIND = { cook: '👩‍🍳 Kochen', rest: '🍴 Restaurant' };
-const TIME = { 'Morgens / Vormittags': '🌅 Vormittags', 'Mittags': '☀️ Mittags', 'Abends': '🌙 Abends' };
+const TIME = { 'Ganztags': '🌞 Ganztags', 'Morgens / Vormittags': '🌅 Vormittags', 'Mittags': '☀️ Mittags', 'Abends': '🌙 Abends' };
 // Karten-Infozeile: Typ · Tag · Tageszeit · Ersteller (alte Vorschläge ohne bekannten Ersteller zeigen keinen)
 const PLAIN = { cook: 'Kochen', rest: 'Restaurant' };
 const meta = a => { const nm = ppl[a.by];
@@ -236,7 +242,7 @@ const meta = a => { const nm = ppl[a.by];
 const avatar = uid => { const nm = ppl[uid] || 'Jemand'; return `<i class="${uid === me ? 'me' : ''}" style="background:hsl(${hue(nm)},45%,42%)">${esc(nm.trim()[0].toUpperCase())}</i>`; };
 
 // Inline-Formulare für Ort und Reservierung (geöffnet über das ⋯-Menü)
-const placeForm = a => `<div class="resf"><input id="epl" placeholder="📍 Ort, z. B. Blaue Grotte" maxlength="80" value="${esc(a.place || '')}"><button data-plsave="${esc(a.id)}">Speichern</button>${a.place ? `<button class="o" data-pldel="${esc(a.id)}">Entfernen</button>` : ''}<button class="o" data-plcancel="1">Abbrechen</button></div>`;
+const placeForm = a => `<div class="resf"><input id="epl" data-place="1" data-pid="${esc(a.pid || '')}" autocomplete="off" placeholder="📍 Ort, z. B. Blaue Grotte" maxlength="80" value="${esc(a.place || '')}"><button data-plsave="${esc(a.id)}">Speichern</button>${a.place ? `<button class="o" data-pldel="${esc(a.id)}">Entfernen</button>` : ''}<button class="o" data-plcancel="1">Abbrechen</button></div>`;
 const resForm = a => { const r = a.res || {}; return `<div class="resf"><input type="time" id="ert" value="${esc(r.t || '')}"><input type="number" id="erp" min="1" max="99" placeholder="Personen" value="${esc(r.p || '')}"><button data-ressave="${esc(a.id)}">Speichern</button>${a.res ? `<button class="o" data-resdel="${esc(a.id)}">Entfernen</button>` : ''}<button class="o" data-rescancel="1">Abbrechen</button></div>`; };
 
 // ⋯-Menü pro Karte: seltene Aktionen gebündelt
@@ -252,9 +258,9 @@ function cardMenu(a) {
 
 // "Mein Plan": nur die eigenen Eintragungen, nach Tag und Tageszeit sortiert (Reise beginnt Samstag)
 const DAYS = ['Samstag', 'Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag'];
-const SLOTS = ['Morgens / Vormittags', 'Mittags', 'Abends'];
-const slotOf = a => { if (a.res && a.res.t) { const h = parseInt(a.res.t, 10); return h < 11 ? 0 : h < 16 ? 1 : 2; } const i = SLOTS.indexOf(a.time); return i < 0 ? 3 : i; };
-const timeLabel = a => a.res && a.res.t ? `${a.res.t} Uhr` : a.time === 'Morgens / Vormittags' ? '🌅 Vormittags' : a.time === 'Mittags' ? '☀️ Mittags' : a.time === 'Abends' ? '🌙 Abends' : 'Ohne Uhrzeit';
+const SLOTS = ['Ganztags', 'Morgens / Vormittags', 'Mittags', 'Abends'];
+const slotOf = a => { if (a.res && a.res.t) { const h = parseInt(a.res.t, 10); return h < 11 ? 1 : h < 16 ? 2 : 3; } const i = SLOTS.indexOf(a.time); return i < 0 ? 4 : i; };
+const timeLabel = a => a.res && a.res.t ? `${a.res.t} Uhr` : TIME[a.time] || 'Ohne Uhrzeit';
 
 // Beim Essen wird abgestimmt statt eingetragen, deshalb zählen für den Plan nur Aktivitäten
 const myActs = () => acts.filter(a => (a.cat || 'act') === 'act' && sig.some(x => x.act === a.id && x.uid === me));
@@ -280,7 +286,7 @@ function editCard(a) {
     <input id="et" maxlength="80" placeholder="Titel" value="${esc(a.title || '')}">
     ${food ? `<select id="ek">${opts([['cook', '👩‍🍳 Kochen'], ['rest', '🍴 Restaurant']], a.kind, 'Kochen oder Restaurant?')}</select>
     <input id="elk" type="url" maxlength="300" placeholder="Link (nur bei Restaurant, optional)" value="${esc(a.link || '')}">` : ''}
-    <input id="epo" maxlength="80" placeholder="📍 Ort (optional)" value="${esc(a.place || '')}">
+    <input id="epo" data-place="1" data-pid="${esc(a.pid || '')}" autocomplete="off" maxlength="80" placeholder="📍 Ort (optional)" value="${esc(a.place || '')}">
     <textarea id="ed" rows="2" maxlength="200" placeholder="Kurze Beschreibung (optional)">${esc(a.desc || '')}</textarea>
     <div class="two"><select id="ew">${opts(WEEK.map(d => [d, d]), a.day, 'Kein Tag')}</select>
     <select id="ez">${opts(SLOTS.map(s => [s, TIME[s].slice(3)]), a.time, 'Keine Tageszeit')}</select></div>
@@ -294,12 +300,110 @@ const shopItems = a => Object.entries((a && a.shop) || {}).filter(([, v]) => v &
 const shopRows = (a, ph) => { const items = shopItems(a), id = esc(a.id);
   return `${items.map(i => `<div class="si${i.done ? ' dn' : ''}"><button class="sc" data-stog="${id}|${esc(i.id)}" aria-label="Abhaken">${i.done ? '✓' : ''}</button><span>${esc(i.t)}</span><button class="x" data-sdel="${id}|${esc(i.id)}" aria-label="Entfernen">×</button></div>`).join('')}
     ${items.length ? '' : '<div class="none">Noch nichts auf der Liste.</div>'}
-    <div class="sa"><input id="sin-${id}" data-sinp="${id}" placeholder="${ph}" maxlength="60"><button data-sadd="${id}" aria-label="Hinzufügen">+</button></div>`; };
+    <div class="sa"><input id="sin-${id}" data-sinp="${id}" placeholder="${ph}" maxlength="60"><button data-sadd="${id}" aria-label="Hinzufügen">+</button></div>${sugBox(a)}`; };
 function shopList(a) {
   const items = shopItems(a), done = items.filter(i => i.done).length;
   const label = `🛒 Einkaufsliste${items.length ? ` (${done}/${items.length})` : ''}`;
   if (!shopOpen.has(a.id)) return `<button class="tx" data-shop="${esc(a.id)}">${label} ▾</button>`;
   return `<div class="shop"><button class="tx" data-shop="${esc(a.id)}">${label} ▴</button>${shopRows(a, 'z. B. Tomaten')}</div>`;
+}
+
+// ===== Einkaufs-Vorschläge: eingebaute Rezept-Datenbank =====
+// Format pro Zeile: Familie | Suchwörter (Synonyme, auch englisch/italienisch/maltesisch) | Zutaten
+// Familie mit * = allgemeiner Eintrag, der nur greift, wenn kein spezielleres Gericht derselben Familie passt.
+const RECIPES = `
+*pasta|pasta, nudel, spaghetti, spagetti, spageti, penne, fusilli, tagliatelle, rigatoni, farfalle, linguine, maccaroni, makkaroni, tortellini, ravioli, gnocchi|Nudeln, Passierte Tomaten, Zwiebeln, Knoblauch, Parmesan, Basilikum, Olivenöl, Salz, Pfeffer
+pasta|bolognese, bolo, ragu, ragù, hackfleischsoße, hackfleischsauce, fleischsoße, fleischsauce|Spaghetti, Hackfleisch, Zwiebeln, Knoblauch, Karotten, Staudensellerie, Passierte Tomaten, Tomatenmark, Rotwein, Parmesan, Olivenöl, Oregano
+pasta|carbonara|Spaghetti, Guanciale oder Speck, Eier, Parmesan, Pecorino, Schwarzer Pfeffer
+pasta|pesto|Nudeln, Pesto, Basilikum, Pinienkerne, Parmesan, Knoblauch, Olivenöl, Cherrytomaten
+pasta|aglio, olio, knoblauchnudeln|Spaghetti, Knoblauch, Chili, Olivenöl, Petersilie, Parmesan
+pasta|arrabbiata, arrabiata, scharfe nudeln|Penne, Passierte Tomaten, Knoblauch, Chili, Olivenöl, Petersilie, Parmesan
+pasta|alfredo, sahnesoße, sahnesauce, rahmsoße, lachsnudeln, lachs-sahne|Tagliatelle, Sahne, Butter, Parmesan, Knoblauch, Zitrone, Petersilie
+pasta|frutti di mare, meeresfrüchtenudeln, scampi pasta, garnelennudeln|Spaghetti, Meeresfrüchte, Garnelen, Knoblauch, Weißwein, Cherrytomaten, Petersilie, Chili, Zitrone, Olivenöl
+pasta|tomatensoße, tomatensauce, napoli, pomodoro|Nudeln, Passierte Tomaten, Zwiebeln, Knoblauch, Basilikum, Olivenöl, Parmesan
+pasta|nudelsalat, pastasalat|Nudeln, Cherrytomaten, Mozzarella, Pesto, Rucola, Paprika, Gurke, Mayonnaise, Erbsen
+lasagne|lasagne, lasagna|Lasagneplatten, Hackfleisch, Passierte Tomaten, Zwiebeln, Knoblauch, Milch, Butter, Mehl, Mozzarella, Parmesan, Muskat
+auflauf|auflauf, gratin, überbacken, nudelauflauf, kartoffelgratin|Nudeln oder Kartoffeln, Sahne, Reibekäse, Schinken, Brokkoli, Zwiebeln, Eier, Muskat
+pizza|pizza, pizzen, pinsa, calzone|Pizzateig oder Mehl und Hefe, Passierte Tomaten, Mozzarella, Salami, Schinken, Champignons, Paprika, Oliven, Oregano, Rucola, Olivenöl
+flammkuchen|flammkuchen, tarte flambée|Flammkuchenteig, Schmand oder Crème fraîche, Speckwürfel, Zwiebeln, Frühlingszwiebeln
+grill|grill, grillen, bbq, barbecue, barbeque, grillabend, grillparty, braai|Grillkohle, Grillanzünder, Würstchen, Steaks, Hähnchenspieße, Halloumi oder Grillkäse, Maiskolben, Zucchini, Paprika, Baguette, Kräuterbutter, Ketchup, Senf, BBQ-Sauce, Kartoffelsalat, Alufolie, Servietten
+grill|spieß, spiesse, schaschlik, souvlaki|Fleisch für Spieße, Holzspieße, Paprika, Zwiebeln, Zucchini, Knoblauch, Olivenöl, Zitrone, Tzatziki, Fladenbrot
+burger|burger, hamburger, cheeseburger, smashburger|Burgerbrötchen, Rinderhack oder Patties, Cheddar, Tomaten, Eisbergsalat, Zwiebeln, Gewürzgurken, Ketchup, Mayonnaise, Senf, Pommes
+hotdog|hotdog, hot dog|Hotdog-Brötchen, Würstchen, Röstzwiebeln, Gewürzgurken, Ketchup, Senf, Remoulade
+mexican|taco, tacos, burrito, burritos, quesadilla, fajita, fajitas, enchilada, mexikanisch, mexican, tex-mex|Tortillas, Hackfleisch oder Hähnchen, Paprika, Zwiebeln, Mais, Kidneybohnen, Reibekäse, Saure Sahne, Guacamole oder Avocados, Salsa, Limetten, Koriander, Taco-Gewürz
+mexican|nachos|Tortilla-Chips, Reibekäse, Jalapeños, Salsa, Guacamole, Saure Sahne, Hackfleisch
+chili|chili con carne, chili sin carne, chili|Hackfleisch, Kidneybohnen, Mais, Passierte Tomaten, Zwiebeln, Paprika, Knoblauch, Chili, Kreuzkümmel, Reis oder Baguette, Saure Sahne
+curry|curry, indisch, tikka, masala, korma, butter chicken, dal, dhal|Hähnchen oder Kichererbsen, Currypaste oder Currypulver, Kokosmilch, Zwiebeln, Knoblauch, Ingwer, Reis, Naan, Koriander, Joghurt, Tomaten
+curry|thai, thaicurry, rotes curry, grünes curry, pad thai|Currypaste, Kokosmilch, Hähnchen oder Tofu, Paprika, Zuckerschoten, Reis, Limetten, Koriander, Fischsauce, Erdnüsse
+asia|wok, stir fry, gebratene nudeln, bratnudeln, gebratener reis, bratreis, asiatisch, asia, nudelpfanne, reispfanne, teriyaki|Mie-Nudeln oder Reis, Hähnchen oder Tofu, Paprika, Brokkoli, Karotten, Frühlingszwiebeln, Sojasauce, Ingwer, Knoblauch, Sesamöl, Eier
+sushi|sushi, maki, poke, bowl, buddha bowl|Sushi-Reis, Noriblätter, Lachs, Avocado, Gurke, Sojasauce, Wasabi, Ingwer, Reisessig, Sesam, Edamame
+rice|reis, rice, reispfanne, reisgericht|Reis, Gemüsebrühe, Zwiebeln, Paprika, Erbsen, Karotten, Sojasauce, Eier
+risotto|risotto|Risottoreis, Gemüsebrühe, Zwiebeln, Weißwein, Parmesan, Butter, Champignons oder Spargel
+paella|paella|Paellareis, Garnelen, Muscheln, Hähnchen, Paprika, Erbsen, Safran, Zwiebeln, Knoblauch, Zitronen, Brühe
+fish|fisch, lachs, dorade, wolfsbarsch, thunfisch, lampuki, swordfish, schwertfisch, fish|Fischfilet, Zitronen, Knoblauch, Petersilie, Olivenöl, Kartoffeln, Salat, Weißwein
+fish|garnelen, scampi, shrimps, gambas, meeresfrüchte, muscheln, calamari, tintenfisch, oktopus, octopus|Garnelen oder Meeresfrüchte, Knoblauch, Chili, Zitronen, Petersilie, Baguette, Olivenöl, Weißwein
+fish|fish and chips, fish & chips|Fischfilet, Mehl, Bier, Kartoffeln, Remoulade, Zitronen, Erbsen
+schnitzel|schnitzel, cordon bleu|Schnitzelfleisch, Paniermehl, Eier, Mehl, Zitronen, Kartoffeln oder Pommes, Preiselbeeren, Salat
+chicken|hähnchen, hühnchen, chicken, hühnerbrust, chicken wings, wings, ofenhähnchen, brathähnchen|Hähnchen, Knoblauch, Paprikapulver, Zitronen, Kartoffeln, Rosmarin, Gemüse, Olivenöl
+potato|kartoffel, potatoes, bratkartoffeln, ofenkartoffeln, rosmarinkartoffeln, kartoffelsalat|Kartoffeln, Zwiebeln, Speck, Rosmarin, Kräuterquark, Butter, Salz
+potato|pommes, fries, chips|Pommes, Ketchup, Mayonnaise, Salz
+*salad|salat, salad, caesar, rucola|Salat, Tomaten, Gurke, Paprika, Rote Zwiebeln, Feta oder Mozzarella, Croutons, Olivenöl, Balsamico, Honig, Senf
+salad|griechisch, greek, bauernsalat, horiatiki|Tomaten, Gurke, Paprika, Rote Zwiebeln, Feta, Oliven, Oregano, Olivenöl
+salad|caprese, tomate mozzarella|Tomaten, Mozzarella, Basilikum, Olivenöl, Balsamico
+greek|gyros, tzatziki, pita, griechisches essen|Gyros oder Schweinefleisch, Pita-Brot, Tzatziki, Zwiebeln, Tomaten, Pommes, Krautsalat
+mezze|mezze, meze, falafel, hummus, humus, couscous, tabouleh, orientalisch|Kichererbsen, Falafel, Hummus, Fladenbrot, Couscous, Tomaten, Gurke, Petersilie, Minze, Zitronen, Joghurt, Tahini
+shakshuka|shakshuka, schakschuka|Eier, Passierte Tomaten, Paprika, Zwiebeln, Knoblauch, Kreuzkümmel, Feta, Brot
+breakfast|frühstück, breakfast, brunch, fruehstueck|Brötchen, Brot, Butter, Marmelade, Nutella, Honig, Käse, Aufschnitt, Eier, Joghurt, Müsli, Milch, Obst, Orangensaft, Kaffee, Tee
+breakfast|rührei, spiegelei, omelett, omelette, eier, rührei mit speck, bacon|Eier, Speck, Butter, Milch, Schnittlauch, Brot, Tomaten
+breakfast|pancakes, pancake, pfannkuchen, eierkuchen, crêpes, crepes, palatschinken|Mehl, Eier, Milch, Butter, Zucker, Backpulver, Ahornsirup, Beeren, Nutella
+breakfast|french toast, arme ritter|Toastbrot, Eier, Milch, Zimt, Zucker, Butter, Ahornsirup
+breakfast|porridge, overnight oats, haferbrei, müsli, smoothie bowl, granola|Haferflocken, Milch, Joghurt, Beeren, Banane, Honig, Nüsse
+italian|bruschetta, antipasti, antipasto, crostini|Baguette oder Ciabatta, Tomaten, Knoblauch, Basilikum, Olivenöl, Mozzarella, Parmaschinken, Oliven, Getrocknete Tomaten
+italian|tiramisu|Löffelbiskuits, Mascarpone, Eier, Zucker, Espresso, Kakaopulver, Amaretto
+malta|ftira, ħobż biż-żejt, hobz biz-zejt, maltesisch, maltese|Ftira oder Maltesisches Brot, Thunfisch, Tomatenmark (Kunserva), Kapern, Oliven, Zwiebeln, Olivenöl, Minze, Bohnen
+malta|pastizzi, pastizz|Pastizzi (TK oder Bäckerei), Ricotta, Erbsen
+malta|fenek, kaninchen, rabbit|Kaninchen, Knoblauch, Rotwein, Tomaten, Lorbeer, Kartoffeln, Erbsen
+malta|bigilla|Ackerbohnen, Knoblauch, Chili, Olivenöl, Petersilie, Galletti-Cracker
+malta|timpana, imqarrun|Maccheroni, Hackfleisch, Passierte Tomaten, Eier, Parmesan, Blätterteig, Zwiebeln
+sandwich|sandwich, sandwiches, toast, toasties, panini, wrap, wraps, club sandwich|Toastbrot oder Wraps, Käse, Schinken, Putenbrust, Tomaten, Salat, Gurke, Mayonnaise, Butter
+soup|suppe, soup, eintopf, minestrone|Gemüsebrühe, Kartoffeln, Karotten, Lauch, Zwiebeln, Nudeln, Tomaten, Petersilie, Brot
+spaetzle|käsespätzle, spätzle|Spätzle, Bergkäse oder Emmentaler, Zwiebeln, Butter, Schnittlauch
+picnic|picknick, picnic, strand, beach, lunchpaket, proviant|Brötchen, Wraps, Käse, Aufschnitt, Obst, Gemüsesticks, Hummus, Chips, Kekse, Wasser, Servietten, Müllbeutel, Kühltasche
+party|party, cocktail, cocktails, drinks, sangria, aperol, spritz, hugo, mojito, sundowner, vorglühen|Aperol, Prosecco, Sodawasser, Orangen, Limetten, Minze, Rum, Rohrzucker, Eiswürfel, Wein, Bier, Cola, Tonic Water, Knabberzeug
+party|bier, beer, kinnie, cisk|Bier, Kinnie, Eiswürfel, Chips, Erdnüsse
+dessert|nachtisch, dessert, eis, ice cream, gelato, obstsalat, fruit salad|Eis, Obst, Beeren, Sahne, Schokosauce, Wassermelone, Joghurt
+dessert|kuchen, backen, cake, brownies, muffins, cookies, kekse|Mehl, Zucker, Butter, Eier, Backpulver, Schokolade, Kakaopulver, Vanillezucker, Milch
+dessert|kaiserschmarrn|Mehl, Eier, Milch, Zucker, Butter, Rosinen, Puderzucker, Apfelmus
+veggie|gemüsepfanne, ofengemüse, vegetarisch, vegan, gemüse, grillgemüse|Zucchini, Paprika, Aubergine, Champignons, Zwiebeln, Kichererbsen, Knoblauch, Olivenöl, Kräuter, Feta
+raclette|raclette, fondue|Raclettekäse, Kartoffeln, Champignons, Paprika, Zwiebeln, Mais, Schinken, Baguette, Cornichons
+`;
+// Für die allgemeine Liste: Urlaubs-Basics
+const BASICS = 'Wasser, Sonnencreme, After-Sun, Mückenspray, Kaffee, Milch, Brot, Butter, Obst, Snacks, Chips, Bier, Wein, Eiswürfel, Olivenöl, Salz, Pfeffer, Toilettenpapier, Küchenrolle, Spülmittel, Müllbeutel, Taschentücher'.split(', ');
+
+// Text vereinfachen: klein, Umlaute ausschreiben, Akzente weg
+const norm = t => String(t).toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ħ/g, 'h').replace(/ż/g, 'z');
+const RX = RECIPES.trim().split('\n').map(l => { const [f, k, i] = l.split('|'); return { fam: f.replace('*', ''), gen: f.startsWith('*'), keys: k.split(',').map(x => norm(x.trim())).filter(Boolean), items: i.split(',').map(x => x.trim()) }; });
+// Kurze Wörter nur am Wortanfang (sonst passt "eis" in "Reis"), lange auch mitten im Wort ("Gemüsecurry")
+const hit = (t, k) => k.length >= 5 ? t.includes(k) : new RegExp('(^|[^a-z])' + k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).test(t);
+function suggestFor(a) {
+  if (a.id === GEN) return BASICS;
+  const t = norm(a.title || '');
+  const m = RX.filter(r => r.keys.some(k => hit(t, k)));
+  const spec = new Set(m.filter(r => !r.gen).map(r => r.fam));
+  const out = [];
+  m.filter(r => !r.gen || !spec.has(r.fam)).forEach(r => r.items.forEach(i => { if (!out.some(o => norm(o) === norm(i))) out.push(i); }));
+  return out;
+}
+const sugOpen = new Set();
+function sugBox(a) {
+  const have = new Set(shopItems(a).map(i => norm(i.t)));
+  const list = suggestFor(a).filter(i => !have.has(norm(i))).slice(0, 14);
+  if (!list.length) return '';
+  const id = esc(a.id), label = a.id === GEN ? 'Urlaubs-Basics' : `Passt zu „${esc(a.title)}“`;
+  if (!sugOpen.has(a.id)) return `<button class="tx sgt" data-sugt="${id}">✨ Vorschläge (${list.length}) ▾</button>`;
+  return `<div class="sug"><button class="tx sgt" data-sugt="${id}">✨ ${label} ▴</button>
+    <div class="chips">${list.map(i => `<button class="chip" data-sug="${id}" data-t="${esc(i)}">+ ${esc(i)}</button>`).join('')}</div>
+    <button class="tx" data-sugall="${id}">Alle ${list.length} hinzufügen</button></div>`;
 }
 
 // Reiter "Einkauf": allgemeine Liste + alle Kochvorschläge gebündelt
@@ -404,6 +508,10 @@ $('list').onclick = async e => {
   }
   if (b.dataset.shop) { const id = b.dataset.shop; shopOpen.has(id) ? shopOpen.delete(id) : shopOpen.add(id); render(true); return; }
   if (b.dataset.sadd) { addShop(b.dataset.sadd); return; }
+  if (b.dataset.sugt) { const id = b.dataset.sugt; sugOpen.has(id) ? sugOpen.delete(id) : sugOpen.add(id); render(true); return; }
+  if (b.dataset.sug) { addShopItems(b.dataset.sug, [b.dataset.t]); return; }
+  if (b.dataset.sugall) { const a = acts.find(x => x.id === b.dataset.sugall) || { id: GEN, shop: {} }, have = new Set(shopItems(a).map(i => norm(i.t)));
+    addShopItems(a.id, suggestFor(a).filter(i => !have.has(norm(i))).slice(0, 14)); return; }
   if (b.dataset.stog || b.dataset.sdel) {
     const [id, item] = (b.dataset.stog || b.dataset.sdel).split('|'), a = acts.find(x => x.id === id);
     try {
@@ -418,7 +526,7 @@ $('list').onclick = async e => {
   if (b.dataset.esave) {
     const a = acts.find(x => x.id === b.dataset.esave); if (!a || !canEdit(a)) return;
     const title = $('et').value.trim(); if (!title) { toast('Bitte gib einen Titel ein.', 1); return; }
-    const data = { title, desc: $('ed').value.trim(), day: $('ew').value, time: $('ez').value, place: $('epo').value.trim() };
+    const data = { title, desc: $('ed').value.trim(), day: $('ew').value, time: $('ez').value, place: $('epo').value.trim(), pid: $('epo').value.trim() ? ($('epo').dataset.pid || '') : '' };
     if ((a.cat || 'act') === 'food') {
       data.kind = $('ek').value; if (!data.kind) { toast('Bitte wähle: Kochen oder Restaurant.', 1); return; }
       const lk = data.kind === 'rest' ? normLink($('elk').value) : '';
@@ -433,8 +541,8 @@ $('list').onclick = async e => {
   if (b.dataset.pl) { editPlace = b.dataset.pl; editRes = null; render(true); const i = $('epl'); if (i) i.focus(); return; }
   if (b.dataset.plcancel) { editPlace = null; render(true); return; }
   if (b.dataset.pldel || b.dataset.plsave) {
-    const id = b.dataset.pldel || b.dataset.plsave, place = b.dataset.plsave ? $('epl').value.trim() : '';
-    try { await setDoc(doc(db, 'activities', id), { place }, { merge: true }); editPlace = null; render(true); toast(place ? 'Ort gespeichert ✓' : 'Ort entfernt'); }
+    const id = b.dataset.pldel || b.dataset.plsave, place = b.dataset.plsave ? $('epl').value.trim() : '', pid = place ? ($('epl').dataset.pid || '') : '';
+    try { await setDoc(doc(db, 'activities', id), { place, pid }, { merge: true }); editPlace = null; render(true); toast(place ? 'Ort gespeichert ✓' : 'Ort entfernt'); }
     catch (err) { toast(FAIL, 1); }
     return;
   }
@@ -458,6 +566,14 @@ $('list').onclick = async e => {
 };
 
 
+async function addShopItems(id, texts) {
+  if (!texts.length) return;
+  const shop = {}, now = Date.now();
+  texts.forEach((t, n) => { shop['i' + now.toString(36) + n + Math.random().toString(36).slice(2, 5)] = { t, done: false, ts: now + n }; });
+  const extra = id === GEN ? { cat: 'list', title: 'Einkaufsliste', ts: 0 } : {};
+  try { await setDoc(doc(db, 'activities', id), { shop, ...extra }, { merge: true }); render(true); toast(texts.length === 1 ? `${texts[0]} hinzugefügt ✓` : `${texts.length} Sachen hinzugefügt ✓`); }
+  catch (err) { toast(FAIL, 1); }
+}
 async function addShop(id) {
   const i = $('sin-' + id); if (!i) return;
   const t = i.value.trim(); if (!t) { i.focus(); return; }
@@ -510,7 +626,7 @@ $('go').onclick = async () => {
   const t = $('t'), d = $('d'), w = $('w'), z = $('z'), k = $('k'); if (!t.value.trim()) { toast('Bitte gib einen Titel ein.', 1); t.focus(); return; }
   if (tab === 'food' && !k.value) { toast('Bitte wähle: Kochen oder Restaurant.', 1); return; }
   const data = { title: t.value.trim(), desc: d.value.trim(), day: w.value, time: z.value, cat: tab, kind: tab === 'food' ? k.value : '', ts: Date.now(), by: me };
-  if ($('pl').value.trim()) data.place = $('pl').value.trim();
+  if ($('pl').value.trim()) { data.place = $('pl').value.trim(); if ($('pl').dataset.pid) data.pid = $('pl').dataset.pid; }
   if (tab === 'food' && k.value === 'rest') {
     const lk = normLink($('lnk').value);
     if (lk === false) { toast('Der Link ist ungültig.', 1); return; }
@@ -523,10 +639,57 @@ $('go').onclick = async () => {
   }
   try {
     await setDoc(doc(db, 'activities', 'a' + Date.now()), data);
-    t.value = ''; d.value = ''; w.value = ''; z.value = ''; k.value = ''; $('pl').value = ''; $('lnk').value = ''; $('rv').checked = false; $('rt').value = ''; $('rp').value = ''; formFields();
+    t.value = ''; d.value = ''; w.value = ''; z.value = ''; k.value = ''; $('pl').value = ''; $('pl').dataset.pid = ''; $('lnk').value = ''; $('rv').checked = false; $('rt').value = ''; $('rp').value = ''; formFields();
     addOpen = false; top(); toast('Vorschlag gespeichert ✓');
   } catch (err) { toast(FAIL, 1); }
 };
+
+// ===== Ortsvorschläge von Google Places =====
+// Schlüssel ist auf larsinger20.github.io und auf Maps JavaScript API + Places API (New) beschränkt.
+// Kosten: Tippen läuft in einer "Sitzung", am Ende wird nur die Orts-ID abgerufen (bei Google unbegrenzt kostenlos).
+const MAPS_KEY = 'AIzaSyC3PGB_MNnTcbf5M8KrI2Hwjr5Uygw5bEM';
+const MALTA = { north: 36.09, south: 35.78, east: 14.58, west: 14.17 };
+let acTimer, acToken = null, acList = [], acInput = null;
+function loadPlaces() {
+  if (!(window.google && google.maps && google.maps.importLibrary)) {
+    // offizieller Google-Lader (lädt die Bibliothek erst beim ersten Gebrauch)
+    (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({ key: MAPS_KEY, v: 'weekly', language: 'de', region: 'MT' });
+  }
+  return google.maps.importLibrary('places');
+}
+const acClose = () => { document.querySelectorAll('.acl').forEach(x => x.remove()); acList = []; };
+function acShow(i, list) {
+  acClose(); if (!list.length || document.activeElement !== i) return;
+  acList = list; acInput = i;
+  const box = document.createElement('div'); box.className = 'acl';
+  box.innerHTML = list.map((sg, n) => { const pp = sg.placePrediction;
+    return `<button type="button" class="aci" data-i="${n}"><b>📍 ${esc(pp.mainText ? pp.mainText.text : pp.text.text)}</b>${pp.secondaryText ? `<small>${esc(pp.secondaryText.text)}</small>` : ''}</button>`; }).join('') + '<div class="acg">Vorschläge von Google</div>';
+  i.insertAdjacentElement('afterend', box);
+}
+document.addEventListener('input', e => {
+  const i = e.target; if (!i.dataset || !i.dataset.place) return;
+  i.dataset.pid = ''; clearTimeout(acTimer);
+  const q = i.value.trim(); if (!MAPS_KEY || q.length < 2) { acClose(); return; }
+  acTimer = setTimeout(async () => {
+    try {
+      const lib = await loadPlaces();
+      if (!acToken) acToken = new lib.AutocompleteSessionToken();
+      const { suggestions } = await lib.AutocompleteSuggestion.fetchAutocompleteSuggestions({ input: q, sessionToken: acToken, language: 'de', region: 'mt', includedRegionCodes: ['mt'], locationRestriction: MALTA });
+      if (i.value.trim() === q) acShow(i, suggestions.filter(sg => sg.placePrediction).slice(0, 5));
+    } catch (err) { console.warn(err); acClose(); }
+  }, 250);
+});
+// pointerdown statt click: so verliert das Feld den Fokus nicht, bevor der Vorschlag übernommen ist
+document.addEventListener('pointerdown', async e => {
+  const b = e.target.closest('.aci'); if (!b || !acInput) return;
+  e.preventDefault();
+  const pp = acList[+b.dataset.i].placePrediction, i = acInput;
+  i.value = pp.mainText ? pp.mainText.text : pp.text.text; i.dataset.pid = pp.placeId; acClose();
+  try { await pp.toPlace().fetchFields({ fields: ['id'] }); } catch (err) {}
+  acToken = null;
+});
+document.addEventListener('focusout', e => { if (e.target.dataset && e.target.dataset.place) setTimeout(acClose, 150); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') acClose(); });
 
 // Kleines Extra: Tipp auf Flagge/Titel lässt Urlaubs-Emojis über den ganzen Bildschirm aufploppen
 const FX = ['🌴', '☀️', '🏖️', '🌊', '🍹', '⛵', '🐠', '😎', '🍦', '🐚', 'FLAG', 'FLAG', 'FLAG'];
