@@ -7,76 +7,133 @@
 <link rel="icon" href="favicon.ico?v=3" sizes="any">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=3">
 <meta name="apple-mobile-web-app-title" content="Malta Planner">
-<meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#171c1e" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f6f4ef;--card:#fff;--tx:#1f2a2e;--mu:#6b7478;--ac:#1d7a6b;--bd:#e3e0d8;--rd:#c0392b}
-@media(prefers-color-scheme:dark){:root{--bg:#171c1e;--card:#222a2d;--tx:#eef1f1;--mu:#98a3a7;--ac:#4fc3ae;--bd:#333d40;--rd:#ef7b6e}}
+/* Apple-inspiriertes Design: SF Pro (auf Apple-Geräten) bzw. Inter, Apple-Grau, Apple-Blau, randlose Karten, Pillen-Knöpfe */
+:root{--bg:#f5f5f7;--card:#fff;--tx:#1d1d1f;--tx2:#424245;--mu:#6e6e73;--ac:#0066cc;--acb:#0071e3;--bd:rgba(0,0,0,.09);--fill:rgba(118,118,128,.12);--seg:rgba(118,118,128,.12);--segon:#fff;--rd:#d70015;--glass:rgba(245,245,247,.72);--pop:rgba(255,255,255,.82);--sh:0 1px 2px rgba(0,0,0,.04),0 6px 20px rgba(0,0,0,.05);--chk:#c7c7cc;--fav:#b64400;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",system-ui,sans-serif;--disp:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Segoe UI",system-ui,sans-serif}
+@media(prefers-color-scheme:dark){:root{--bg:#000;--card:#1c1c1e;--tx:#f5f5f7;--tx2:#d1d1d6;--mu:#98989d;--ac:#2997ff;--acb:#0071e3;--bd:rgba(255,255,255,.12);--fill:rgba(118,118,128,.24);--seg:rgba(118,118,128,.24);--segon:#636366;--rd:#ff453a;--glass:rgba(0,0,0,.72);--pop:rgba(44,44,46,.82);--sh:none;--chk:#48484a;--fav:#ff9f0a}}
 [hidden]{display:none!important}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,sans-serif}
-main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
-.hd{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px}
-h1{margin:0;font-size:26px;display:flex;align-items:center;gap:10px}p.s{margin:0 0 20px;color:var(--mu)}
-.flag{width:36px;height:24px;border-radius:4px;box-shadow:0 0 0 1px var(--bd);flex-shrink:0}
-.c{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
-.c h2{margin:0;font-size:18px}.c p{margin:4px 0 10px;color:var(--mu);font-size:14px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:17px/1.47 var(--font);letter-spacing:-.012em;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+main{max-width:600px;margin:0 auto;padding:24px 16px 48px}
+h1,h2{font-family:var(--disp);letter-spacing:-.018em}
+.hd{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:2px}
+h1{margin:0;font-size:32px;font-weight:700;line-height:1.1;display:flex;align-items:center;gap:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+p.s{margin:4px 0 22px;color:var(--mu);font-size:17px}
+.flag{width:39px;height:26px;border-radius:5px;box-shadow:0 0 0 .5px var(--bd),0 1px 3px rgba(0,0,0,.12);flex-shrink:0;transition:transform .2s cubic-bezier(.3,1.6,.6,1)}h1:active .flag{transform:scale(.88) rotate(-6deg)}
+
+/* Karten: randlos, groß gerundet, weicher Schatten */
+.c{background:var(--card);border:0;border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:var(--sh)}
+.c h2{margin:0;font-size:19px;font-weight:600;line-height:1.25}.c p{margin:4px 0 12px;color:var(--mu);font-size:15px}
 .r{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.r>button{white-space:nowrap;flex-shrink:0}
-.efb{display:flex;gap:8px}.efb button{flex:1}
-.day{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:999px;padding:2px 10px;font-size:13px;margin:4px 6px 0 0}
-button{font:inherit;border:0;border-radius:10px;padding:9px 14px;background:var(--ac);color:#fff;cursor:pointer}
-button.o{background:transparent;color:var(--ac);border:1.5px solid var(--ac)}
-textarea{resize:vertical;max-width:100%;min-height:60px}
-input,textarea,select{width:100%;font:inherit;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);margin-bottom:8px}
-.tabs{display:flex;gap:6px;position:sticky;top:0;z-index:4;background:var(--bg);margin:0 -16px 10px;padding:8px 16px;padding-top:max(8px,env(safe-area-inset-top))}
-.tb{flex:1;min-width:0;padding:7px 4px;font-size:14px;line-height:1.25;white-space:nowrap;background:var(--card);color:var(--tx);border:1px solid var(--bd);display:flex;flex-direction:column;align-items:center}
-.tb .ti{font-size:18px}.tb .n{display:inline-block;min-width:20px;margin-left:4px;padding:0 6px;border-radius:999px;background:var(--bg);color:var(--mu);font-size:12px;font-weight:600}
-.tb.on{background:var(--ac);color:#fff;border-color:var(--ac)}.tb.on .n{background:rgba(255,255,255,.25);color:#fff}
-.addb{width:100%;margin-bottom:12px;padding:12px;font-weight:600;font-size:16px}
-.ah{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.x{background:none;color:var(--mu);font-size:22px;line-height:1;padding:6px 10px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.meta{margin-top:4px;font-size:14px;color:var(--mu)}.nw{white-space:nowrap}
-.card{position:relative;padding:16px}
-.hd2{display:flex;align-items:flex-start;gap:8px;position:relative}.tt{flex:1;min-width:0}.tt h2{font-size:18px;line-height:1.3}
-.mn{width:34px;height:34px;margin:-6px -8px 0 0;padding:0;flex-shrink:0;border-radius:50%;background:transparent;color:var(--mu);font-size:20px;line-height:1;letter-spacing:1px}.mn:hover{background:var(--bg)}
-.menu{position:absolute;right:-6px;top:32px;z-index:6;min-width:220px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,.18)}
-.menu button{display:block;width:100%;text-align:left;background:none;color:var(--tx);padding:11px 12px;border-radius:9px;font-size:15px}.menu button:hover{background:var(--bg)}.menu .dz{color:var(--rd)}
-.card .meta{margin-top:2px}.ds{margin:8px 0 0!important;color:var(--tx)!important;opacity:.8;font-size:14px}
-.card .info{margin-top:10px}.card>.tx{margin-top:4px}
-.none{font-size:13px;color:var(--mu)}
-.ft2{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid var(--bd)}
-.who{display:flex;align-items:center;gap:10px;min-width:0}
-.stack{display:flex;flex-shrink:0}.stack i{width:26px;height:26px;border-radius:50%;color:#fff;font-style:normal;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px var(--card);margin-left:-7px}.stack i:first-child{margin-left:0}.stack i.me{box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--ac)}
-.wt{display:flex;flex-direction:column;min-width:0;line-height:1.3}.wc{font-size:13px;font-weight:600}.wn{font-size:13px;color:var(--mu);overflow-wrap:anywhere}.wn b{color:var(--tx);font-weight:600}
-.mb{flex-shrink:0;white-space:nowrap;padding:9px 14px;font-size:15px}.mb.th{min-width:56px;padding:7px 16px;font-size:20px;line-height:1.2}
-.fav{display:inline-block;margin:0 0 4px}
-.fav{display:inline-block;font-size:12px;font-weight:600;color:#8a5a00;background:#fdf0cf;border-radius:999px;padding:1px 8px;margin-bottom:4px}
-@media(prefers-color-scheme:dark){.fav{color:#f5d27a;background:#3d3420}}
-.shop{margin-top:6px;padding:4px 12px 10px;border:1px solid var(--bd);border-radius:12px;background:var(--bg)}
-.si{display:flex;align-items:center;gap:10px;padding:2px 0;border-bottom:1px solid var(--bd)}.si span{flex:1;min-width:0;overflow-wrap:anywhere}.si.dn span{text-decoration:line-through;color:var(--mu)}
-.sc{width:26px;height:26px;padding:0;flex-shrink:0;border-radius:7px;background:var(--card);border:1.5px solid var(--bd);color:#fff;font-size:15px;line-height:1;margin:7px 0}.si.dn .sc{background:var(--ac);border-color:var(--ac)}
-.sa{display:flex;gap:8px;margin-top:10px}.sa input{margin:0;background:var(--card)}.sa button{padding:0 16px;font-size:20px}
-.c.in{position:relative;border-color:color-mix(in srgb,var(--ac) 45%,var(--bd));background:linear-gradient(180deg,color-mix(in srgb,var(--ac) 7%,var(--card)),var(--card) 70%);box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 18px color-mix(in srgb,var(--ac) 14%,transparent)}
-.c.in::after{content:"✓";position:absolute;top:-8px;left:14px;width:20px;height:20px;border-radius:50%;background:var(--ac);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px var(--bg)}
-.info{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;margin:8px 0 2px;font-size:14px}.info .day{margin:0}.lk{color:var(--ac);text-decoration:none;font-weight:500}a.lk:not(.day){padding:6px 0}.ok{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 10%,var(--card))}
-button.tx{background:none;color:var(--ac);padding:8px 2px;font-size:14px;min-height:36px}button.tx.mu{color:var(--mu)}
-.toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;transition:opacity .2s,transform .2s;background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:15px;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:20;max-width:calc(100% - 32px);text-align:center;pointer-events:none}
-.toast.on{opacity:1;transform:translate(-50%,0)}.toast.err{background:var(--rd);color:#fff}
+.efb{display:flex;gap:10px}.efb button{flex:1}
+
+/* Knöpfe: Pillen */
+button{font:inherit;letter-spacing:inherit;border:0;border-radius:980px;padding:9px 18px;background:var(--acb);color:#fff;cursor:pointer;transition:transform .15s ease,background-color .2s,opacity .2s;-webkit-tap-highlight-color:transparent}
+button:active{transform:scale(.96)}
+button.o{background:transparent;color:var(--ac);box-shadow:inset 0 0 0 1px var(--ac)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--acb) 45%,transparent)}
+
+/* Eingabefelder wie iOS */
+input,textarea,select{width:100%;font:inherit;font-size:17px;letter-spacing:inherit;padding:12px 14px;border:0;border-radius:12px;background:var(--fill);color:var(--tx);margin-bottom:10px;-webkit-appearance:none;appearance:none}
+input::placeholder,textarea::placeholder{color:var(--mu)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%2386868b' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:34px}
+input[type=checkbox]{-webkit-appearance:auto;appearance:auto;accent-color:var(--acb)}
+textarea{resize:vertical;max-width:100%;min-height:70px}
+
+/* Reiter: iOS-Segment-Schalter in einer Milchglas-Leiste */
+.tabs{position:sticky;top:0;z-index:4;margin:0 -16px 12px;padding:8px 16px;padding-top:max(8px,env(safe-area-inset-top));background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px)}
+.seg{position:relative;display:flex;background:var(--seg);border-radius:12px;padding:3px}
+.ind{position:absolute;top:3px;bottom:3px;left:0;width:0;border-radius:9px;background:var(--segon);box-shadow:0 3px 8px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.04);transition:transform .35s cubic-bezier(.3,1.25,.5,1),width .35s cubic-bezier(.3,1.25,.5,1)}
+.tb{position:relative;z-index:1;flex:1;min-width:0;padding:6px 2px 5px;font-size:12px;font-weight:500;line-height:1.2;white-space:nowrap;background:transparent;color:var(--tx);border-radius:9px;display:flex;flex-direction:column;align-items:center;gap:1px}
+.tb:active{transform:none;opacity:.6}
+.tb .ti{font-size:19px;line-height:1.15}.tb.on{font-weight:600}
+.tb .n{position:absolute;top:2px;left:calc(50% + 9px);min-width:17px;padding:0 5px;border-radius:999px;background:var(--acb);color:#fff;font-size:10.5px;font-weight:600;line-height:16px;text-align:center;letter-spacing:0}.tb .n:empty{display:none}
+
+.addb{display:block;width:100%;margin:0 0 14px;padding:13px;font-weight:500;font-size:17px}
+.ah{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.x{background:var(--fill);color:var(--mu);font-size:18px;line-height:1;width:30px;height:30px;padding:0;display:flex;align-items:center;justify-content:center}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.meta{margin-top:4px;font-size:15px;color:var(--mu)}.nw{white-space:nowrap}
+
+/* Vorschlags-Karten */
+.card{position:relative;padding:18px 18px 16px}
+.hd2{display:flex;align-items:flex-start;gap:8px;position:relative}.tt{flex:1;min-width:0}.tt h2{font-size:20px}
+.mn{width:32px;height:32px;margin:-4px -6px 0 0;padding:0;flex-shrink:0;border-radius:50%;background:var(--fill);color:var(--mu);font-size:18px;line-height:1;letter-spacing:1px;display:flex;align-items:center;justify-content:center}
+.menu{position:absolute;right:-6px;top:34px;z-index:6;min-width:240px;background:var(--pop);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);border-radius:14px;padding:0;overflow:hidden;box-shadow:0 0 0 .5px var(--bd),0 12px 40px rgba(0,0,0,.22);transform-origin:top right;animation:pop .22s cubic-bezier(.3,1.3,.5,1)}
+.menu button{display:block;width:100%;text-align:left;background:none;color:var(--tx);padding:12px 16px;border-radius:0;font-size:17px}.menu button+button{box-shadow:inset 0 .5px 0 var(--bd)}.menu button:active{transform:none;background:var(--fill)}.menu .dz{color:var(--rd)}
+@keyframes pop{from{opacity:0;transform:scale(.85)}}
+.ds{margin:10px 0 0!important;color:var(--tx2)!important;font-size:15px!important}
+.card .info{margin-top:12px}.card>.tx{margin-top:6px}
+.none{font-size:15px;color:var(--mu)}
+.fav{display:block;font-size:12px;font-weight:600;color:var(--fav);margin:0 0 2px;letter-spacing:0}
+.c.in{box-shadow:var(--sh),0 0 0 1.5px var(--acb)}
+.c.in::after{content:"✓";position:absolute;top:-8px;left:16px;width:22px;height:22px;border-radius:50%;background:var(--acb);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px var(--bg)}
+
+/* Infozeile, Links, Reservierung */
+.info{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;margin:8px 0 2px;font-size:15px}.info .day{margin:0}
+.lk{color:var(--ac);text-decoration:none}a.lk:not(.day){padding:4px 0}
+.day{display:inline-block;background:var(--fill);border-radius:999px;padding:3px 11px;font-size:14px;margin:4px 6px 0 0}
+.ok{color:var(--tx)}
+button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-height:36px;border-radius:0}button.tx:active{transform:none;opacity:.5}button.tx.mu{color:var(--mu)}
 .resf{display:flex;flex-wrap:wrap;gap:8px}.info .resf{width:100%;margin-top:4px}.resf input{width:auto;flex:1;min-width:110px;margin:0}
-.chk{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:15px}.chk input{width:auto;margin:0}
-.m{color:var(--mu);text-align:center;padding:20px 0}
+.chk{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:17px}.chk input{width:20px;height:20px;margin:0}
+
+/* Fußzeile mit Teilnehmern */
+.ft2{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;padding-top:14px;box-shadow:inset 0 .5px 0 var(--bd)}
+.who{display:flex;align-items:center;gap:10px;min-width:0}
+.stack{display:flex;flex-shrink:0}.stack i{width:28px;height:28px;border-radius:50%;color:#fff;font-style:normal;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px var(--card);margin-left:-8px}.stack i:first-child{margin-left:0}.stack i.me{box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--acb)}
+.wt{display:flex;flex-direction:column;min-width:0;line-height:1.3}.wc{font-size:14px;font-weight:600}.wn{font-size:14px;color:var(--mu);overflow-wrap:anywhere}.wn b{color:var(--tx);font-weight:600}
+.mb{flex-shrink:0;white-space:nowrap;padding:8px 16px;font-size:15px}.mb.th{min-width:58px;padding:6px 18px;font-size:20px;line-height:1.25}
+
+/* Einkaufslisten wie die Erinnerungen-App */
+.shop{margin-top:8px;padding:2px 0 0}
+.si{display:flex;align-items:center;gap:12px;min-height:46px;position:relative}.si+.si::before{content:"";position:absolute;left:36px;right:0;top:0;height:.5px;background:var(--bd)}
+.si span{flex:1;min-width:0;overflow-wrap:anywhere;font-size:17px;transition:color .2s}.si.dn span{color:var(--mu)}
+.sc{width:24px;height:24px;padding:0;flex-shrink:0;border-radius:50%;background:transparent;box-shadow:inset 0 0 0 1.5px var(--chk);color:#fff;font-size:13px;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center}
+.si.dn .sc{background:var(--acb);box-shadow:none;animation:tick .3s cubic-bezier(.3,1.6,.5,1)}
+@keyframes tick{from{transform:scale(.6)}}
+.si .x{background:none;width:30px;height:30px;font-size:20px;color:var(--mu)}
+.sa{display:flex;gap:8px;margin-top:8px}.sa input{margin:0}.sa button{padding:0;width:46px;flex-shrink:0;font-size:22px;font-weight:400}
+.shc{padding:16px 18px}.shh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px}.shh h2{font-size:20px}.shh .meta{margin:0;font-size:15px;white-space:nowrap}
+
+/* Countdown wie eine Apple-Produktkachel */
+.cd{display:flex;flex-direction:column;gap:2px;background:#1d1d1f;color:#f5f5f7;border-radius:22px;padding:20px 22px 18px;margin:0 0 18px}
+@media(prefers-color-scheme:dark){.cd{background:#1c1c1e}}
+.cd .ey{font-size:14px;font-weight:600;color:#2997ff;letter-spacing:-.01em}
+.cd .ut{display:flex;gap:22px;margin:4px 0 2px}
+.cd .u b{display:block;font-family:var(--disp);font-size:46px;font-weight:200;line-height:1.05;letter-spacing:-.03em;font-variant-numeric:tabular-nums;background:linear-gradient(180deg,#fff 30%,#a1a1a6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.cd .u small{font-size:13px;color:#a1a1a6}.cd .wh{font-size:15px;color:#a1a1a6}
+.cd .big{font-family:var(--disp);font-size:28px;font-weight:600;letter-spacing:-.02em}
+
+/* Mein Plan: gruppierte Liste */
+.pd h2{margin:0 0 2px;font-size:22px;font-weight:700}.pr{display:flex;gap:14px;padding:12px 0;box-shadow:inset 0 .5px 0 var(--bd)}.pd h2+.pr{box-shadow:none}
+.pt{flex:0 0 78px;font-size:14px;color:var(--mu);padding-top:2px}.pr .tl{font-weight:600}.pr .meta{font-size:14px}.pr .info{margin-top:2px}
+
+/* Sonstiges */
+.m{color:var(--mu);text-align:center;padding:24px 8px;font-size:15px}
 .pf{position:relative}.av{width:40px;height:40px;border-radius:50%;padding:0;font-weight:600;font-size:17px}
-.pm{position:absolute;right:0;top:48px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;min-width:170px;box-shadow:0 6px 20px rgba(0,0,0,.15);z-index:5}
-.pm small{color:var(--mu)}.pm b{display:block;margin-bottom:8px}.pm button{width:100%}
-.cd{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#1d7a6b;color:#fff;border-radius:14px;padding:12px 14px;margin:0 0 16px}
-.cd small{display:block;font-size:13px;opacity:.85}.cd .ut{display:flex;gap:6px}
-.cd .u{text-align:center;min-width:46px;background:rgba(255,255,255,.16);border-radius:10px;padding:4px 6px}.cd .u b{display:block;font-size:20px;line-height:1.2;font-variant-numeric:tabular-nums}.cd .u small{font-size:11px}
-.pd h2{margin:0 0 4px}.pr{display:flex;gap:12px;padding:10px 0;border-top:1px solid var(--bd)}.pd h2+.pr{border-top:0}
-.pt{flex:0 0 74px;font-size:13px;color:var(--mu);padding-top:2px}.pr .tl{font-weight:600}.pr .info{margin-top:2px}
+.pm{position:absolute;right:0;top:48px;background:var(--pop);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);border-radius:14px;padding:14px;min-width:190px;box-shadow:0 0 0 .5px var(--bd),0 12px 40px rgba(0,0,0,.22);z-index:5;animation:pop .22s cubic-bezier(.3,1.3,.5,1);transform-origin:top right}
+.pm small{color:var(--mu);font-size:13px}.pm b{display:block;margin-bottom:10px}.pm button{width:100%}
+.toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translate(-50%,24px) scale(.96);opacity:0;transition:opacity .25s,transform .35s cubic-bezier(.3,1.3,.5,1);background:rgba(29,29,31,.88);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:#fff;padding:12px 20px;border-radius:999px;font-size:15px;font-weight:500;box-shadow:0 8px 30px rgba(0,0,0,.25);z-index:20;max-width:calc(100% - 32px);text-align:center;pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0) scale(1)}.toast.err{background:var(--rd)}
+@media(prefers-color-scheme:dark){.toast{background:rgba(58,58,60,.9)}}
+.fx{position:fixed;left:0;top:0;pointer-events:none;z-index:50;font-size:30px;line-height:1;will-change:transform}.fx img{width:36px;height:24px;border-radius:3px;box-shadow:0 0 0 1px rgba(0,0,0,.1);display:block}
+
+/* Karten blenden beim Reiterwechsel sanft ein */
+#list.anim>.c{animation:rise .45s cubic-bezier(.2,.8,.3,1) both}
+#list.anim>.c:nth-child(2){animation-delay:.05s}#list.anim>.c:nth-child(3){animation-delay:.1s}#list.anim>.c:nth-child(4){animation-delay:.15s}#list.anim>.c:nth-child(n+5){animation-delay:.2s}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style></head><body><main>
 <div class="hd"><h1><img class="flag" src="flag.png?v=3" alt="">Malta Planner</h1><div class="pf" id="me" hidden></div></div>
 <p class="s">Schlag Ideen vor und trag dich bei denen ein, auf die du Lust hast.</p>
 <div class="cd" id="cd"></div>
-<div class="tabs" id="tabs" hidden><button class="tb on" data-tab="act"><span class="ti">🗺</span><span>Aktivitäten<b class="n" id="n-act"></b></span></button><button class="tb" data-tab="food"><span class="ti">🍽</span><span>Essen<b class="n" id="n-food"></b></span></button><button class="tb" data-tab="plan"><span class="ti">📅</span><span>Mein Plan<b class="n" id="n-plan"></b></span></button></div>
+<div class="tabs" id="tabs" hidden><div class="seg"><span class="ind" id="ind"></span><button class="tb on" data-tab="act"><span class="ti">🗺</span><span>Aktivitäten<b class="n" id="n-act"></b></span></button><button class="tb" data-tab="food"><span class="ti">🍽</span><span>Essen<b class="n" id="n-food"></b></span></button><button class="tb" data-tab="shop"><span class="ti">🛒</span><span>Einkauf<b class="n" id="n-shop"></b></span></button><button class="tb" data-tab="plan"><span class="ti">📅</span><span>Mein Plan<b class="n" id="n-plan"></b></span></button></div></div>
 
 <div class="c" id="ask" hidden><h2>Wie heißt du?</h2>
 <p>Lege einen PIN fest (4–8 Ziffern). Damit kommst du später mit demselben Namen und PIN wieder in dein Profil, auch nach dem Löschen der Cookies oder auf einem neuen Handy.</p>
@@ -148,7 +205,9 @@ const canEdit = a => a.by === me || isAdmin();
 function top() {
   const n = ppl[me];
   const show = !!n && !editing;
-  $('ask').hidden = show; $('add').hidden = !show || tab === 'plan' || !addOpen; $('addOpen').hidden = !show || tab === 'plan' || addOpen; $('list').hidden = !show; $('me').hidden = !show; $('tabs').hidden = !show; $('pinCard').hidden = !(show && !pins[me]);
+  $('ask').hidden = show; const noAdd = tab === 'plan' || tab === 'shop';
+  $('add').hidden = !show || noAdd || !addOpen; $('addOpen').hidden = !show || noAdd || addOpen; $('list').hidden = !show; $('me').hidden = !show; $('tabs').hidden = !show; $('pinCard').hidden = !(show && !pins[me]);
+  if (show) requestAnimationFrame(moveInd);
   if (show) {
     $('me').innerHTML = '<button class="av" id="avb" aria-label="Profil">' + esc(n.trim()[0].toUpperCase()) + '</button>';
     $('avb').onclick = e => {
@@ -231,15 +290,30 @@ function editCard(a) {
 }
 
 // Einkaufsliste bei Kochvorschlägen: Feld shop = { itemId: { t, done, ts } }, Einträge einzeln gemerged
+// Die allgemeine Einkaufsliste (unabhängig von Mahlzeiten) liegt als Sonder-Dokument activities/shoplist mit cat 'list'
+const GEN = 'shoplist';
+const shopItems = a => Object.entries((a && a.shop) || {}).filter(([, v]) => v && v.t).map(([id, v]) => ({ id, ...v })).sort((x, y) => (x.ts || 0) - (y.ts || 0));
+const shopRows = (a, ph) => { const items = shopItems(a), id = esc(a.id);
+  return `${items.map(i => `<div class="si${i.done ? ' dn' : ''}"><button class="sc" data-stog="${id}|${esc(i.id)}" aria-label="Abhaken">${i.done ? '✓' : ''}</button><span>${esc(i.t)}</span><button class="x" data-sdel="${id}|${esc(i.id)}" aria-label="Entfernen">×</button></div>`).join('')}
+    ${items.length ? '' : '<div class="none">Noch nichts auf der Liste.</div>'}
+    <div class="sa"><input id="sin-${id}" data-sinp="${id}" placeholder="${ph}" maxlength="60"><button data-sadd="${id}" aria-label="Hinzufügen">+</button></div>`; };
 function shopList(a) {
-  const items = Object.entries(a.shop || {}).filter(([, v]) => v && v.t).map(([id, v]) => ({ id, ...v })).sort((x, y) => (x.ts || 0) - (y.ts || 0));
-  const done = items.filter(i => i.done).length;
+  const items = shopItems(a), done = items.filter(i => i.done).length;
   const label = `🛒 Einkaufsliste${items.length ? ` (${done}/${items.length})` : ''}`;
   if (!shopOpen.has(a.id)) return `<button class="tx" data-shop="${esc(a.id)}">${label} ▾</button>`;
-  return `<div class="shop"><button class="tx" data-shop="${esc(a.id)}">${label} ▴</button>
-    ${items.map(i => `<div class="si${i.done ? ' dn' : ''}"><button class="sc" data-stog="${esc(a.id)}|${esc(i.id)}" aria-label="Abhaken">${i.done ? '✓' : ''}</button><span>${esc(i.t)}</span><button class="x" data-sdel="${esc(a.id)}|${esc(i.id)}" aria-label="Entfernen">×</button></div>`).join('')}
-    ${items.length ? '' : '<div class="none">Noch nichts auf der Liste.</div>'}
-    <div class="sa"><input id="sin-${esc(a.id)}" data-sinp="${esc(a.id)}" placeholder="z. B. Tomaten" maxlength="60"><button data-sadd="${esc(a.id)}">+</button></div></div>`;
+  return `<div class="shop"><button class="tx" data-shop="${esc(a.id)}">${label} ▴</button>${shopRows(a, 'z. B. Tomaten')}</div>`;
+}
+
+// Reiter "Einkauf": allgemeine Liste + alle Kochvorschläge gebündelt
+const cookActs = () => acts.filter(a => a.cat === 'food' && a.kind === 'cook');
+const openItems = () => [acts.find(a => a.id === GEN), ...cookActs()].reduce((n, a) => n + shopItems(a).filter(i => !i.done).length, 0);
+function renderShop() {
+  const gen = acts.find(a => a.id === GEN) || { id: GEN, shop: {} };
+  const all = [gen, ...cookActs()].flatMap(shopItems), done = all.filter(i => i.done).length;
+  const meals = cookActs().map(a => `<div class="c shc"><div class="shh"><h2>👩‍🍳 ${esc(a.title)}</h2>${a.day ? `<span class="meta">${esc(a.day)}</span>` : ''}</div>${shopRows(a, 'Zutat hinzufügen')}</div>`).join('');
+  $('list').innerHTML = `<p class="s" style="margin:-4px 0 12px">${all.length ? `${done} von ${all.length} erledigt.` : 'Hier landet alles, was ihr einkaufen müsst.'}</p>
+    <div class="c shc"><div class="shh"><h2>🛒 Allgemein</h2><span class="meta">für alle</span></div>${shopRows(gen, 'z. B. Sonnencreme, Wasser')}</div>
+    ${meals || '<div class="m">Zutaten für ein Gericht kommen automatisch hierher, sobald es bei 🍽 Essen einen Kochvorschlag gibt.</div>'}`;
 }
 
 function render(force) {
@@ -250,7 +324,9 @@ function render(force) {
   $('n-act').textContent = acts.filter(a => (a.cat || 'act') === 'act').length;
   $('n-food').textContent = acts.filter(a => a.cat === 'food').length;
   $('n-plan').textContent = myActs().length;
+  $('n-shop').textContent = openItems() || '';
   if (tab === 'plan') { renderPlan(); return; }
+  if (tab === 'shop') { renderShop(); return; }
   const votes = a => sig.filter(x => x.act === a.id).length;
   let items = acts.filter(a => (a.cat || 'act') === tab);
   if (!items.length) { $('list').innerHTML = '<div class="m">Noch keine Vorschläge. Mach den ersten mit „+“ oben! ☝️</div>'; return; }
@@ -388,7 +464,9 @@ async function addShop(id) {
   const i = $('sin-' + id); if (!i) return;
   const t = i.value.trim(); if (!t) { i.focus(); return; }
   const item = 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
-  try { await setDoc(doc(db, 'activities', id), { shop: { [item]: { t, done: false, ts: Date.now() } } }, { merge: true }); i.value = ''; render(true); const n = $('sin-' + id); if (n) n.focus(); }
+  // cat 'list' sorgt dafür, dass die allgemeine Liste nie als Aktivität auftaucht
+  const extra = id === GEN ? { cat: 'list', title: 'Einkaufsliste', ts: 0 } : {};
+  try { await setDoc(doc(db, 'activities', id), { shop: { [item]: { t, done: false, ts: Date.now() } }, ...extra }, { merge: true }); i.value = ''; render(true); const n = $('sin-' + id); if (n) n.focus(); }
   catch (err) { toast(FAIL, 1); }
 }
 $('list').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.dataset.sinp) { e.preventDefault(); addShop(e.target.dataset.sinp); } });
@@ -402,6 +480,16 @@ function formFields() {
 $('k').onchange = formFields; $('rv').onchange = formFields;
 const normLink = v => { v = v.trim(); if (!v) return ''; if (!/^https?:\/\//i.test(v)) v = 'https://' + v; try { const u = new URL(v); return /^https?:$/.test(u.protocol) ? u.href : false; } catch (e) { return false; } };
 
+// Weißes Feld im Segment-Schalter unter den aktiven Reiter schieben
+function moveInd() {
+  const b = document.querySelector('.tb.on'), i = $('ind'); if (!b || !i || !b.offsetWidth) return;
+  const first = !i.style.width; if (first) i.style.transition = 'none';
+  i.style.width = b.offsetWidth + 'px'; i.style.transform = `translateX(${b.offsetLeft}px)`;
+  if (first) { void i.offsetWidth; i.style.transition = ''; }
+}
+addEventListener('resize', moveInd);
+const animList = () => { const l = $('list'); l.classList.remove('anim'); void l.offsetWidth; l.classList.add('anim'); clearTimeout(animList.t); animList.t = setTimeout(() => l.classList.remove('anim'), 800); };
+
 function setTab(t) {
   tab = t;
   document.querySelectorAll('.tb').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
@@ -413,7 +501,8 @@ function setTab(t) {
   $('addOpen').textContent = food ? '+ Neuen Essensvorschlag machen' : '+ Neue Aktivität vorschlagen';
   formFields();
   top();
-  render();
+  render(true);
+  moveInd(); animList();
 }
 $('tabs').onclick = e => { const b = e.target.closest('.tb'); if (b) setTab(b.dataset.tab); };
 $('addOpen').onclick = () => { addOpen = true; top(); $('t').focus(); };
@@ -441,14 +530,40 @@ $('go').onclick = async () => {
   } catch (err) { toast(FAIL, 1); }
 };
 
+// Kleines Extra: Tipp auf Flagge/Titel lässt Urlaubs-Emojis über den ganzen Bildschirm aufploppen
+const FX = ['🌴', '☀️', '🏖️', '🌊', '🍹', '⛵', '🐠', '😎', '🍦', '🐚', 'FLAG', 'FLAG', 'FLAG'];
+function party() {
+  const W = innerWidth, H = innerHeight, calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  for (let i = 0; i < (calm ? 14 : 34); i++) {
+    const e = document.createElement('div'), k = FX[Math.floor(Math.random() * FX.length)];
+    e.className = 'fx';
+    if (k === 'FLAG') e.innerHTML = '<img src="flag.png?v=3" alt="">'; else e.textContent = k;
+    e.style.fontSize = (24 + Math.random() * 24) + 'px';
+    e.style.left = (Math.random() * (W - 50) + 4) + 'px';
+    e.style.top = (Math.random() * (H - 80) + 20) + 'px';
+    document.body.appendChild(e);
+    const r = (Math.random() - .5) * 50, up = 40 + Math.random() * 70;
+    const frames = calm ? [{ opacity: 0 }, { opacity: 1, offset: .2 }, { opacity: 1, offset: .7 }, { opacity: 0 }]
+      : [{ transform: `scale(0) rotate(${r}deg)`, opacity: 0 },
+         { transform: `scale(1.25) rotate(${r}deg)`, opacity: 1, offset: .15 },
+         { transform: `scale(1) translateY(-${up * .3}px) rotate(${r}deg)`, opacity: 1, offset: .3 },
+         { transform: `scale(.9) translateY(-${up}px) rotate(${-r}deg)`, opacity: 0 }];
+    // nacheinander aufploppen, damit es wie ein kleines Feuerwerk wirkt
+    const dur = 1600 + Math.random() * 900, del = Math.random() * 700;
+    e.animate(frames, { duration: dur, delay: del, easing: 'ease-out', fill: 'both' });
+    setTimeout(() => e.remove(), dur + del + 100);
+  }
+}
+document.querySelector('h1').addEventListener('click', party);
+
 // Countdown bis zum Abflug (31.10.2026, 11:10 Uhr deutscher Zeit, Winterzeit = +01:00)
 const DEPART = new Date('2026-10-31T11:10:00+01:00');
 function countdown() {
   const ms = DEPART - Date.now();
-  if (ms <= 0) { $('cd').innerHTML = '<div><b>🌴 Wir sind auf Malta!</b><small>Viel Spaß euch allen</small></div>'; return; }
+  if (ms <= 0) { $('cd').innerHTML = '<span class="ey">Malta</span><span class="big">🌴 Wir sind auf Malta!</span><span class="wh">Viel Spaß euch allen.</span>'; return; }
   const m = Math.floor(ms / 60000), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), mi = m % 60;
   const u = (n, l) => `<div class="u"><b>${n}</b><small>${l}</small></div>`;
-  $('cd').innerHTML = `<div><b>✈️ Abflug</b><small>Sa, 31.10. · 11:10 Uhr</small></div><div class="ut">${u(d, d === 1 ? 'Tag' : 'Tage')}${u(h, 'Std.')}${u(mi, 'Min.')}</div>`;
+  $('cd').innerHTML = `<span class="ey">✈️ Abflug nach Malta</span><div class="ut">${u(d, d === 1 ? 'Tag' : 'Tage')}${u(h, 'Std.')}${u(mi, 'Min.')}</div><span class="wh">Samstag, 31. Oktober · 11:10 Uhr</span>`;
 }
 countdown(); setInterval(countdown, 15000);
 </script></body></html>
