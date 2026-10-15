@@ -726,7 +726,10 @@ const trip = () => acts.find(a => a.id === TRIP) || {};
 const rih = () => ppl[me] ? `<small class="rih">ℹ️ Reise-Info ${tripOpen ? '▴' : '▾'}</small>` : '';
 const villaUrl = T => mapUrl({ place: T.vaddr, pid: T.vpid });
 const TF = [['vname', '🏡 Name der Unterkunft', 'z. B. Villa Bella Vista'], ['vaddr', '📍 Adresse', 'Adresse der Villa'], ['cin', '🔑 Check-in', 'z. B. Sa 31.10. ab 15 Uhr'], ['cout', '🧳 Check-out', 'z. B. Sa 7.11. bis 10 Uhr'],
-  ['fout', '✈️ Hinflug', 'z. B. FR 1234 · 11:10 Uhr ab FMM'], ['fback', '🛬 Rückflug', 'z. B. FR 1235 · 14:30 Uhr ab MLA']];
+  ['fout', '✈️ Hinflug', 'z. B. Sa 31.10. · KM 307 · München → Malta · 11:00 Uhr'], ['fback', '🛬 Rückflug', 'z. B. Sa 07.11. · KM 306 · Malta → München · 07:15 Uhr']];
+// Flugnummer im Text (z. B. "KM 307") macht den Eintrag automatisch zum Flightradar24-Link
+const flightLink = t => { if (!t) return ''; const m = String(t).match(/\b([A-Z]{2}|[A-Z]\d|\d[A-Z])\s?(\d{1,4})\b/);
+  return m ? `<a class="lk" href="https://www.flightradar24.com/data/flights/${(m[1] + m[2]).toLowerCase()}" target="_blank" rel="noopener noreferrer">${esc(t)} ↗</a>` : esc(t); };
 function renderTrip() {
   const box = $('trip'), show = tripOpen && !!ppl[me];
   box.hidden = !show; $('cd').setAttribute('aria-expanded', show);
@@ -742,7 +745,7 @@ function renderTrip() {
   const rows = [
     row('🏡', T.vname ? esc(T.vname) : 'Unterkunft', T.vaddr ? `<a class="lk" href="${esc(villaUrl(T))}" target="_blank" rel="noopener noreferrer">${esc(T.vaddr)}</a>` : (T.vname ? '–' : '')),
     row('🔑', 'Check-in', esc(T.cin || '')), row('🧳', 'Check-out', esc(T.cout || '')),
-    row('✈️', 'Hinflug', esc(T.fout || '')), row('🛬', 'Rückflug', esc(T.fback || ''))].join('');
+    row('✈️', 'Hinflug', flightLink(T.fout)), row('🛬', 'Rückflug', flightLink(T.fback))].join('');
   const empty = !TF.some(([k]) => T[k]);
   box.innerHTML = `<div class="ah"><h2>Reise-Info</h2>${isAdmin() ? '<button class="tx" data-tedit="1">✏️ Bearbeiten</button>' : ''}</div>`
     + (empty ? `<p class="none" style="margin:0 0 6px">${isAdmin() ? 'Trag hier Villa und Flüge ein.' : 'Lars trägt hier bald Villa und Flüge ein.'}</p>` : '') + rows;
@@ -765,14 +768,14 @@ $('trip').addEventListener('click', async e => {
 // Kochvorschläge ohne eigenen Ort spielen automatisch in der Villa
 const villaChip = a => { const T = trip(); return a.kind === 'cook' && !a.place && T.vaddr ? `<a class="lk" href="${esc(villaUrl(T))}" target="_blank" rel="noopener noreferrer">🏡 ${esc(T.vname || 'Villa')}</a>` : ''; };
 
-// Countdown bis zum Abflug (31.10.2026, 11:10 Uhr deutscher Zeit, Winterzeit = +01:00)
-const DEPART = new Date('2026-10-31T11:10:00+01:00');
+// Countdown bis zum Abflug (31.10.2026, 11:00 Uhr deutscher Zeit, Winterzeit = +01:00)
+const DEPART = new Date('2026-10-31T11:00:00+01:00');
 function countdown() {
   const ms = DEPART - Date.now();
   if (ms <= 0) { $('cd').innerHTML = `<div><b>🌴 Wir sind auf Malta!</b><small>Viel Spaß euch allen</small>${rih()}</div>`; return; }
   const m = Math.floor(ms / 60000), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), mi = m % 60;
   const u = (n, l) => `<div class="u"><b>${n}</b><small>${l}</small></div>`;
-  $('cd').innerHTML = `<div><b>✈️ Abflug</b><small>Sa, 31.10. · 11:10 Uhr</small>${rih()}</div><div class="ut">${u(d, d === 1 ? 'Tag' : 'Tage')}${u(h, 'Std.')}${u(mi, 'Min.')}</div>`;
+  $('cd').innerHTML = `<div><b>✈️ Abflug</b><small>Sa, 31.10. · 11:00 Uhr</small>${rih()}</div><div class="ut">${u(d, d === 1 ? 'Tag' : 'Tage')}${u(h, 'Std.')}${u(mi, 'Min.')}</div>`;
 }
 countdown(); setInterval(countdown, 15000);
 </script></body></html>
