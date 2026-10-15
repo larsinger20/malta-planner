@@ -20,7 +20,7 @@ h1{margin:0;font-size:26px;display:flex;align-items:center;gap:10px}p.s{margin:0
 .flag{width:36px;height:24px;border-radius:4px;box-shadow:0 0 0 1px var(--bd);flex-shrink:0}
 .c{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
 .c h2{margin:0;font-size:18px}.c p{margin:4px 0 10px;color:var(--mu);font-size:14px}
-.r{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.r{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.r>button{white-space:nowrap;flex-shrink:0}
 .ft{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}.names{min-width:0}.cnt{font-size:13px;color:var(--mu);margin-bottom:6px}.none{font-size:13px;color:var(--mu)}
 .ppl{display:flex;flex-wrap:wrap;gap:6px}
 .pp{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--bd);border-radius:999px;padding:2px 10px 2px 3px;font-size:13px}
@@ -42,7 +42,15 @@ input,textarea,select{width:100%;font:inherit;padding:10px;border:1px solid var(
 .ah{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.x{background:none;color:var(--mu);font-size:22px;line-height:1;padding:6px 10px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .meta{margin-top:4px;font-size:14px;color:var(--mu)}.nw{white-space:nowrap}
-.c.in{border-color:var(--ac);box-shadow:inset 4px 0 0 var(--ac)}
+.by{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:13px;color:var(--mu)}.by i{width:18px;height:18px;border-radius:50%;color:#fff;font-style:normal;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fav{display:inline-block;font-size:12px;font-weight:600;color:#8a5a00;background:#fdf0cf;border-radius:999px;padding:1px 8px;margin-bottom:4px}
+@media(prefers-color-scheme:dark){.fav{color:#f5d27a;background:#3d3420}}
+.shop{margin-top:6px;padding:4px 12px 10px;border:1px solid var(--bd);border-radius:12px;background:var(--bg)}
+.si{display:flex;align-items:center;gap:10px;padding:2px 0;border-bottom:1px solid var(--bd)}.si span{flex:1;min-width:0;overflow-wrap:anywhere}.si.dn span{text-decoration:line-through;color:var(--mu)}
+.sc{width:26px;height:26px;padding:0;flex-shrink:0;border-radius:7px;background:var(--card);border:1.5px solid var(--bd);color:#fff;font-size:15px;line-height:1;margin:7px 0}.si.dn .sc{background:var(--ac);border-color:var(--ac)}
+.sa{display:flex;gap:8px;margin-top:10px}.sa input{margin:0;background:var(--card)}.sa button{padding:0 16px;font-size:20px}
+.c.in{position:relative;border-color:color-mix(in srgb,var(--ac) 45%,var(--bd));background:linear-gradient(180deg,color-mix(in srgb,var(--ac) 7%,var(--card)),var(--card) 70%);box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 18px color-mix(in srgb,var(--ac) 14%,transparent)}
+.c.in::after{content:"✓";position:absolute;top:-8px;left:14px;width:20px;height:20px;border-radius:50%;background:var(--ac);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px var(--bg)}
 .info{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;margin:8px 0 2px;font-size:14px}.info .day{margin:0}.lk{color:var(--ac);text-decoration:none;font-weight:500}a.lk:not(.day){padding:6px 0}.ok{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 10%,var(--card))}
 button.tx{background:none;color:var(--ac);padding:8px 2px;font-size:14px;min-height:36px}button.tx.mu{color:var(--mu)}
 .toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;transition:opacity .2s,transform .2s;background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:15px;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:20;max-width:calc(100% - 32px);text-align:center;pointer-events:none}
@@ -95,7 +103,7 @@ button.tx{background:none;color:var(--ac);padding:8px 2px;font-size:14px;min-hei
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, deleteField, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ====== HIER DEINE FIREBASE-DATEN EINFÜGEN (siehe Anleitung) ======
 const firebaseConfig = {
@@ -125,7 +133,8 @@ let me = null;
 try { me = localStorage.getItem('uid'); if (!me) { me = 'u' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); localStorage.setItem('uid', me); } }
 catch (e) { me = 'u' + Math.random().toString(36).slice(2, 10); }
 
-let acts = [], sig = [], ppl = {}, pins = {}, editing = false, tab = 'act', editRes = null, editPlace = null, editAct = null, addOpen = false;
+let acts = [], sig = [], ppl = {}, pins = {}, editing = false, tab = 'act', editRes = null, editPlace = null, editAct = null, addOpen = false, pending = false;
+const shopOpen = new Set();
 const ADMIN = 'lars';
 const isAdmin = () => (ppl[me] || '').trim().toLowerCase() === ADMIN;
 const canEdit = a => a.by === me || isAdmin();
@@ -154,6 +163,8 @@ const placeChip = a => a.place ? `<a class="lk" href="${esc(mapUrl(a.place))}" t
 const linkChip = a => { try { const u = new URL(a.link || ''); if (/^https?:$/.test(u.protocol)) return `<a class="lk" href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">🔗 ${esc(u.hostname.replace(/^www\./, ''))}</a>`; } catch (e) {} return ''; };
 const KIND = { cook: '👩‍🍳 Kochen', rest: '🍴 Restaurant' };
 const TIME = { 'Morgens / Vormittags': '🌅 Vormittags', 'Mittags': '☀️ Mittags', 'Abends': '🌙 Abends' };
+// Wer hat's vorgeschlagen? (alte Vorschläge ohne bekannten Ersteller zeigen nichts)
+const byLine = a => { const nm = ppl[a.by]; if (!nm) return ''; return `<div class="by"><i style="background:hsl(${hue(nm)},45%,42%)">${esc(nm.trim()[0].toUpperCase())}</i>Vorgeschlagen von ${a.by === me ? 'dir' : esc(nm)}</div>`; };
 const meta = a => [KIND[a.kind], a.day && '📅 ' + esc(a.day), TIME[a.time] || (a.time && esc(a.time))].filter(Boolean).map(x => `<span class="nw">${x}</span>`).join(' · ');
 
 function placeInfo(a) {
@@ -178,9 +189,12 @@ const SLOTS = ['Morgens / Vormittags', 'Mittags', 'Abends'];
 const slotOf = a => { if (a.res && a.res.t) { const h = parseInt(a.res.t, 10); return h < 11 ? 0 : h < 16 ? 1 : 2; } const i = SLOTS.indexOf(a.time); return i < 0 ? 3 : i; };
 const timeLabel = a => a.res && a.res.t ? `${a.res.t} Uhr` : a.time === 'Morgens / Vormittags' ? '🌅 Vormittags' : a.time === 'Mittags' ? '☀️ Mittags' : a.time === 'Abends' ? '🌙 Abends' : 'Ohne Uhrzeit';
 
+// Beim Essen wird abgestimmt statt eingetragen, deshalb zählen für den Plan nur Aktivitäten
+const myActs = () => acts.filter(a => (a.cat || 'act') === 'act' && sig.some(x => x.act === a.id && x.uid === me));
+
 function renderPlan() {
-  const mine = acts.filter(a => sig.some(x => x.act === a.id && x.uid === me));
-  if (!mine.length) { $('list').innerHTML = '<div class="m">Du hast dich noch nirgends eingetragen.<br>Schau bei 🗺 Aktivitäten und 🍽 Essen vorbei und tipp auf „Ich bin dabei“.</div>'; return; }
+  const mine = myActs();
+  if (!mine.length) { $('list').innerHTML = '<div class="m">Du hast dich noch nirgends eingetragen.<br>Schau bei 🗺 Aktivitäten vorbei und tipp auf „🙋 Ich bin dabei“.</div>'; return; }
   const groups = [...DAYS, ''].map(d => ({ d, items: mine.filter(a => (DAYS.includes(a.day) ? a.day : '') === d).sort((x, y) => slotOf(x) - slotOf(y) || ((x.res && x.res.t) || '').localeCompare((y.res && y.res.t) || '')) })).filter(g => g.items.length);
   $('list').innerHTML = `<p class="s" style="margin:-4px 0 12px">Du bist bei ${mine.length} ${mine.length === 1 ? 'Sache' : 'Sachen'} dabei.</p>` + groups.map(g => `<div class="c pd"><h2>${g.d ? esc(g.d) : 'Noch kein Tag festgelegt'}</h2>${g.items.map(a => {
     const n = sig.filter(x => x.act === a.id).length;
@@ -206,27 +220,51 @@ function editCard(a) {
     <div class="efb"><button data-esave="${esc(a.id)}">Speichern</button><button class="o" data-ecancel="1">Abbrechen</button></div></div>`;
 }
 
-function render() {
+// Einkaufsliste bei Kochvorschlägen: Feld shop = { itemId: { t, done, ts } }, Einträge einzeln gemerged
+function shopList(a) {
+  const items = Object.entries(a.shop || {}).filter(([, v]) => v && v.t).map(([id, v]) => ({ id, ...v })).sort((x, y) => (x.ts || 0) - (y.ts || 0));
+  const done = items.filter(i => i.done).length;
+  const label = `🛒 Einkaufsliste${items.length ? ` (${done}/${items.length})` : ''}`;
+  if (!shopOpen.has(a.id)) return `<button class="tx" data-shop="${esc(a.id)}">${label} ▾</button>`;
+  return `<div class="shop"><button class="tx" data-shop="${esc(a.id)}">${label} ▴</button>
+    ${items.map(i => `<div class="si${i.done ? ' dn' : ''}"><button class="sc" data-stog="${esc(a.id)}|${esc(i.id)}" aria-label="Abhaken">${i.done ? '✓' : ''}</button><span>${esc(i.t)}</span><button class="x" data-sdel="${esc(a.id)}|${esc(i.id)}" aria-label="Entfernen">×</button></div>`).join('')}
+    ${items.length ? '' : '<div class="none">Noch nichts auf der Liste.</div>'}
+    <div class="sa"><input id="sin-${esc(a.id)}" data-sinp="${esc(a.id)}" placeholder="z. B. Tomaten" maxlength="60"><button data-sadd="${esc(a.id)}">+</button></div></div>`;
+}
+
+function render(force) {
   if (!ppl[me]) return;
   const ae = document.activeElement;
-  if ((editRes || editPlace || editAct) && ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && $('list').contains(ae)) return;
+  if (!force && ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && $('list').contains(ae)) { pending = true; return; }
+  pending = false;
   $('n-act').textContent = acts.filter(a => (a.cat || 'act') === 'act').length;
   $('n-food').textContent = acts.filter(a => a.cat === 'food').length;
-  $('n-plan').textContent = acts.filter(a => sig.some(x => x.act === a.id && x.uid === me)).length;
+  $('n-plan').textContent = myActs().length;
   if (tab === 'plan') { renderPlan(); return; }
-  const items = acts.filter(a => (a.cat || 'act') === tab);
+  const votes = a => sig.filter(x => x.act === a.id).length;
+  let items = acts.filter(a => (a.cat || 'act') === tab);
   if (!items.length) { $('list').innerHTML = '<div class="m">Noch keine Vorschläge. Mach den ersten mit „+“ oben! ☝️</div>'; return; }
+  // Essen: beliebteste Vorschläge zuerst
+  const food = tab === 'food', top1 = food ? Math.max(...items.map(votes)) : 0;
+  if (food) items = [...items].sort((x, y) => votes(y) - votes(x) || (x.ts || 0) - (y.ts || 0));
+  const soloTop = items.filter(a => votes(a) === top1).length === 1;
   $('list').innerHTML = items.map(a => {
     if (editAct === a.id && canEdit(a)) return editCard(a);
     const s = sig.filter(x => x.act === a.id), mine = s.some(x => x.uid === me);
     const chips = s.map(x => { const nm = ppl[x.uid] || 'Jemand', you = x.uid === me;
       return `<span class="pp${you ? ' me' : ''}"><i style="background:hsl(${hue(nm)},45%,42%)">${esc(nm.trim()[0].toUpperCase())}</i>${you ? 'Du' : esc(nm)}</span>`; }).join('');
-    const m = meta(a);
-    return `<div class="c${mine ? ' in' : ''}"><div class="r"><div><h2>${esc(a.title)}</h2>${m ? `<div class="meta">${m}</div>` : ''}</div>
-      <button class="${mine ? 'o' : ''}" data-a="${esc(a.id)}">${mine ? 'Austragen' : 'Ich bin dabei'}</button></div>
+    const m = meta(a), fav = food && top1 > 0 && soloTop && s.length === top1;
+    const btn = food ? `<button class="${mine ? '' : 'o'}" data-a="${esc(a.id)}">${mine ? '👍 Abgestimmt' : '👍 Lecker'}</button>`
+      : `<button class="${mine ? 'o' : ''}" data-a="${esc(a.id)}">${mine ? '👋 Austragen' : '🙋 Ich bin dabei'}</button>`;
+    const who = food ? (s.length ? `<div class="cnt">👍 ${s.length} ${s.length === 1 ? 'Stimme' : 'Stimmen'}</div><div class="ppl">${chips}</div>` : '<div class="none">Noch keine Stimmen</div>')
+      : (s.length ? `<div class="cnt">👥 ${s.length} dabei</div><div class="ppl">${chips}</div>` : '<div class="none">Noch niemand eingetragen</div>');
+    return `<div class="c${mine ? ' in' : ''}"><div class="r"><div>${fav ? '<div class="fav">🏆 Favorit</div>' : ''}<h2>${esc(a.title)}</h2></div>
+      ${btn}</div>
+      ${m ? `<div class="meta">${m}</div>` : ''}${byLine(a)}
       ${a.desc ? `<p>${esc(a.desc)}</p>` : ''}
       <div class="info">${a.kind === 'rest' ? linkChip(a) : ''}${placeInfo(a)}${a.kind === 'rest' ? restInfo(a) : ''}</div>
-      <div class="ft"><div class="names">${s.length ? `<div class="cnt">👥 ${s.length} dabei</div><div class="ppl">${chips}</div>` : '<div class="none">Noch niemand eingetragen</div>'}</div>
+      ${a.kind === 'cook' ? shopList(a) : ''}
+      <div class="ft"><div class="names">${who}</div>
       <div class="acts">${canEdit(a) ? `<button class="del edt" data-edit="${esc(a.id)}" title="Bearbeiten" aria-label="Bearbeiten"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>` : ''}${isAdmin() ? `<button class="del" data-del="${esc(a.id)}" title="Löschen" aria-label="Löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg></button>` : ''}</div></div></div>`;
   }).join('');
 }
@@ -275,8 +313,19 @@ $('list').onclick = async e => {
     } catch (err) { toast('Löschen hat nicht geklappt.', 1); b.disabled = false; }
     return;
   }
-  if (b.dataset.edit) { editAct = b.dataset.edit; editRes = null; editPlace = null; render(); const i = $('et'); if (i) i.focus(); return; }
-  if (b.dataset.ecancel) { editAct = null; render(); return; }
+  if (b.dataset.shop) { const id = b.dataset.shop; shopOpen.has(id) ? shopOpen.delete(id) : shopOpen.add(id); render(true); return; }
+  if (b.dataset.sadd) { addShop(b.dataset.sadd); return; }
+  if (b.dataset.stog || b.dataset.sdel) {
+    const [id, item] = (b.dataset.stog || b.dataset.sdel).split('|'), a = acts.find(x => x.id === id);
+    try {
+      if (b.dataset.sdel) await updateDoc(doc(db, 'activities', id), { ['shop.' + item]: deleteField() });
+      else await setDoc(doc(db, 'activities', id), { shop: { [item]: { done: !(a && a.shop && a.shop[item] && a.shop[item].done) } } }, { merge: true });
+      render(true);
+    } catch (err) { toast(FAIL, 1); }
+    return;
+  }
+  if (b.dataset.edit) { editAct = b.dataset.edit; editRes = null; editPlace = null; render(true); const i = $('et'); if (i) i.focus(); return; }
+  if (b.dataset.ecancel) { editAct = null; render(true); return; }
   if (b.dataset.esave) {
     const a = acts.find(x => x.id === b.dataset.esave); if (!a || !canEdit(a)) return;
     const title = $('et').value.trim(); if (!title) { toast('Bitte gib einen Titel ein.', 1); return; }
@@ -288,36 +337,48 @@ $('list').onclick = async e => {
       data.link = lk;
     }
     b.disabled = true;
-    try { await setDoc(doc(db, 'activities', a.id), data, { merge: true }); editAct = null; render(); toast('Änderungen gespeichert ✓'); }
+    try { await setDoc(doc(db, 'activities', a.id), data, { merge: true }); editAct = null; render(true); toast('Änderungen gespeichert ✓'); }
     catch (err) { toast(FAIL, 1); b.disabled = false; }
     return;
   }
-  if (b.dataset.pl) { editPlace = b.dataset.pl; editRes = null; render(); const i = $('epl'); if (i) i.focus(); return; }
-  if (b.dataset.plcancel) { editPlace = null; render(); return; }
+  if (b.dataset.pl) { editPlace = b.dataset.pl; editRes = null; render(true); const i = $('epl'); if (i) i.focus(); return; }
+  if (b.dataset.plcancel) { editPlace = null; render(true); return; }
   if (b.dataset.pldel || b.dataset.plsave) {
     const id = b.dataset.pldel || b.dataset.plsave, place = b.dataset.plsave ? $('epl').value.trim() : '';
-    try { await setDoc(doc(db, 'activities', id), { place }, { merge: true }); editPlace = null; render(); toast(place ? 'Ort gespeichert ✓' : 'Ort entfernt'); }
+    try { await setDoc(doc(db, 'activities', id), { place }, { merge: true }); editPlace = null; render(true); toast(place ? 'Ort gespeichert ✓' : 'Ort entfernt'); }
     catch (err) { toast(FAIL, 1); }
     return;
   }
-  if (b.dataset.res) { editRes = b.dataset.res; editPlace = null; render(); return; }
-  if (b.dataset.rescancel) { editRes = null; render(); return; }
+  if (b.dataset.res) { editRes = b.dataset.res; editPlace = null; render(true); return; }
+  if (b.dataset.rescancel) { editRes = null; render(true); return; }
   if (b.dataset.resdel) {
     try { await setDoc(doc(db, 'activities', b.dataset.resdel), { res: null }, { merge: true }); toast('Reservierung entfernt'); } catch (err) { toast(FAIL, 1); }
-    editRes = null; render(); return;
+    editRes = null; render(true); return;
   }
   if (b.dataset.ressave) {
     const t = $('ert').value, p = parseInt($('erp').value, 10);
     if (!t || !(p >= 1 && p <= 99)) { toast('Bitte Uhrzeit und Personenanzahl angeben.', 1); return; }
-    try { await setDoc(doc(db, 'activities', b.dataset.ressave), { res: { t, p } }, { merge: true }); editRes = null; render(); toast('Reservierung gespeichert ✓'); }
+    try { await setDoc(doc(db, 'activities', b.dataset.ressave), { res: { t, p } }, { merge: true }); editRes = null; render(true); toast('Reservierung gespeichert ✓'); }
     catch (err) { toast(FAIL, 1); }
     return;
   }
   const a = b.dataset.a, ref = doc(db, 'signups', a + '_' + me); b.disabled = true;
-  try { sig.some(x => x.act === a && x.uid === me) ? await deleteDoc(ref) : await setDoc(ref, { act: a, uid: me }); }
+  try { sig.some(x => x.act === a && x.uid === me) ? await deleteDoc(ref) : await setDoc(ref, { act: a, uid: me }); render(true); }
   catch (err) { toast(FAIL, 1); }
   b.disabled = false;
 };
+
+
+async function addShop(id) {
+  const i = $('sin-' + id); if (!i) return;
+  const t = i.value.trim(); if (!t) { i.focus(); return; }
+  const item = 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  try { await setDoc(doc(db, 'activities', id), { shop: { [item]: { t, done: false, ts: Date.now() } } }, { merge: true }); i.value = ''; render(true); const n = $('sin-' + id); if (n) n.focus(); }
+  catch (err) { toast(FAIL, 1); }
+}
+$('list').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.dataset.sinp) { e.preventDefault(); addShop(e.target.dataset.sinp); } });
+// Updates, die während des Tippens kamen, nachholen, sobald das Feld verlassen wird
+$('list').addEventListener('focusout', () => setTimeout(() => { if (pending) render(); }, 0));
 
 function formFields() {
   const rest = tab === 'food' && $('k').value === 'rest';
