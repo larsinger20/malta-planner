@@ -655,7 +655,10 @@ $('go').onclick = async () => {
     }
   }
   try {
-    await setDoc(doc(db, 'activities', 'a' + Date.now()), data);
+    const nid = 'a' + Date.now();
+    await setDoc(doc(db, 'activities', nid), data);
+    // Wer etwas vorschlägt, ist automatisch dabei (Aktivität) bzw. stimmt dafür (Essen)
+    await setDoc(doc(db, 'signups', nid + '_' + me), { act: nid, uid: me }).catch(() => {});
     t.value = ''; d.value = ''; w.value = ''; z.value = ''; k.value = ''; $('pl').value = ''; $('pl').dataset.pid = ''; $('rv').checked = false; $('rt').value = ''; $('rp').value = ''; formFields();
     addOpen = false; top(); toast('Vorschlag gespeichert ✓');
   } catch (err) { toast(FAIL, 1); }
