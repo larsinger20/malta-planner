@@ -14,9 +14,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* Apple-inspirierte Formen (SF Pro bzw. Inter, Pillen-Knöpfe, iOS-Reiter) mit Urlaubsfarben: Sand + Meerestürkis */
-:root{--bg:#f6f4ef;--card:#fff;--tx:#1f2a2e;--tx2:#3d4a4e;--mu:#6b7478;--ac:#1d7a6b;--acb:#1d7a6b;--bd:#e3e0d8;--fill:rgba(120,105,80,.09);--seg:rgba(120,105,80,.10);--segon:#fff;--rd:#c0392b;--glass:rgba(246,244,239,.78);--pop:rgba(255,255,255,.88);--sh:0 1px 2px rgba(60,50,30,.04);--chk:#c9c4b8;--fav:#b45309;
+:root{--bg:#f6f4ef;--card:#fff;--tx:#1f2a2e;--tx2:#3d4a4e;--mu:#6b7478;--ac:#1d7a6b;--acb:#1d7a6b;--bd:#e3e0d8;--fill:rgba(120,105,80,.09);--seg:rgba(120,105,80,.10);--segon:#fff;--rd:#c0392b;--glass:rgba(246,244,239,.78);--pop:rgba(255,255,255,.88);--sh:0 1px 2px rgba(60,50,30,.04);--chk:#c9c4b8;--fav:#b45309;--neg:#c2580f;--negb:#ea7a3b;
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",system-ui,sans-serif;--disp:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Segoe UI",system-ui,sans-serif}
-@media(prefers-color-scheme:dark){:root{--bg:#0b0f10;--card:#20282b;--tx:#eef1f1;--tx2:#cfd6d8;--mu:#98a3a7;--ac:#4fc3ae;--acb:#1f8c7a;--bd:#333d40;--fill:rgba(255,255,255,.07);--seg:rgba(255,255,255,.08);--segon:#3a4548;--rd:#ef7b6e;--glass:rgba(11,15,16,.8);--pop:rgba(34,42,45,.9);--sh:none;--chk:#4a5558;--fav:#f5b544}}
+@media(prefers-color-scheme:dark){:root{--bg:#0b0f10;--card:#20282b;--tx:#eef1f1;--tx2:#cfd6d8;--mu:#98a3a7;--ac:#4fc3ae;--acb:#1f8c7a;--bd:#333d40;--fill:rgba(255,255,255,.07);--seg:rgba(255,255,255,.08);--segon:#3a4548;--rd:#ef7b6e;--glass:rgba(11,15,16,.8);--pop:rgba(34,42,45,.9);--sh:none;--chk:#4a5558;--fav:#f5b544;--neg:#f29a5e;--negb:#e07a3c}}
 [hidden]{display:none!important}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font:17px/1.47 var(--font);letter-spacing:-.012em;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
@@ -111,7 +111,14 @@ button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-heigh
 .bar i{display:block;width:100%;min-height:2px;border-radius:4px 4px 2px 2px;background:color-mix(in srgb,var(--acb) 45%,var(--fill))}.bar.tod i{background:var(--acb)}.bar small{font-size:10px;color:var(--mu)}
 .sh3{font-size:17px;margin:16px 0 4px;font-family:var(--disp)}.srow{display:flex;align-items:center;gap:12px;padding:8px 0;box-shadow:inset 0 .5px 0 var(--bd)}.sname{flex:1;min-width:0;line-height:1.25}.sname b{display:block;font-weight:600}.sname small{color:var(--mu);font-size:13px}.sago{font-size:13px;color:var(--mu);white-space:nowrap}
 .seg2{display:flex;background:var(--seg);border-radius:11px;padding:3px;margin:0 0 14px}.seg2 button{flex:1;background:transparent;color:var(--tx);padding:7px 4px;font-size:14px;font-weight:500;border-radius:8px}.seg2 button:active{transform:none;opacity:.6}.seg2 .on{background:var(--segon);font-weight:600;box-shadow:0 2px 6px rgba(0,0,0,.1)}
-.chip.on{background:var(--acb);color:#fff}.amt{font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}.srow.mine b{color:var(--ac)}.srow .x{background:none;width:28px;height:28px;font-size:18px}
+.chip.on{background:var(--acb);color:#fff}.amt{font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}.srow.mine b{color:var(--ac)}
+.kst{margin:4px 0 14px;padding:12px 14px;border-radius:16px;background:var(--fill)}.kst small{display:block;font-size:13px;color:var(--mu)}.kst b{display:block;font-size:28px;font-weight:700;font-family:var(--disp);font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1.2}
+.pos{color:var(--ac)}.neg{color:var(--neg)}
+.klb{font-size:13px;color:var(--mu);margin:14px 0 2px;display:flex;justify-content:space-between;gap:8px}.klb span{white-space:nowrap}
+.brow{display:flex;align-items:center;gap:10px;padding:7px 0}.brow .sname{flex:0 0 92px}.brow .sname b{font-size:15px}.brow .sname small{font-size:12px}
+.bar{flex:1;position:relative;height:14px;min-width:40px}.bar::before{content:'';position:absolute;left:50%;top:-3px;bottom:-3px;border-left:1.5px solid var(--bd)}.bar i{position:absolute;top:2px;height:10px;border-radius:5px}
+.bval{flex:0 0 64px;text-align:right;font-weight:600;font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.trf .stack i{margin-left:0}.trf .stack{align-items:center}.trf .arr{color:var(--mu);font-size:15px;margin:0 5px}.trf .sname b{font-size:15px}.trf .sname .amt{display:block;font-size:17px;color:var(--tx)}.trf.oth{opacity:.72}.srow .x{background:none;width:28px;height:28px;font-size:18px}
 .cst{font-size:14px;color:var(--mu)}
 .cmts{margin-top:6px}.cmi{display:flex;gap:10px;align-items:flex-start;padding:8px 0;box-shadow:inset 0 .5px 0 var(--bd)}.cmi .stack i{width:26px;height:26px}.cmb{flex:1;min-width:0;font-size:15px;overflow-wrap:anywhere;line-height:1.35}.cmb small{color:var(--mu);font-size:12px}.cmb b{font-weight:600}.cmi .x{background:none;width:26px;height:26px;font-size:18px}
 .info .ple{flex-basis:100%;margin-top:2px}.ple input{margin-bottom:6px}.ple .acl{margin:-2px 0 8px}
@@ -516,6 +523,14 @@ function balances() {
     [...f].sort().forEach(u => { b[u] = (b[u] || 0) - base - (rest > 0 ? 1 : 0); if (rest > 0) rest--; }); });
   return b;
 }
+function shares() {
+  const paid = {}, share = {};
+  COSTS().forEach(c => { const f = (c.for || []).filter(Boolean); if (c.kind === 'pay' || !f.length || !c.amt) return;
+    paid[c.by] = (paid[c.by] || 0) + c.amt;
+    const base = Math.floor(c.amt / f.length); let rest = c.amt - base * f.length;
+    [...f].sort().forEach(u => { share[u] = (share[u] || 0) + base + (rest > 0 ? 1 : 0); if (rest > 0) rest--; }); });
+  return { paid, share };
+}
 function settle(b) {   // möglichst wenige Überweisungen
   const deb = [], cre = [];
   Object.entries(b).forEach(([u, v]) => { if (v < 0) deb.push([u, -v]); else if (v > 0) cre.push([u, v]); });
@@ -532,9 +547,25 @@ function costView() {
   const total = list.filter(c => c.kind !== 'pay').reduce((n, c) => n + (c.amt || 0), 0), mine = b[me] || 0;
   let h = `<div class="c shc"><div class="shh"><h2>💶 Wer bekommt was?</h2>${total ? `<span class="meta">gesamt ${eur(total)}</span>` : ''}</div>`;
   if (!list.length) h += '<div class="none">Noch keine Ausgaben. Trag ein, was du für die Gruppe bezahlt hast.</div>';
-  else if (!tr.length) h += '<div class="none">Alles ausgeglichen 🎉</div>';
-  else h += tr.map(t => `<div class="srow${t.from === me || t.to === me ? ' mine' : ''}"><span class="stack">${avatar(t.from)}</span><div class="sname"><b>${payText(t)}</b><small>${eur(t.amt)}</small></div><button class="tx" data-settle="${esc(t.from)}|${esc(t.to)}|${t.amt}">✓ Erledigt</button></div>`).join('');
-  if (list.length && mine) h += `<small class="none">${mine > 0 ? `Du bekommst insgesamt ${eur(mine)}.` : `Du schuldest insgesamt ${eur(-mine)}.`}</small>`;
+  else {
+    const S = shares(), who = [...new Set([...Object.keys(b), ...Object.keys(S.paid), ...Object.keys(S.share)])].filter(u => S.paid[u] || S.share[u] || b[u]);
+    // 1) Dein Stand: eine große Zahl
+    if (who.includes(me)) h += `<div class="kst"><small>Dein Stand</small><b class="${mine > 0 ? 'pos' : mine < 0 ? 'neg' : ''}">${mine > 0 ? '+' : mine < 0 ? '−' : ''}${eur(Math.abs(mine))}</b>
+      <small>${mine > 0 ? 'Du bekommst Geld zurück' : mine < 0 ? 'Du zahlst noch' : 'Du bist ausgeglichen ✓'} · bezahlt ${eur(S.paid[me] || 0)} · dein Anteil ${eur(S.share[me] || 0)}</small></div>`;
+    // 2) Wer steht wo? Balken von der Mitte aus
+    const max = Math.max(1, ...who.map(u => Math.abs(b[u] || 0)));
+    h += `<div class="klb">Wer steht wo?<span><span class="neg">◀ zahlt</span> · <span class="pos">bekommt ▶</span></span></div>` +
+      who.sort((x, y) => (b[y] || 0) - (b[x] || 0)).map(u => { const v = b[u] || 0, w = v ? Math.max(3, Math.abs(v) / max * 50) : 0;
+        return `<div class="brow"><span class="stack">${avatar(u)}</span><div class="sname"><b>${nm(u)}</b><small>bezahlt ${eur(S.paid[u] || 0)}</small></div>
+          <div class="bar">${w ? `<i style="${v > 0 ? 'left' : 'right'}:50%;width:${w.toFixed(1)}%;background:${v > 0 ? 'var(--acb)' : 'var(--negb)'}"></i>` : ''}</div>
+          <span class="bval ${v > 0 ? 'pos' : v < 0 ? 'neg' : ''}">${v > 0 ? '+' : v < 0 ? '−' : '±'}${eur(Math.abs(v)).replace(/,00\s?€/, ' €')}</span></div>`; }).join('');
+    // 3) So gleichen wir aus: Pfeile zwischen den Profil-Kreisen, eigene zuerst
+    if (!tr.length) h += '<div class="klb">So gleichen wir aus</div><div class="none">Alles ausgeglichen 🎉</div>';
+    else { const isMine = t => t.from === me || t.to === me;
+      h += `<div class="klb">So gleichen wir aus · ${tr.length} ${tr.length === 1 ? 'Überweisung' : 'Überweisungen'}</div>` +
+        [...tr].sort((x, y) => isMine(y) - isMine(x)).map(t => `<div class="srow trf${isMine(t) ? ' mine' : ' oth'}"><span class="stack">${avatar(t.from)}<span class="arr">→</span>${avatar(t.to)}</span>
+          <div class="sname"><b>${nm(t.from)} → ${nmAkk(t.to)}</b><span class="amt">${eur(t.amt)}</span></div><button class="tx" data-settle="${esc(t.from)}|${esc(t.to)}|${t.amt}">✓ Erledigt</button></div>`).join(''); }
+  }
   h += '</div>';
   if (costForm) {
     const F = costForm, opt = everyone.map(u => `<option value="${esc(u)}"${u === F.by ? ' selected' : ''}>${u === me ? 'Ich' : esc(ppl[u])}</option>`).join('');
