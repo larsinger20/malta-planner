@@ -561,7 +561,7 @@ function renderShop() {
   const gen = acts.find(a => a.id === GEN) || { id: GEN, shop: {} };
   const all = [gen, ...cookActs()].flatMap(shopItems), done = all.filter(i => i.done).length;
   const meals = cookActs().map(a => `<div class="c shc"><div class="shh"><h2>👩‍🍳 ${esc(a.title)}</h2>${a.day ? `<span class="meta">${esc(a.day)}</span>` : ''}</div>${shopRows(a, 'Zutat hinzufügen')}</div>`).join('');
-  $('list').innerHTML = sw + `<p class="s" style="margin:-4px 0 12px">${all.length ? `${done} von ${all.length} erledigt.` : 'Hier landet alles, was ihr einkaufen müsst.'}</p>
+  $('list').innerHTML = sw + `<p class="s" style="margin:-4px 0 12px">${all.length ? `${done} von ${all.length} erledigt.` : 'Hier landet alles, was wir einkaufen müssen.'}</p>
     <div class="c shc"><div class="shh"><h2>🛒 Allgemein</h2><span class="meta">für alle</span></div>${shopRows(gen, 'z. B. Sonnencreme, Wasser')}</div>
     ${meals || '<div class="m">Zutaten für ein Gericht kommen automatisch hierher, sobald es bei 🍽 Essen einen Kochvorschlag gibt.</div>'}`;
 }
