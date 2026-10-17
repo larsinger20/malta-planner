@@ -150,7 +150,8 @@ button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-heigh
 .m{color:var(--mu);text-align:center;padding:24px 8px;font-size:15px}
 .pf{position:relative}.av{width:40px;height:40px;border-radius:50%;padding:0;font-weight:600;font-size:17px}
 .pm{position:absolute;right:0;top:48px;background:var(--pop);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);border-radius:14px;padding:14px;min-width:250px;box-shadow:0 0 0 .5px var(--bd),0 12px 40px rgba(0,0,0,.22);z-index:5;animation:pop .22s cubic-bezier(.3,1.3,.5,1);transform-origin:top right}
-.pm small{color:var(--mu);font-size:13px}.sw{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin:6px 0 12px}.swc{width:26px;height:26px;padding:0;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}.swc.on{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--tx)}.swc.tk{color:#fff;font-size:11px;font-weight:700;opacity:.45;cursor:not-allowed}.swc.tk:active{transform:none}.pm b{display:block;margin-bottom:10px}.pm button{width:100%}
+.pm small{color:var(--mu);font-size:13px}.sw{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin:6px 0 12px}.swc{width:26px;height:26px;padding:0;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}.sw.big{grid-template-columns:repeat(7,1fr);gap:10px;margin:14px 0 4px;justify-items:center}.sw.big .swc{width:36px;height:36px;font-size:13px}
+.swc.on{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--tx)}.swc.tk{color:#fff;font-size:11px;font-weight:700;opacity:.45;cursor:not-allowed}.swc.tk:active{transform:none}.pm b{display:block;margin-bottom:10px}.pm button{width:100%}
 .toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translate(-50%,24px) scale(.96);opacity:0;transition:opacity .25s,transform .35s cubic-bezier(.3,1.3,.5,1);background:rgba(29,29,31,.88);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:#fff;padding:12px 20px;border-radius:999px;font-size:15px;font-weight:500;box-shadow:0 8px 30px rgba(0,0,0,.25);z-index:20;max-width:calc(100% - 32px);text-align:center;pointer-events:none}
 .toast.on{opacity:1;transform:translate(-50%,0) scale(1)}.toast.err{background:var(--rd)}
 @media(prefers-color-scheme:dark){.toast{background:rgba(58,58,60,.9)}}
@@ -165,6 +166,7 @@ button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-heigh
 <div class="hd"><h1><img class="flag" src="flag.png?v=3" alt="">Malta Planner</h1><div class="pf" id="me" hidden></div></div>
 <p class="s">Schlag Ideen vor und trag dich bei denen ein, auf die du Lust hast.</p>
 <div class="cd" id="cd"><div class="cdt" id="cdt" role="button" tabindex="0" aria-expanded="false" aria-controls="trip"></div><div class="cdx"><div class="cdi"><div class="cdin" id="trip"></div></div></div></div>
+<div class="c colcard" id="colCard" hidden></div>
 <div class="c stats" id="stats" hidden></div>
 <div class="tabs" id="tabs" hidden><div class="seg"><span class="ind" id="ind"></span><button class="tb on" data-tab="act"><span class="ti">🗺</span><span>Aktivitäten<b class="n" id="n-act"></b></span></button><button class="tb" data-tab="food"><span class="ti">🍽</span><span>Essen<b class="n" id="n-food"></b></span></button><button class="tb" data-tab="shop"><span class="ti">🛒</span><span>Einkauf<b class="n" id="n-shop"></b></span></button><button class="tb" data-tab="plan"><span class="ti">📅</span><span>Mein Plan<b class="n" id="n-plan"></b></span></button></div></div>
 
@@ -238,23 +240,36 @@ function top() {
   const n = ppl[me];
   const show = !!n && !editing;
   $('ask').hidden = show; const noAdd = tab === 'plan' || tab === 'shop';
-  $('add').hidden = !show || noAdd || !addOpen; $('addOpen').hidden = !show || noAdd || addOpen; $('list').hidden = !show; $('me').hidden = !show; $('tabs').hidden = !show; $('pinCard').hidden = !(show && !pins[me]);
-  if (show) requestAnimationFrame(moveInd);
+  // Jeder soll eine eigene Farbe haben: solange keine gewählt ist (und noch eine frei ist), kommt zuerst die Farbwahl
+  const needCol = show && !PALETTE.includes(pcol[me]) && PALETTE.some(c => !takenBy(c));
+  const app = show && !needCol;
+  $('add').hidden = !app || noAdd || !addOpen; $('addOpen').hidden = !app || noAdd || addOpen; $('list').hidden = !app; $('me').hidden = !show; $('tabs').hidden = !app; $('pinCard').hidden = !(show && !pins[me]);
+  $('colCard').hidden = !needCol;
+  if (needCol) $('colCard').innerHTML = `<h2>🎨 Such dir deine Farbe aus</h2><p>Damit dich alle auf einen Blick erkennen, bekommt jeder seine eigene Farbe. Vergebene Farben sind mit dem Buchstaben der Person markiert.</p><div class="sw big">${swatches()}</div>`;
+  if (app) requestAnimationFrame(moveInd);
   countdown(); renderTrip();
   if (show) {
     $('me').innerHTML = '<button class="av" id="avb" aria-label="Profil" style="background:' + colOf(me) + '">' + esc(n.trim()[0].toUpperCase()) + '</button>';
     $('avb').onclick = e => {
       e.stopPropagation();
       const m = $('pm'); if (m) { m.remove(); return; }
-      $('me').insertAdjacentHTML('beforeend', '<div class="pm" id="pm"><small>Angemeldet als</small><b>' + esc(n) + '</b><small>Deine Farbe</small><div class="sw">' + PALETTE.map(c => { const o = takenBy(c); return '<button class="swc' + (pcol[me] === c ? ' on' : '') + (o ? ' tk' : '') + '" data-col="' + c + '" style="background:' + c + '" aria-label="' + (o ? 'Vergeben an ' + esc(ppl[o]) : 'Farbe wählen') + '">' + (o ? esc(ppl[o].trim()[0].toUpperCase()) : '') + '</button>'; }).join('') + '</div><button class="o" id="ch">Name ändern</button>' + (isAdmin() ? '<button class="o" id="stb" style="margin-top:8px">📊 Statistik</button>' : '') + '</div>');
+      $('me').insertAdjacentHTML('beforeend', '<div class="pm" id="pm"><small>Angemeldet als</small><b>' + esc(n) + '</b><small>Deine Farbe</small><div class="sw">' + swatches() + '</div><button class="o" id="ch">Name ändern</button>' + (isAdmin() ? '<button class="o" id="stb" style="margin-top:8px">📊 Statistik</button>' : '') + '</div>');
       $('ch').onclick = () => { editing = true; $('n').value = n; top(); };
-      $('pm').querySelectorAll('[data-col]').forEach(b => b.onclick = async ev => { ev.stopPropagation();
-        const o = takenBy(b.dataset.col); if (o) { toast(`Die Farbe hat schon ${ppl[o]}.`, 1); return; }
-        try { await setDoc(doc(db, 'people', me), { col: b.dataset.col }, { merge: true }); pcol[me] = b.dataset.col; const pmEl = $('pm'); if (pmEl) pmEl.remove(); top(); render(true); toast('Farbe gespeichert ✓'); } catch (err) { toast(FAIL, 1); } });
+      $('pm').querySelectorAll('[data-col]').forEach(b => b.onclick = ev => { ev.stopPropagation(); pickColor(b.dataset.col); });
       if ($('stb')) $('stb').onclick = () => { $('pm').remove(); statsOpen = true; renderStats(); $('stats').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
     };
   }
 }
+
+const swatches = () => PALETTE.map(c => { const o = takenBy(c);
+  return `<button class="swc${pcol[me] === c ? ' on' : ''}${o ? ' tk' : ''}" data-col="${c}" style="background:${c}" aria-label="${o ? 'Vergeben an ' + esc(ppl[o]) : 'Farbe wählen'}">${o ? esc(ppl[o].trim()[0].toUpperCase()) : ''}</button>`; }).join('');
+async function pickColor(c) {
+  const o = takenBy(c); if (o) { toast(`Die Farbe hat schon ${ppl[o]}.`, 1); return; }
+  const first = !PALETTE.includes(pcol[me]);
+  try { await setDoc(doc(db, 'people', me), { col: c }, { merge: true }); pcol[me] = c; const pmEl = $('pm'); if (pmEl) pmEl.remove(); top(); render(true); toast(first ? 'Super, los geht\'s! 🎉' : 'Farbe gespeichert ✓'); }
+  catch (err) { toast(FAIL, 1); }
+}
+$('colCard').addEventListener('click', e => { const b = e.target.closest('[data-col]'); if (b) pickColor(b.dataset.col); });
 
 // Profilmenü und ⋯-Menü schließen beim Tippen daneben
 document.addEventListener('click', e => {
