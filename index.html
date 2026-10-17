@@ -130,15 +130,17 @@ button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-heigh
 
 main{padding-bottom:90px}
 .mapv{position:fixed;inset:0;z-index:35;background:var(--bg);display:flex;flex-direction:column;animation:mapIn .25s ease-out}@keyframes mapIn{from{transform:translateY(16px)}}
-.mapbar{display:flex;align-items:center;gap:8px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);box-shadow:inset 0 -.5px 0 var(--bd);z-index:2}
-.mapf{flex:1;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}.mapf::-webkit-scrollbar{display:none}.mapf .chip{white-space:nowrap}
-#mapc{flex:1;min-height:0}.mapmiss{padding:10px 14px max(12px,env(safe-area-inset-bottom));font-size:14px;color:var(--mu);background:var(--card);box-shadow:inset 0 .5px 0 var(--bd)}.mapmiss small{opacity:.8}
-#mapv.mlight{--bg:#f6f4ef;--card:#fff;--tx:#1f2a2e;--mu:#6b7478;--ac:#1d7a6b;--acb:#1d7a6b;--bd:#e3e0d8;--fill:rgba(120,105,80,.09);--glass:rgba(246,244,239,.78)}
-#mapv.mdark{--bg:#0b0f10;--card:#20282b;--tx:#eef1f1;--mu:#98a3a7;--ac:#4fc3ae;--acb:#1f8c7a;--bd:#333d40;--fill:rgba(255,255,255,.07);--glass:rgba(11,15,16,.8)}
+.mapbar{position:absolute;top:0;left:0;right:0;display:flex;align-items:flex-start;gap:8px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));z-index:2;pointer-events:none}.mapbar>*{pointer-events:auto}
+.mglass{background:var(--lg);-webkit-backdrop-filter:blur(22px) saturate(190%);backdrop-filter:blur(22px) saturate(190%);box-shadow:var(--lgring),var(--lgsh)}
+.mbtns{display:flex;flex-direction:column;gap:8px}.mapbar .x{width:42px;height:42px;flex-shrink:0;border-radius:50%;color:var(--tx);font-size:20px}.mapbar .x:active{transform:scale(.92)}
+.mapf{flex:0 1 auto;min-width:0;margin-right:auto;display:flex;gap:2px;padding:4px;border-radius:999px;overflow-x:auto;scrollbar-width:none}.mapf::-webkit-scrollbar{display:none}.mapf{position:relative}.mapf .chip{position:relative;z-index:1;white-space:nowrap;background:transparent;padding:8px 12px;font-weight:500;transition:color .25s}.mapf .chip:active{transform:none;background:transparent}.mapf .chip.on{color:var(--ac);font-weight:600}.mind{position:absolute;top:4px;bottom:4px;left:0;border-radius:999px;background:var(--lgon);box-shadow:var(--lgring),0 2px 8px rgba(0,0,0,.1)}
+#mapc{flex:1;min-height:0}.mapmiss{position:absolute;left:12px;right:12px;bottom:max(12px,calc(env(safe-area-inset-bottom) + 6px));z-index:2;padding:10px 14px;border-radius:18px;font-size:14px;color:var(--tx2,var(--mu))}.mapmiss small{opacity:.8}
+#mapv.mlight{--bg:#f6f4ef;--card:#fff;--tx:#1f2a2e;--mu:#6b7478;--ac:#1d7a6b;--acb:#1d7a6b;--bd:#e3e0d8;--fill:rgba(120,105,80,.09);--glass:rgba(246,244,239,.78);--tx2:#3d4a4e;--lg:rgba(255,255,255,.6);--lgbd:rgba(255,255,255,.75);--lghi:rgba(255,255,255,.9);--lgon:rgba(255,255,255,.9);--lgsh:0 8px 24px rgba(60,50,30,.16),0 2px 6px rgba(60,50,30,.08);--lgring:inset 0 0 0 .5px rgba(255,255,255,.75),inset 0 1px 0 rgba(255,255,255,.9)}
+#mapv.mdark{--bg:#0b0f10;--card:#20282b;--tx:#eef1f1;--mu:#98a3a7;--ac:#4fc3ae;--acb:#1f8c7a;--bd:#333d40;--fill:rgba(255,255,255,.07);--glass:rgba(11,15,16,.8);--tx2:#cfd6d8;--lg:rgba(32,40,43,.62);--lgbd:rgba(255,255,255,.13);--lghi:rgba(255,255,255,.2);--lgon:rgba(255,255,255,.16);--lgsh:0 8px 24px rgba(0,0,0,.45),0 2px 6px rgba(0,0,0,.3);--lgring:inset 0 0 0 .5px rgba(255,255,255,.13),inset 0 1px 0 rgba(255,255,255,.2)}
 #mapv{color:var(--tx)}.mth{font-size:16px}
-.gm-style .gm-style-iw-c{padding:0!important;border-radius:14px!important;background:var(--card)!important;box-shadow:0 0 0 .5px var(--bd),0 8px 24px rgba(0,0,0,.25)!important}
+.gm-style .gm-style-iw-c{padding:0!important;border-radius:20px!important;background:var(--card)!important;box-shadow:var(--lgring),0 0 0 .5px var(--bd),0 10px 30px rgba(0,0,0,.25)!important}
 .gm-style .gm-style-iw-d{overflow:auto!important;padding:0!important;max-height:none!important}.gm-style .gm-style-iw-tc::after{background:var(--card)!important}
-.gin{font:14px/1.35 var(--font);color:var(--tx);padding:10px 12px 12px;position:relative}.gin b{display:block;font-size:15px;font-weight:600;padding-right:22px;margin-bottom:2px}.gin small{display:block;color:var(--mu);font-size:13px}
+.gin{font:14px/1.35 var(--font);color:var(--tx);padding:12px 14px 14px;position:relative}.gin b{display:block;font-size:15px;font-weight:600;padding-right:22px;margin-bottom:2px}.gin small{display:block;color:var(--mu);font-size:13px}
 .gin .gbtn{display:inline-block;margin-top:8px;padding:5px 12px;border-radius:999px;background:var(--fill);color:var(--ac);font-weight:600;font-size:13px;text-decoration:none}
 .gin .ginx{position:absolute;right:4px;top:4px;width:26px;height:26px;padding:0;background:none;color:var(--mu);font-size:18px;line-height:1}
 html.noscroll,html.noscroll body{overflow:hidden}
@@ -213,7 +215,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
 <button id="ps">PIN speichern</button></div>
 
 <button class="mapb" id="mapBtn" hidden aria-label="Karte mit allen Orten">🗺 Karte</button>
-<div class="mapv" id="mapv" hidden><div class="mapbar"><div class="mapf" id="mapf"></div><button class="x mth" id="mapth" aria-label="Kartenansicht hell/dunkel umschalten">🌙</button><button class="x" id="mapx" aria-label="Karte schließen">×</button></div><div id="mapc"></div><div class="mapmiss" id="mapmiss"></div></div>
+<div class="mapv" id="mapv" hidden><div class="mapbar"><div class="mapf mglass" id="mapf"></div><div class="mbtns"><button class="x mglass" id="mapx" aria-label="Karte schließen">×</button><button class="x mth mglass" id="mapth" aria-label="Kartenansicht hell/dunkel umschalten">🌙</button></div></div><div id="mapc"></div><div class="mapmiss mglass" id="mapmiss"></div></div>
 <button class="addb" id="addOpen" hidden>+ Neue Aktivität vorschlagen</button>
 
 <div class="c" id="add" hidden><div class="ah"><h2 id="ah">Neue Aktivität vorschlagen</h2><button class="x" id="addClose" aria-label="Schließen">×</button></div>
@@ -966,7 +968,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') acClose(); }
 // ===== Karte mit allen Orten (Google Maps, gleicher Schlüssel wie die Ortsvorschläge) =====
 // Jedes Öffnen = 1 "Dynamic Map"-Aufruf (10.000/Monat kostenlos). Klassische Marker + Kartenstil ohne Map-ID, damit keine weitere Einrichtung nötig ist.
 let gmap = null, gInfo = null, gMarkers = [], mapOpen = false, mapFilter = 'all', gLib = null, infoOpen = false;
-const MF = [['all', 'Alle'], ['act', '🗺 Aktivitäten'], ['food', '🍽 Essen'], ['mine', '🙋 Meine']];
+const MF = [['all', 'Alle'], ['act', 'Aktivitäten'], ['food', 'Essen'], ['mine', 'Meine']];
 // Unaufgeräumte Geschäfts-Symbole ausblenden; im Dunkelmodus dunkler Kartenstil
 const G_CLEAN = [{ featureType: 'poi.business', stylers: [{ visibility: 'off' }] }, { featureType: 'transit', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] }];
 const G_DARK = [{ elementType: 'geometry', stylers: [{ color: '#1d2427' }] }, { elementType: 'labels.text.fill', stylers: [{ color: '#9aa5a9' }] }, { elementType: 'labels.text.stroke', stylers: [{ color: '#0b0f10' }] },
@@ -981,9 +983,21 @@ function gPin(color, emo, big, ring) {
   return { icon: { path: google.maps.SymbolPath.CIRCLE, scale: big ? 13 : 11, fillColor: color, fillOpacity: 1, strokeColor: ring || '#fff', strokeWeight: ring ? 3 : 2 },
     label: { text: emo, fontSize: big ? '13px' : '11px' } };
 }
+// Glasperle unter dem gewählten Filter: gleitet und wobbelt wie bei den Reitern
+let mfPrev = null;
+function moveMapInd() {
+  const on = document.querySelector('#mapf .chip.on'), i = document.querySelector('#mapf .mind'); if (!on || !i) return;
+  const x = on.offsetLeft, w = on.offsetWidth; i.style.translate = x + 'px'; i.style.width = w + 'px';
+  if (mfPrev && mfPrev.x !== x && !calm() && i.animate) {
+    i.animate([{ translate: mfPrev.x + 'px', width: mfPrev.w + 'px' }, { translate: x + 'px', width: w + 'px' }], { duration: 420, easing: 'cubic-bezier(.3,1.3,.5,1)' });
+    i.animate([{ scale: '1 1' }, { scale: '1.14 .9', offset: .35 }, { scale: '1 1' }], { duration: 420, easing: 'ease-out' });
+  }
+  mfPrev = { x, w };
+}
 function renderMap(fit) {
   if (!mapOpen || !gmap) return;
-  $('mapf').innerHTML = MF.map(([k, l]) => `<button class="chip${mapFilter === k ? ' on' : ''}" data-mf="${k}">${l}</button>`).join('');
+  $('mapf').innerHTML = '<span class="mind"></span>' + MF.map(([k, l]) => `<button class="chip${mapFilter === k ? ' on' : ''}" data-mf="${k}">${l}</button>`).join('');
+  moveMapInd();
   gMarkers.forEach(m => m.setMap(null)); gMarkers = [];
   const T = trip(), bounds = new google.maps.LatLngBounds(), missing = []; let n = 0;
   const add = (pos, opt, html, z) => { const m = new google.maps.Marker({ map: gmap, position: pos, zIndex: z, ...opt });
@@ -999,7 +1013,7 @@ function renderMap(fit) {
   });
   $('mapmiss').innerHTML = missing.length ? `📍 Ohne Kartenpunkt: ${missing.map(a => esc(a.title)).join(', ')} <small>· über ⋯ → „Ort ändern“ einmal aus den Vorschlägen wählen</small>` : '';
   $('mapmiss').hidden = !missing.length;
-  if (fit) { if (n > 1) gmap.fitBounds(bounds, 48); else if (n) { gmap.setCenter(bounds.getCenter()); gmap.setZoom(13); } else { gmap.setCenter({ lat: 35.94, lng: 14.38 }); gmap.setZoom(11); } }
+  if (fit) { if (n > 1) gmap.fitBounds(bounds, { top: 80, bottom: $('mapmiss').hidden ? 40 : 110, left: 36, right: 36 }); else if (n) { gmap.setCenter(bounds.getCenter()); gmap.setZoom(13); } else { gmap.setCenter({ lat: 35.94, lng: 14.38 }); gmap.setZoom(11); } }
 }
 async function openMap() {
   if (!MAPS_KEY) { toast('Die Karte ist noch nicht eingerichtet.', 1); return; }
@@ -1009,7 +1023,7 @@ async function openMap() {
     if (!gLib) { loadPlaces(); gLib = await google.maps.importLibrary('maps'); await google.maps.importLibrary('marker'); }
     const dark = mapDark(), styles = dark ? [...G_DARK, ...G_CLEAN] : G_CLEAN; applyMapTheme();
     if (!gmap) {
-      gmap = new gLib.Map($('mapc'), { center: { lat: 35.94, lng: 14.38 }, zoom: 11, disableDefaultUI: true, zoomControl: true, gestureHandling: 'greedy', clickableIcons: false, styles,
+      gmap = new gLib.Map($('mapc'), { center: { lat: 35.94, lng: 14.38 }, zoom: 11, disableDefaultUI: true, zoomControl: false, gestureHandling: 'greedy', clickableIcons: false, styles,
         backgroundColor: dark ? '#0b0f10' : '#e8eef0' });
       gInfo = new gLib.InfoWindow({ headerDisabled: true, maxWidth: 250 }); gInfo.addListener('closeclick', () => { infoOpen = false; }); gmap.addListener('click', () => { gInfo.close(); infoOpen = false; });
     } else gmap.setOptions({ styles });
