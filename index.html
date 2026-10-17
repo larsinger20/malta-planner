@@ -502,7 +502,8 @@ function sugBox(a) {
   const list = suggestFor(a).filter(i => !have.has(norm(i))).slice(0, 14);
   if (!list.length) return '';
   const id = esc(a.id), label = a.id === GEN ? 'Urlaubs-Basics' : `Passt zu „${esc(a.title)}“`;
-  if (!sugOpen.has(a.id)) return `<button class="tx sgt" data-sugt="${id}">✨ Vorschläge (${list.length}) ▾</button>`;
+  // auch zugeklappt in .sug, damit der Abstand beim Aufklappen nicht springt
+  if (!sugOpen.has(a.id)) return `<div class="sug"><button class="tx sgt" data-sugt="${id}">✨ Vorschläge (${list.length}) ▾</button></div>`;
   return `<div class="sug"><button class="tx sgt" data-sugt="${id}">✨ ${label} ▴</button>
     <div class="chips">${list.map(i => `<button class="chip" data-sug="${id}" data-t="${esc(i)}">+ ${esc(i)}</button>`).join('')}</div>
     <button class="tx" data-sugall="${id}">Alle ${list.length} hinzufügen</button></div>`;
@@ -775,7 +776,11 @@ $('list').onclick = async e => {
     try { await updateDoc(doc(db, 'activities', aid), { ['cm.' + cid]: deleteField() }); render(true); } catch (err) { toast(FAIL, 1); } return; }
   if (b.dataset.shop) { const id = b.dataset.shop; shopOpen.has(id) ? shopOpen.delete(id) : shopOpen.add(id); render(true); return; }
   if (b.dataset.sadd) { addShop(b.dataset.sadd); return; }
-  if (b.dataset.sugt) { const id = b.dataset.sugt; sugOpen.has(id) ? sugOpen.delete(id) : sugOpen.add(id); render(true); return; }
+  if (b.dataset.sugt) { // weich auf- und zuklappen wie bei den Kommentaren (gemessene Höhe)
+    const id = b.dataset.sugt, box = b.closest('.sug'), sel = `[data-sugt="${CSS.escape(id)}"]`;
+    if (sugOpen.has(id)) { if (box) await slideHeight(box, box.offsetHeight, b.offsetHeight, 240); sugOpen.delete(id); render(true); }
+    else { const from = b.offsetHeight; sugOpen.add(id); render(true); const t = document.querySelector(sel), nb = t && t.closest('.sug'); if (nb) await slideHeight(nb, from, nb.offsetHeight, 320); }
+    return; }
   if (b.dataset.sug) { addShopItems(b.dataset.sug, [b.dataset.t]); return; }
   if (b.dataset.sugall) { const a = acts.find(x => x.id === b.dataset.sugall) || { id: GEN, shop: {} }, have = new Set(shopItems(a).map(i => norm(i.t)));
     addShopItems(a.id, suggestFor(a).filter(i => !have.has(norm(i))).slice(0, 14)); return; }
