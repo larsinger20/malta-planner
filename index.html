@@ -115,6 +115,17 @@ button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-heigh
 .cmts{margin-top:6px}.cmi{display:flex;gap:10px;align-items:flex-start;padding:8px 0;box-shadow:inset 0 .5px 0 var(--bd)}.cmi .stack i{width:26px;height:26px}.cmb{flex:1;min-width:0;font-size:15px;overflow-wrap:anywhere;line-height:1.35}.cmb small{color:var(--mu);font-size:12px}.cmb b{font-weight:600}.cmi .x{background:none;width:26px;height:26px;font-size:18px}
 .info .ple{flex-basis:100%;margin-top:2px}.ple input{margin-bottom:6px}.ple .acl{margin:-2px 0 8px}
 .plb{display:flex;align-items:center;gap:14px}.plb span{flex:1}.plb .dz{color:var(--rd);white-space:nowrap}.plb .tx{white-space:nowrap}.sm2{padding:7px 16px;font-size:15px}
+.mapb{position:fixed;left:50%;bottom:max(22px,calc(env(safe-area-inset-bottom) + 10px));transform:translateX(-50%);z-index:15;background:var(--pop);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);color:var(--tx);padding:10px 18px;font-size:15px;font-weight:500;box-shadow:0 0 0 .5px var(--bd),0 4px 16px rgba(0,0,0,.12)}.mapb:active{transform:translateX(-50%) scale(.96)}
+
+main{padding-bottom:90px}
+.mapv{position:fixed;inset:0;z-index:35;background:var(--bg);display:flex;flex-direction:column;animation:mapIn .25s ease-out}@keyframes mapIn{from{transform:translateY(16px)}}
+.mapbar{display:flex;align-items:center;gap:8px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);box-shadow:inset 0 -.5px 0 var(--bd);z-index:2}
+.mapf{flex:1;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}.mapf::-webkit-scrollbar{display:none}.mapf .chip{white-space:nowrap}
+#mapc{flex:1;min-height:0}.mapmiss{padding:10px 14px max(12px,env(safe-area-inset-bottom));font-size:14px;color:var(--mu);background:var(--card);box-shadow:inset 0 .5px 0 var(--bd)}.mapmiss small{opacity:.8}
+.gin{font:15px/1.4 var(--font);color:#1f2a2e;padding:2px 2px 0}.gin small{color:#6b7478}.gin a{color:#1d7a6b;font-weight:600;text-decoration:none}
+html.noscroll,html.noscroll body{overflow:hidden}
+.cmts{margin:0 -6px;padding:0 6px}   /* Luft am Rand, damit der Ring ums Profilbild beim Animieren nie angeschnitten wird */
+.cmi.new{animation:cmNew .38s cubic-bezier(.3,1,.4,1)}@keyframes cmNew{from{opacity:0;transform:translateY(-8px)}}
 .shc{padding:16px 18px}.shh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px}.shh h2{font-size:20px}.shh .meta{margin:0;font-size:15px;white-space:nowrap}
 
 /* Countdown: Türkis-Kachel, Text links, Zahlen-Kästchen rechts */
@@ -183,6 +194,8 @@ button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-heigh
 <input id="pin2" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN (4–8 Ziffern)" maxlength="8">
 <button id="ps">PIN speichern</button></div>
 
+<button class="mapb" id="mapBtn" hidden aria-label="Karte mit allen Orten">🗺 Karte</button>
+<div class="mapv" id="mapv" hidden><div class="mapbar"><div class="mapf" id="mapf"></div><button class="x" id="mapx" aria-label="Karte schließen">×</button></div><div id="mapc"></div><div class="mapmiss" id="mapmiss"></div></div>
 <button class="addb" id="addOpen" hidden>+ Neue Aktivität vorschlagen</button>
 
 <div class="c" id="add" hidden><div class="ah"><h2 id="ah">Neue Aktivität vorschlagen</h2><button class="x" id="addClose" aria-label="Schließen">×</button></div>
@@ -247,6 +260,7 @@ function top() {
   const app = show && !needCol;
   $('add').hidden = !app || noAdd || !addOpen; $('addOpen').hidden = !app || noAdd || addOpen; $('list').hidden = !app; $('me').hidden = !show; $('tabs').hidden = !app; $('pinCard').hidden = !(show && !pins[me]);
   $('colCard').hidden = !needCol;
+  $('mapBtn').hidden = !app || !(tab === 'act' || tab === 'food');
   if (needCol) $('colCard').innerHTML = `<h2>🎨 Such dir deine Farbe aus</h2><p>Damit dich alle auf einen Blick erkennen, bekommt jeder seine eigene Farbe. Vergebene Farben sind mit dem Buchstaben der Person markiert.</p><div class="sw big">${swatches()}</div>`;
   if (app) requestAnimationFrame(moveInd);
   countdown(); renderTrip();
@@ -280,6 +294,13 @@ document.addEventListener('click', e => {
 });
 
 // Ort öffnet Google Maps (auf dem iPhone die App, falls installiert)
+// Koordinaten aus einem Ort-Feld: neue Auswahl → neue Position; unveränderter Ort → nichts ändern; sonst löschen
+function geoFrom(inp, prev = {}, kl = 'lat', kg = 'lng', kp = 'pid') {
+  if (!inp || !inp.value.trim()) return { [kl]: null, [kg]: null };
+  if (inp.dataset.lat) return { [kl]: +inp.dataset.lat, [kg]: +inp.dataset.lng };
+  if (inp.dataset.pid && inp.dataset.pid === prev[kp] && inp.value.trim() === (prev[kp === 'pid' ? 'place' : 'vaddr'] || '')) return {};
+  return { [kl]: null, [kg]: null };
+}
 // Mit Google-Orts-ID (pid, aus den Vorschlägen) öffnet Maps exakt den gewählten Ort, sonst Textsuche
 const mapUrl = a => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(a.pid ? a.place : /malta|gozo|comino/i.test(a.place) ? a.place : a.place + ', Malta') + (a.pid ? '&query_place_id=' + encodeURIComponent(a.pid) : '');
 const placeChip = a => a.place ? `<a class="lk" href="${esc(mapUrl(a))}" target="_blank" rel="noopener noreferrer">📍 ${esc(a.place)}</a>` : '';
@@ -541,7 +562,23 @@ const costChip = a => { const c = COSTS().filter(x => x.act === a.id && x.kind !
 
 // ===== Kommentare an Vorschlägen =====
 // Feld cm im Vorschlag: { commentId: { u, t, ts } }, Einträge einzeln gemerged (wie die Einkaufsliste)
-const cmOpen = new Set();
+const cmOpen = new Set(); let cmNew = null;
+const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Höhe weich animieren (gemessen, statt max-height zu raten); Abschneiden nur während der Animation
+function slideHeight(el, from, to, ms = 300) {
+  if (!el || calm()) return Promise.resolve();
+  el.style.overflow = 'hidden';
+  const an = el.animate([{ height: from + 'px', opacity: from < to ? .35 : 1 }, { height: to + 'px', opacity: from < to ? 1 : .35 }], { duration: ms, easing: 'cubic-bezier(.3,1,.4,1)' });
+  // Sicherheitsnetz: spätestens nach der Dauer weitermachen, falls der Browser das Ende nicht meldet
+  return Promise.race([an.finished.catch(() => {}), new Promise(r => setTimeout(r, ms + 60))]).then(() => { an.cancel(); el.style.overflow = ''; });
+}
+const cmBox = id => { const t = document.querySelector(`#list [data-cmt="${CSS.escape(id)}"]`); return t && t.closest('.cmts'); };
+async function openComments(id, fromH, focus) {
+  cmOpen.add(id); render(true);
+  const box = cmBox(id), i = $('cmin-' + id);
+  if (focus && i) i.focus({ preventScroll: true });
+  if (box) await slideHeight(box, fromH, box.offsetHeight, 320);
+}
 const cmItems = a => Object.entries(a.cm || {}).filter(([, v]) => v && v.t).map(([id, v]) => ({ id, ...v })).sort((x, y) => (x.ts || 0) - (y.ts || 0));
 function cmBlock(a) {
   const items = cmItems(a), id = esc(a.id), open = cmOpen.has(a.id);
@@ -549,13 +586,14 @@ function cmBlock(a) {
   const label = items.length ? `💬 ${items.length} ${items.length === 1 ? 'Kommentar' : 'Kommentare'}` : '💬 Kommentare';
   if (!open) return `<button class="tx" data-cmt="${id}">${label} ▾</button>`;
   return `<div class="cmts"><button class="tx" data-cmt="${id}">${label} ▴</button>
-    ${items.map(c => `<div class="cmi"><span class="stack">${avatar(c.u)}</span><div class="cmb"><b>${nm(c.u)}</b> <small>${ago(c.ts)}</small><div>${esc(c.t)}</div></div>${c.u === me || isAdmin() ? `<button class="x" data-cmdel="${id}|${esc(c.id)}" aria-label="Löschen">×</button>` : ''}</div>`).join('')}
+    ${items.map(c => `<div class="cmi${c.id === cmNew ? ' new' : ''}"><span class="stack">${avatar(c.u)}</span><div class="cmb"><b>${nm(c.u)}</b> <small>${ago(c.ts)}</small><div>${esc(c.t)}</div></div>${c.u === me || isAdmin() ? `<button class="x" data-cmdel="${id}|${esc(c.id)}" aria-label="Löschen">×</button>` : ''}</div>`).join('')}
     <div class="sa"><input id="cmin-${id}" data-cminp="${id}" placeholder="Kommentar schreiben…" maxlength="300"><button data-cmadd="${id}" aria-label="Senden">➤</button></div></div>`;
 }
 async function addComment(id) {
   const i = $('cmin-' + id); if (!i) return; const t = i.value.trim(); if (!t) { i.focus(); return; }
   const cid = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
-  try { await setDoc(doc(db, 'activities', id), { cm: { [cid]: { u: me, t, ts: Date.now() } } }, { merge: true }); render(true); const n = $('cmin-' + id); if (n) n.focus(); }
+  // nur der neue Kommentar gleitet herein, der Rest bleibt ruhig stehen
+  try { cmNew = cid; await setDoc(doc(db, 'activities', id), { cm: { [cid]: { u: me, t, ts: Date.now() } } }, { merge: true }); render(true); cmNew = null; const n = $('cmin-' + id); if (n) n.focus(); }
   catch (err) { toast(FAIL, 1); }
 }
 
@@ -615,7 +653,7 @@ function render(force) {
 
 onSnapshot(collection(db, 'people'), q => { ppl = {}; pins = {}; seen = {}; pcol = {}; q.docs.forEach(d => { ppl[d.id] = d.data().name; pins[d.id] = d.data().ph || ''; seen[d.id] = d.data().seen || 0; pcol[d.id] = d.data().col || ''; }); top(); render(); countVisit(); markSeen(); renderStats(); },
   e => { $('list').hidden = false; $('list').innerHTML = '<div class="m">Verbindung zur Datenbank fehlgeschlagen. Prüfe Config und Regeln.</div>'; console.error(e); });
-onSnapshot(collection(db, 'activities'), q => { acts = q.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.ts || 0) - (b.ts || 0)); render(); renderTrip(); renderStats(); });
+onSnapshot(collection(db, 'activities'), q => { acts = q.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.ts || 0) - (b.ts || 0)); render(); renderTrip(); renderStats(); if (mapOpen && !infoOpen) renderMap(false); });
 onSnapshot(collection(db, 'signups'), q => { sig = q.docs.map(d => d.data()); render(); });
 
 $('ns').onclick = async () => {
@@ -675,8 +713,12 @@ $('list').onclick = async e => {
     const s = sig.filter(x => x.act === a.id).map(x => x.uid).filter(u => ppl[u]);
     setTab('shop'); shopView = 'cost'; costForm = { t: a.title, amt: '', by: me, act: a.id, for: new Set(s.length ? s : Object.keys(ppl)) };
     render(true); scrollTo({ top: 0, behavior: 'smooth' }); const i = $('cf-amt'); if (i) i.focus(); return; }
-  if (b.dataset.cm) { cmOpen.add(b.dataset.cm); render(true); const i = $('cmin-' + b.dataset.cm); if (i) i.focus(); return; }
-  if (b.dataset.cmt) { const id = b.dataset.cmt; cmOpen.has(id) ? cmOpen.delete(id) : cmOpen.add(id); render(true); return; }
+  if (b.dataset.cm) { const id = b.dataset.cm; if (!cmOpen.has(id)) { const t = document.querySelector(`#list [data-cmt="${CSS.escape(id)}"]`); await openComments(id, t ? t.offsetHeight : 0, true); } else { const i = $('cmin-' + id); if (i) i.focus({ preventScroll: true }); } return; }
+  if (b.dataset.cmt) { const id = b.dataset.cmt;
+    // Weich auf- und zuklappen: Höhe vom Knopf bis zur ganzen Liste und zurück
+    if (cmOpen.has(id)) { const box = b.closest('.cmts'); if (box) await slideHeight(box, box.offsetHeight, b.offsetHeight, 240); cmOpen.delete(id); render(true); }
+    else await openComments(id, b.offsetHeight);
+    return; }
   if (b.dataset.cmadd) { addComment(b.dataset.cmadd); return; }
   if (b.dataset.cmdel) { const [aid, cid] = b.dataset.cmdel.split('|');
     try { await updateDoc(doc(db, 'activities', aid), { ['cm.' + cid]: deleteField() }); render(true); } catch (err) { toast(FAIL, 1); } return; }
@@ -700,7 +742,7 @@ $('list').onclick = async e => {
   if (b.dataset.esave) {
     const a = acts.find(x => x.id === b.dataset.esave); if (!a || !canEdit(a)) return;
     const title = $('et').value.trim(); if (!title) { toast('Bitte gib einen Titel ein.', 1); return; }
-    const data = { title, desc: $('ed').value.trim(), day: $('ew').value, time: $('ez').value, place: $('epo').value.trim(), pid: $('epo').value.trim() ? ($('epo').dataset.pid || '') : '' };
+    const data = { title, desc: $('ed').value.trim(), day: $('ew').value, time: $('ez').value, place: $('epo').value.trim(), pid: $('epo').value.trim() ? ($('epo').dataset.pid || '') : '', ...geoFrom($('epo'), a) };
     if ((a.cat || 'act') === 'food') {
       data.kind = $('ek').value; if (!data.kind) { toast('Bitte wähle: Kochen oder Restaurant.', 1); return; }
     }
@@ -713,7 +755,8 @@ $('list').onclick = async e => {
   if (b.dataset.plcancel) { editPlace = null; render(true); return; }
   if (b.dataset.pldel || b.dataset.plsave) {
     const id = b.dataset.pldel || b.dataset.plsave, place = b.dataset.plsave ? $('epl').value.trim() : '', pid = place ? ($('epl').dataset.pid || '') : '';
-    try { await setDoc(doc(db, 'activities', id), { place, pid }, { merge: true }); editPlace = null; render(true); toast(place ? 'Ort gespeichert ✓' : 'Ort entfernt'); }
+    const geo = place ? geoFrom($('epl'), acts.find(x => x.id === id) || {}) : { lat: null, lng: null };
+    try { await setDoc(doc(db, 'activities', id), { place, pid, ...geo }, { merge: true }); editPlace = null; render(true); toast(place ? 'Ort gespeichert ✓' : 'Ort entfernt'); }
     catch (err) { toast(FAIL, 1); }
     return;
   }
@@ -800,7 +843,7 @@ $('go').onclick = async () => {
   const t = $('t'), d = $('d'), w = $('w'), z = $('z'), k = $('k'); if (!t.value.trim()) { toast('Bitte gib einen Titel ein.', 1); t.focus(); return; }
   if (tab === 'food' && !k.value) { toast('Bitte wähle: Kochen oder Restaurant.', 1); return; }
   const data = { title: t.value.trim(), desc: d.value.trim(), day: w.value, time: z.value, cat: tab, kind: tab === 'food' ? k.value : '', ts: Date.now(), by: me };
-  if ($('pl').value.trim()) { data.place = $('pl').value.trim(); if ($('pl').dataset.pid) data.pid = $('pl').dataset.pid; }
+  if ($('pl').value.trim()) { data.place = $('pl').value.trim(); if ($('pl').dataset.pid) data.pid = $('pl').dataset.pid; if ($('pl').dataset.lat) { data.lat = +$('pl').dataset.lat; data.lng = +$('pl').dataset.lng; } }
   if (tab === 'food' && k.value === 'rest') {
     if ($('rv').checked) {
       const rt = $('rt').value, rp = parseInt($('rp').value, 10);
@@ -813,7 +856,7 @@ $('go').onclick = async () => {
     await setDoc(doc(db, 'activities', nid), data);
     // Wer etwas vorschlägt, ist automatisch dabei (Aktivität) bzw. stimmt dafür (Essen)
     await setDoc(doc(db, 'signups', nid + '_' + me), { act: nid, uid: me }).catch(() => {});
-    t.value = ''; d.value = ''; w.value = ''; z.value = ''; k.value = ''; $('pl').value = ''; $('pl').dataset.pid = ''; $('rv').checked = false; $('rt').value = ''; $('rp').value = ''; formFields();
+    t.value = ''; d.value = ''; w.value = ''; z.value = ''; k.value = ''; $('pl').value = ''; $('pl').dataset.pid = ''; $('pl').dataset.lat = ''; $('pl').dataset.lng = ''; $('rv').checked = false; $('rt').value = ''; $('rp').value = ''; formFields();
     addOpen = false; top(); toast('Vorschlag gespeichert ✓');
   } catch (err) { toast(FAIL, 1); }
 };
@@ -843,7 +886,7 @@ function acShow(i, list) {
 }
 document.addEventListener('input', e => {
   const i = e.target; if (!i.dataset || !i.dataset.place) return;
-  i.dataset.pid = ''; clearTimeout(acTimer);
+  i.dataset.pid = ''; i.dataset.lat = ''; i.dataset.lng = ''; clearTimeout(acTimer);
   const q = i.value.trim(); if (!MAPS_KEY || q.length < 2) { acClose(); return; }
   acTimer = setTimeout(async () => {
     try {
@@ -859,13 +902,76 @@ document.addEventListener('pointerdown', async e => {
   const b = e.target.closest('.aci'); if (!b || !acInput) return;
   e.preventDefault();
   const pp = acList[+b.dataset.i].placePrediction, i = acInput;
-  i.value = pp.mainText ? pp.mainText.text : pp.text.text; i.dataset.pid = pp.placeId; acClose();
+  i.value = pp.mainText ? pp.mainText.text : pp.text.text; i.dataset.pid = pp.placeId; i.dataset.lat = ''; i.dataset.lng = ''; acClose();
+  // Position für die Karte (Place Details Essentials, 10.000/Monat kostenlos); beendet zugleich die Sitzung
+  try { const pl = pp.toPlace(); await pl.fetchFields({ fields: ['location'] }); if (pl.location) { i.dataset.lat = pl.location.lat(); i.dataset.lng = pl.location.lng(); } } catch (err) {}
   if (i.id === 'epl') { const sv = document.querySelector('[data-plsave]'); if (sv) sv.click(); }
-  try { await pp.toPlace().fetchFields({ fields: ['id'] }); } catch (err) {}
   acToken = null;
 });
 document.addEventListener('focusout', e => { if (e.target.dataset && e.target.dataset.place) setTimeout(acClose, 150); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') acClose(); });
+
+// ===== Karte mit allen Orten (Google Maps, gleicher Schlüssel wie die Ortsvorschläge) =====
+// Jedes Öffnen = 1 "Dynamic Map"-Aufruf (10.000/Monat kostenlos). Klassische Marker + Kartenstil ohne Map-ID, damit keine weitere Einrichtung nötig ist.
+let gmap = null, gInfo = null, gMarkers = [], mapOpen = false, mapFilter = 'all', gLib = null, infoOpen = false;
+const MF = [['all', 'Alle'], ['act', '🗺 Aktivitäten'], ['food', '🍽 Essen'], ['mine', '🙋 Meine']];
+// Unaufgeräumte Geschäfts-Symbole ausblenden; im Dunkelmodus dunkler Kartenstil
+const G_CLEAN = [{ featureType: 'poi.business', stylers: [{ visibility: 'off' }] }, { featureType: 'transit', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] }];
+const G_DARK = [{ elementType: 'geometry', stylers: [{ color: '#1d2427' }] }, { elementType: 'labels.text.fill', stylers: [{ color: '#9aa5a9' }] }, { elementType: 'labels.text.stroke', stylers: [{ color: '#0b0f10' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2c3539' }] }, { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#3b474c' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0f2a33' }] }, { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#222b2e' }] },
+  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#1f3a33' }] }, { featureType: 'administrative', elementType: 'geometry', stylers: [{ color: '#3b474c' }] }];
+function mapItems() {
+  return acts.filter(a => (a.cat === 'food' || (a.cat || 'act') === 'act') && (mapFilter === 'all' || (mapFilter === 'mine' ? sig.some(x => x.act === a.id && x.uid === me) : (a.cat || 'act') === mapFilter)));
+}
+function gPin(color, emo, big, ring) {
+  return { icon: { path: google.maps.SymbolPath.CIRCLE, scale: big ? 19 : 16, fillColor: color, fillOpacity: 1, strokeColor: ring || '#fff', strokeWeight: ring ? 4 : 3 },
+    label: { text: emo, fontSize: big ? '18px' : '15px' } };
+}
+function renderMap(fit) {
+  if (!mapOpen || !gmap) return;
+  $('mapf').innerHTML = MF.map(([k, l]) => `<button class="chip${mapFilter === k ? ' on' : ''}" data-mf="${k}">${l}</button>`).join('');
+  gMarkers.forEach(m => m.setMap(null)); gMarkers = [];
+  const T = trip(), bounds = new google.maps.LatLngBounds(), missing = []; let n = 0;
+  const add = (pos, opt, html, z) => { const m = new google.maps.Marker({ map: gmap, position: pos, zIndex: z, ...opt });
+    m.addListener('click', () => { gInfo.setContent(`<div class="gin">${html}</div>`); gInfo.open({ map: gmap, anchor: m }); infoOpen = true; });
+    gMarkers.push(m); bounds.extend(pos); n++; };
+  if (T.vlat != null) add({ lat: T.vlat, lng: T.vlng }, gPin('#ffffff', '🏡', true, '#1d7a6b'), `<b>${esc(T.vname || 'Unsere Villa')}</b><br><small>${esc(T.vaddr || '')}</small><br><a href="${esc(villaUrl(T))}" target="_blank" rel="noopener noreferrer">In Google Maps öffnen ↗</a>`, 1);
+  mapItems().forEach(a => {
+    if (a.lat == null) { if (a.place) missing.push(a); return; }
+    const food = a.cat === 'food', s = sig.filter(x => x.act === a.id), mine = s.some(x => x.uid === me);
+    const who = s.length ? (food ? `👍 ${s.length} · ` : `🙋 ${s.length} · `) + s.map(x => nm(x.uid)).join(', ') : (food ? 'Noch keine Stimmen' : 'Noch niemand dabei');
+    add({ lat: a.lat, lng: a.lng }, gPin(food ? '#ea580c' : '#1d7a6b', food ? '🍽' : '📍', mine, mine ? '#ffd84d' : ''),
+      `<b>${esc(a.title)}</b>${meta(a) ? `<br><small>${meta(a)}</small>` : ''}<br><small>${who}</small><br><a href="${esc(mapUrl(a))}" target="_blank" rel="noopener noreferrer">In Google Maps öffnen ↗</a>`, mine ? 3 : 2);
+  });
+  $('mapmiss').innerHTML = missing.length ? `📍 Ohne Kartenpunkt: ${missing.map(a => esc(a.title)).join(', ')} <small>· über ⋯ → „Ort ändern“ einmal aus den Vorschlägen wählen</small>` : '';
+  $('mapmiss').hidden = !missing.length;
+  if (fit) { if (n > 1) gmap.fitBounds(bounds, 48); else if (n) { gmap.setCenter(bounds.getCenter()); gmap.setZoom(13); } else { gmap.setCenter({ lat: 35.94, lng: 14.38 }); gmap.setZoom(11); } }
+}
+async function openMap() {
+  if (!MAPS_KEY) { toast('Die Karte ist noch nicht eingerichtet.', 1); return; }
+  mapOpen = true; $('mapv').hidden = false; document.documentElement.classList.add('noscroll');
+  try { history.pushState({ map: 1 }, ''); } catch (e) {}
+  try {
+    if (!gLib) { loadPlaces(); gLib = await google.maps.importLibrary('maps'); await google.maps.importLibrary('marker'); }
+    const dark = matchMedia('(prefers-color-scheme: dark)').matches, styles = dark ? [...G_DARK, ...G_CLEAN] : G_CLEAN;
+    if (!gmap) {
+      gmap = new gLib.Map($('mapc'), { center: { lat: 35.94, lng: 14.38 }, zoom: 11, disableDefaultUI: true, zoomControl: true, gestureHandling: 'greedy', clickableIcons: false, styles,
+        backgroundColor: dark ? '#0b0f10' : '#e8eef0' });
+      gInfo = new gLib.InfoWindow(); gInfo.addListener('closeclick', () => { infoOpen = false; }); gmap.addListener('click', () => { gInfo.close(); infoOpen = false; });
+    } else gmap.setOptions({ styles });
+    renderMap(true);
+  } catch (e) { console.warn(e); closeMap(); toast('Die Karte konnte nicht geladen werden.', 1); }
+}
+function closeMap(fromPop) {
+  if (!mapOpen) return; mapOpen = false; infoOpen = false; if (gInfo) gInfo.close();
+  $('mapv').hidden = true; document.documentElement.classList.remove('noscroll');
+  if (!fromPop && history.state && history.state.map) { try { history.back(); } catch (e) {} }
+}
+$('mapBtn').onclick = openMap; $('mapx').onclick = () => closeMap();
+$('mapf').onclick = e => { const b = e.target.closest('[data-mf]'); if (b) { mapFilter = b.dataset.mf; if (gInfo) gInfo.close(); infoOpen = false; renderMap(true); } };
+addEventListener('popstate', () => { if (mapOpen) closeMap(true); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && mapOpen) closeMap(); });
 
 // Kleines Extra: Tipp auf Flagge/Titel lässt Urlaubs-Emojis über den ganzen Bildschirm aufploppen
 const FX = ['🌴', '☀️', '🏖️', '🌊', '🍹', '⛵', '🐠', '😎', '🍦', '🐚', 'FLAG', 'FLAG', 'FLAG'];
@@ -931,7 +1037,7 @@ function renderStats() {
     <h3 class="sh3">👥 Wer war wann da?</h3>
     ${people.map(id => { const np = props.filter(a => a.by === id).length, ns = sig.filter(x => x.uid === id).length;
       return `<div class="srow"><span class="stack">${avatar(id)}</span><div class="sname"><b>${id === me ? 'Du' : esc(ppl[id])}</b><small>${np} ${np === 1 ? 'Vorschlag' : 'Vorschläge'} · ${ns}× 🙋/👍</small></div><span class="sago">${id === me ? 'jetzt' : ago(seen[id])}</span></div>`; }).join('')}
-    <small class="none">„Zuletzt aktiv“ wird ab heute erfasst.</small>`;
+    <small class="none">„Zuletzt aktiv“ und Aufrufe werden seit 16.10. erfasst.</small>`;
   $('stx').onclick = () => { statsOpen = false; renderStats(); };
 }
 
@@ -980,6 +1086,7 @@ $('trip').addEventListener('click', async e => {
     const data = { cat: 'info', title: 'Reise-Info', ts: 0 };
     TF.forEach(([k]) => { data[k] = $('tf-' + k).value.trim(); });
     data.vpid = data.vaddr ? ($('tf-vaddr').dataset.pid || '') : '';
+    Object.assign(data, geoFrom($('tf-vaddr'), trip(), 'vlat', 'vlng', 'vpid'));
     try { await setDoc(doc(db, 'activities', TRIP), data, { merge: true }); tripEdit = false; renderTrip(true); render(true); toast('Reise-Info gespeichert ✓'); }
     catch (err) { toast(FAIL, 1); }
   }
