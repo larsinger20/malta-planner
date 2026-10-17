@@ -998,7 +998,7 @@ function wxHtml() {
   if (!days.length) return '';
   const isTrip = days === tripDays, missing = isTrip && tripDays.length && tripDays[tripDays.length - 1].d < t2;
   const n1 = v => v == null ? '–' : v.toLocaleString('de-DE', { maximumFractionDigits: 1 });
-  return `<div class="wx"><div class="wxh"><b>${isTrip ? '🌤️ Wetter für eure Urlaubstage' : '🌤️ Wetter auf Malta'}</b><small>Mellieħa</small></div>
+  return `<div class="wx"><div class="wxh"><b>${isTrip ? '🌤️ Wetter für unsere Urlaubstage' : '🌤️ Wetter auf Malta'}</b><small>Mellieħa</small></div>
     <div class="wxs">${days.map(x => { const dt = new Date(x.d + 'T12:00:00');
       return `<div class="wxd${x.d === today ? ' tod' : ''}${x.d >= t1 && x.d <= t2 ? ' trip' : ''}"><small>${x.d === today ? 'Heute' : WD[dt.getDay()] + ' ' + dt.getDate() + '.'}</small><span class="wxi">${wxIcon(x.code)}</span>
         <b>${Math.round(x.max)}°</b><small>${Math.round(x.min)}°</small><small>💧 ${x.rain ?? 0} %</small><small>💨 ${Math.round(x.wind)}</small>${x.wave != null ? `<small>🌊 ${n1(x.wave)} m</small>` : ''}${x.sea != null ? `<small>🏊 ${Math.round(x.sea)}°</small>` : ''}</div>`; }).join('')}</div>
