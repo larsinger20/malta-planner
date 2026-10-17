@@ -2,10 +2,10 @@
 <html lang="de"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Malta Planner</title>
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=3">
-<link rel="icon" type="image/png" sizes="180x180" href="apple-touch-icon.png?v=3">
-<link rel="icon" href="favicon.ico?v=3" sizes="any">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=3">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=4">
+<link rel="icon" type="image/png" sizes="180x180" href="apple-touch-icon.png?v=4">
+<link rel="icon" href="favicon.ico?v=4" sizes="any">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=4">
 <meta name="apple-mobile-web-app-title" content="Malta Planner">
 <meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0b0f10" media="(prefers-color-scheme: dark)">
@@ -122,9 +122,16 @@ main{padding-bottom:90px}
 .mapbar{display:flex;align-items:center;gap:8px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);box-shadow:inset 0 -.5px 0 var(--bd);z-index:2}
 .mapf{flex:1;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}.mapf::-webkit-scrollbar{display:none}.mapf .chip{white-space:nowrap}
 #mapc{flex:1;min-height:0}.mapmiss{padding:10px 14px max(12px,env(safe-area-inset-bottom));font-size:14px;color:var(--mu);background:var(--card);box-shadow:inset 0 .5px 0 var(--bd)}.mapmiss small{opacity:.8}
-.gin{font:15px/1.4 var(--font);color:#1f2a2e;padding:2px 2px 0}.gin small{color:#6b7478}.gin a{color:#1d7a6b;font-weight:600;text-decoration:none}
+#mapv.mlight{--bg:#f6f4ef;--card:#fff;--tx:#1f2a2e;--mu:#6b7478;--ac:#1d7a6b;--acb:#1d7a6b;--bd:#e3e0d8;--fill:rgba(120,105,80,.09);--glass:rgba(246,244,239,.78)}
+#mapv.mdark{--bg:#0b0f10;--card:#20282b;--tx:#eef1f1;--mu:#98a3a7;--ac:#4fc3ae;--acb:#1f8c7a;--bd:#333d40;--fill:rgba(255,255,255,.07);--glass:rgba(11,15,16,.8)}
+#mapv{color:var(--tx)}.mth{font-size:16px}
+.gm-style .gm-style-iw-c{padding:0!important;border-radius:14px!important;background:var(--card)!important;box-shadow:0 0 0 .5px var(--bd),0 8px 24px rgba(0,0,0,.25)!important}
+.gm-style .gm-style-iw-d{overflow:auto!important;padding:0!important;max-height:none!important}.gm-style .gm-style-iw-tc::after{background:var(--card)!important}
+.gin{font:14px/1.35 var(--font);color:var(--tx);padding:10px 12px 12px;position:relative}.gin b{display:block;font-size:15px;font-weight:600;padding-right:22px;margin-bottom:2px}.gin small{display:block;color:var(--mu);font-size:13px}
+.gin .gbtn{display:inline-block;margin-top:8px;padding:5px 12px;border-radius:999px;background:var(--fill);color:var(--ac);font-weight:600;font-size:13px;text-decoration:none}
+.gin .ginx{position:absolute;right:4px;top:4px;width:26px;height:26px;padding:0;background:none;color:var(--mu);font-size:18px;line-height:1}
 html.noscroll,html.noscroll body{overflow:hidden}
-.cmts{margin:0 -6px;padding:0 6px}   /* Luft am Rand, damit der Ring ums Profilbild beim Animieren nie angeschnitten wird */
+.cmts{margin:8px -6px 0;padding:0 6px}   /* Luft am Rand, damit der Ring ums Profilbild beim Animieren nie angeschnitten wird */
 .cmi.new{animation:cmNew .38s cubic-bezier(.3,1,.4,1)}@keyframes cmNew{from{opacity:0;transform:translateY(-8px)}}
 .shc{padding:16px 18px}.shh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px}.shh h2{font-size:20px}.shh .meta{margin:0;font-size:15px;white-space:nowrap}
 
@@ -195,7 +202,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
 <button id="ps">PIN speichern</button></div>
 
 <button class="mapb" id="mapBtn" hidden aria-label="Karte mit allen Orten">🗺 Karte</button>
-<div class="mapv" id="mapv" hidden><div class="mapbar"><div class="mapf" id="mapf"></div><button class="x" id="mapx" aria-label="Karte schließen">×</button></div><div id="mapc"></div><div class="mapmiss" id="mapmiss"></div></div>
+<div class="mapv" id="mapv" hidden><div class="mapbar"><div class="mapf" id="mapf"></div><button class="x mth" id="mapth" aria-label="Kartenansicht hell/dunkel umschalten">🌙</button><button class="x" id="mapx" aria-label="Karte schließen">×</button></div><div id="mapc"></div><div class="mapmiss" id="mapmiss"></div></div>
 <button class="addb" id="addOpen" hidden>+ Neue Aktivität vorschlagen</button>
 
 <div class="c" id="add" hidden><div class="ah"><h2 id="ah">Neue Aktivität vorschlagen</h2><button class="x" id="addClose" aria-label="Schließen">×</button></div>
@@ -584,7 +591,8 @@ function cmBlock(a) {
   const items = cmItems(a), id = esc(a.id), open = cmOpen.has(a.id);
   if (!items.length && !open) return '';
   const label = items.length ? `💬 ${items.length} ${items.length === 1 ? 'Kommentar' : 'Kommentare'}` : '💬 Kommentare';
-  if (!open) return `<button class="tx" data-cmt="${id}">${label} ▾</button>`;
+  // gleicher Rahmen zu und offen → der Abstand nach oben springt nie
+  if (!open) return `<div class="cmts"><button class="tx" data-cmt="${id}">${label} ▾</button></div>`;
   return `<div class="cmts"><button class="tx" data-cmt="${id}">${label} ▴</button>
     ${items.map(c => `<div class="cmi${c.id === cmNew ? ' new' : ''}"><span class="stack">${avatar(c.u)}</span><div class="cmb"><b>${nm(c.u)}</b> <small>${ago(c.ts)}</small><div>${esc(c.t)}</div></div>${c.u === me || isAdmin() ? `<button class="x" data-cmdel="${id}|${esc(c.id)}" aria-label="Löschen">×</button>` : ''}</div>`).join('')}
     <div class="sa"><input id="cmin-${id}" data-cminp="${id}" placeholder="Kommentar schreiben…" maxlength="300"><button data-cmadd="${id}" aria-label="Senden">➤</button></div></div>`;
@@ -925,8 +933,9 @@ function mapItems() {
   return acts.filter(a => (a.cat === 'food' || (a.cat || 'act') === 'act') && (mapFilter === 'all' || (mapFilter === 'mine' ? sig.some(x => x.act === a.id && x.uid === me) : (a.cat || 'act') === mapFilter)));
 }
 function gPin(color, emo, big, ring) {
-  return { icon: { path: google.maps.SymbolPath.CIRCLE, scale: big ? 19 : 16, fillColor: color, fillOpacity: 1, strokeColor: ring || '#fff', strokeWeight: ring ? 4 : 3 },
-    label: { text: emo, fontSize: big ? '18px' : '15px' } };
+  // klein gehalten, damit die Karte sichtbar bleibt; eigene Pins etwas größer mit goldenem Ring
+  return { icon: { path: google.maps.SymbolPath.CIRCLE, scale: big ? 13 : 11, fillColor: color, fillOpacity: 1, strokeColor: ring || '#fff', strokeWeight: ring ? 3 : 2 },
+    label: { text: emo, fontSize: big ? '13px' : '11px' } };
 }
 function renderMap(fit) {
   if (!mapOpen || !gmap) return;
@@ -934,15 +943,15 @@ function renderMap(fit) {
   gMarkers.forEach(m => m.setMap(null)); gMarkers = [];
   const T = trip(), bounds = new google.maps.LatLngBounds(), missing = []; let n = 0;
   const add = (pos, opt, html, z) => { const m = new google.maps.Marker({ map: gmap, position: pos, zIndex: z, ...opt });
-    m.addListener('click', () => { gInfo.setContent(`<div class="gin">${html}</div>`); gInfo.open({ map: gmap, anchor: m }); infoOpen = true; });
+    m.addListener('click', () => { gInfo.setContent(`<div class="gin"><button class="ginx" aria-label="Schließen">×</button>${html}</div>`); gInfo.open({ map: gmap, anchor: m }); infoOpen = true; });
     gMarkers.push(m); bounds.extend(pos); n++; };
-  if (T.vlat != null) add({ lat: T.vlat, lng: T.vlng }, gPin('#ffffff', '🏡', true, '#1d7a6b'), `<b>${esc(T.vname || 'Unsere Villa')}</b><br><small>${esc(T.vaddr || '')}</small><br><a href="${esc(villaUrl(T))}" target="_blank" rel="noopener noreferrer">In Google Maps öffnen ↗</a>`, 1);
+  if (T.vlat != null) add({ lat: T.vlat, lng: T.vlng }, gPin('#ffffff', '🏡', true, '#1d7a6b'), `<b>🏡 ${esc(T.vname || 'Unsere Villa')}</b><small>${esc(T.vaddr || '')}</small><a class="gbtn" href="${esc(villaUrl(T))}" target="_blank" rel="noopener noreferrer">Google Maps ↗</a>`, 1);
   mapItems().forEach(a => {
     if (a.lat == null) { if (a.place) missing.push(a); return; }
     const food = a.cat === 'food', s = sig.filter(x => x.act === a.id), mine = s.some(x => x.uid === me);
     const who = s.length ? (food ? `👍 ${s.length} · ` : `🙋 ${s.length} · `) + s.map(x => nm(x.uid)).join(', ') : (food ? 'Noch keine Stimmen' : 'Noch niemand dabei');
     add({ lat: a.lat, lng: a.lng }, gPin(food ? '#ea580c' : '#1d7a6b', food ? '🍽' : '📍', mine, mine ? '#ffd84d' : ''),
-      `<b>${esc(a.title)}</b>${meta(a) ? `<br><small>${meta(a)}</small>` : ''}<br><small>${who}</small><br><a href="${esc(mapUrl(a))}" target="_blank" rel="noopener noreferrer">In Google Maps öffnen ↗</a>`, mine ? 3 : 2);
+      `<b>${esc(a.title)}</b>${meta(a) ? `<small>${meta(a)}</small>` : ''}<small>${who}</small><a class="gbtn" href="${esc(mapUrl(a))}" target="_blank" rel="noopener noreferrer">Google Maps ↗</a>`, mine ? 3 : 2);
   });
   $('mapmiss').innerHTML = missing.length ? `📍 Ohne Kartenpunkt: ${missing.map(a => esc(a.title)).join(', ')} <small>· über ⋯ → „Ort ändern“ einmal aus den Vorschlägen wählen</small>` : '';
   $('mapmiss').hidden = !missing.length;
@@ -954,15 +963,23 @@ async function openMap() {
   try { history.pushState({ map: 1 }, ''); } catch (e) {}
   try {
     if (!gLib) { loadPlaces(); gLib = await google.maps.importLibrary('maps'); await google.maps.importLibrary('marker'); }
-    const dark = matchMedia('(prefers-color-scheme: dark)').matches, styles = dark ? [...G_DARK, ...G_CLEAN] : G_CLEAN;
+    const dark = mapDark(), styles = dark ? [...G_DARK, ...G_CLEAN] : G_CLEAN; applyMapTheme();
     if (!gmap) {
       gmap = new gLib.Map($('mapc'), { center: { lat: 35.94, lng: 14.38 }, zoom: 11, disableDefaultUI: true, zoomControl: true, gestureHandling: 'greedy', clickableIcons: false, styles,
         backgroundColor: dark ? '#0b0f10' : '#e8eef0' });
-      gInfo = new gLib.InfoWindow(); gInfo.addListener('closeclick', () => { infoOpen = false; }); gmap.addListener('click', () => { gInfo.close(); infoOpen = false; });
+      gInfo = new gLib.InfoWindow({ headerDisabled: true, maxWidth: 250 }); gInfo.addListener('closeclick', () => { infoOpen = false; }); gmap.addListener('click', () => { gInfo.close(); infoOpen = false; });
     } else gmap.setOptions({ styles });
     renderMap(true);
   } catch (e) { console.warn(e); closeMap(); toast('Die Karte konnte nicht geladen werden.', 1); }
 }
+// Hell/Dunkel nur für die Karte: eigene Wahl (gespeichert), sonst wie das Gerät
+const mapDark = () => { let t = null; try { t = localStorage.getItem('mapTheme'); } catch (e) {} return t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; };
+function applyMapTheme() {
+  const d = mapDark(); $('mapv').classList.toggle('mdark', d); $('mapv').classList.toggle('mlight', !d);
+  $('mapth').textContent = d ? '☀️' : '🌙'; $('mapth').setAttribute('aria-label', d ? 'Karte hell anzeigen' : 'Karte dunkel anzeigen');
+  if (gmap) gmap.setOptions({ styles: d ? [...G_DARK, ...G_CLEAN] : G_CLEAN });
+}
+$('mapth').onclick = () => { const d = !mapDark(); try { localStorage.setItem('mapTheme', d ? 'dark' : 'light'); } catch (e) {} applyMapTheme(); };
 function closeMap(fromPop) {
   if (!mapOpen) return; mapOpen = false; infoOpen = false; if (gInfo) gInfo.close();
   $('mapv').hidden = true; document.documentElement.classList.remove('noscroll');
@@ -971,6 +988,7 @@ function closeMap(fromPop) {
 $('mapBtn').onclick = openMap; $('mapx').onclick = () => closeMap();
 $('mapf').onclick = e => { const b = e.target.closest('[data-mf]'); if (b) { mapFilter = b.dataset.mf; if (gInfo) gInfo.close(); infoOpen = false; renderMap(true); } };
 addEventListener('popstate', () => { if (mapOpen) closeMap(true); });
+document.addEventListener('click', e => { if (e.target.closest('.ginx') && gInfo) { gInfo.close(); infoOpen = false; } });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && mapOpen) closeMap(); });
 
 // Kleines Extra: Tipp auf Flagge/Titel lässt Urlaubs-Emojis über den ganzen Bildschirm aufploppen
