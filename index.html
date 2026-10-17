@@ -119,7 +119,7 @@ button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-heigh
 .pos{color:var(--ac)}.neg{color:var(--neg)}
 .klb{font-size:13px;color:var(--mu);margin:14px 0 2px;display:flex;justify-content:space-between;gap:8px}.klb span{white-space:nowrap}
 .brow{display:flex;align-items:center;gap:10px;padding:7px 0}.brow .sname{flex:0 0 92px}.brow .sname b{font-size:15px}.brow .sname small{font-size:12px}
-.bar{flex:1;position:relative;height:14px;min-width:40px}.bar::before{content:'';position:absolute;left:50%;top:-3px;bottom:-3px;border-left:1.5px solid var(--bd)}.bar i{position:absolute;top:2px;height:10px;border-radius:5px}
+.kbar{flex:1;position:relative;height:14px;min-width:40px}.kbar::before{content:'';position:absolute;left:50%;top:-3px;bottom:-3px;border-left:1.5px solid var(--bd)}.kbar i{position:absolute;top:2px;height:10px;border-radius:5px}
 .bval{flex:0 0 64px;text-align:right;font-weight:600;font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .trf .stack i{margin-left:0}.trf .stack{align-items:center}.trf .arr{color:var(--mu);font-size:15px;margin:0 5px}.trf .sname b{font-size:15px}.trf .sname .amt{display:block;font-size:17px;color:var(--tx)}.trf.oth{opacity:.72}.srow .x{background:none;width:28px;height:28px;font-size:18px}
 .cst{font-size:14px;color:var(--mu)}
@@ -560,7 +560,7 @@ function costView() {
     h += `<div class="klb">Wer steht wo?<span><span class="neg">◀ zahlt</span> · <span class="pos">bekommt ▶</span></span></div>` +
       who.sort((x, y) => (b[y] || 0) - (b[x] || 0)).map(u => { const v = b[u] || 0, w = v ? Math.max(3, Math.abs(v) / max * 50) : 0;
         return `<div class="brow"><span class="stack">${avatar(u)}</span><div class="sname"><b>${nm(u)}</b><small>bezahlt ${eur(S.paid[u] || 0)}</small></div>
-          <div class="bar">${w ? `<i style="${v > 0 ? 'left' : 'right'}:50%;width:${w.toFixed(1)}%;background:${v > 0 ? 'var(--acb)' : 'var(--negb)'}"></i>` : ''}</div>
+          <div class="kbar">${w ? `<i style="${v > 0 ? 'left' : 'right'}:50%;width:${w.toFixed(1)}%;background:${v > 0 ? 'var(--acb)' : 'var(--negb)'}"></i>` : ''}</div>
           <span class="bval ${v > 0 ? 'pos' : v < 0 ? 'neg' : ''}">${v > 0 ? '+' : v < 0 ? '−' : '±'}${eur(Math.abs(v)).replace(/,00\s?€/, ' €')}</span></div>`; }).join('');
     // 3) So gleichen wir aus: Pfeile zwischen den Profil-Kreisen, eigene zuerst
     if (!tr.length) h += '<div class="klb">So gleichen wir aus</div><div class="none">Alles ausgeglichen 🎉</div>';
