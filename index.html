@@ -113,6 +113,8 @@ button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-heigh
 .chip.on{background:var(--acb);color:#fff}.amt{font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}.srow.mine b{color:var(--ac)}.srow .x{background:none;width:28px;height:28px;font-size:18px}
 .cst{font-size:14px;color:var(--mu)}
 .cmts{margin-top:6px}.cmi{display:flex;gap:10px;align-items:flex-start;padding:8px 0;box-shadow:inset 0 .5px 0 var(--bd)}.cmi .stack i{width:26px;height:26px}.cmb{flex:1;min-width:0;font-size:15px;overflow-wrap:anywhere;line-height:1.35}.cmb small{color:var(--mu);font-size:12px}.cmb b{font-weight:600}.cmi .x{background:none;width:26px;height:26px;font-size:18px}
+.info .ple{flex-basis:100%;margin-top:2px}.ple input{margin-bottom:6px}.ple .acl{margin:-2px 0 8px}
+.plb{display:flex;align-items:center;gap:14px}.plb span{flex:1}.plb .dz{color:var(--rd);white-space:nowrap}.plb .tx{white-space:nowrap}.sm2{padding:7px 16px;font-size:15px}
 .shc{padding:16px 18px}.shh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px}.shh h2{font-size:20px}.shh .meta{margin:0;font-size:15px;white-space:nowrap}
 
 /* Countdown: Türkis-Kachel, Text links, Zahlen-Kästchen rechts */
@@ -297,7 +299,9 @@ const colOf = uid => PALETTE.includes(pcol[uid]) ? pcol[uid] : `hsl(${hue(ppl[ui
 const avatar = uid => { const nm = ppl[uid] || 'Jemand'; return `<i class="${uid === me ? 'me' : ''}" style="background:${colOf(uid)}">${esc(nm.trim()[0].toUpperCase())}</i>`; };
 
 // Inline-Formulare für Ort und Reservierung (geöffnet über das ⋯-Menü)
-const placeForm = a => `<div class="resf"><input id="epl" data-place="1" data-pid="${esc(a.pid || '')}" autocomplete="off" placeholder="📍 Ort, z. B. Blaue Grotte" maxlength="80" value="${esc(a.place || '')}"><button data-plsave="${esc(a.id)}">Speichern</button>${a.place ? `<button class="o" data-pldel="${esc(a.id)}">Entfernen</button>` : ''}<button class="o" data-plcancel="1">Abbrechen</button></div>`;
+// Ort ändern: volle Breite, Google-Vorschlag antippen speichert sofort, Enter speichert eigenen Text
+const placeForm = a => `<div class="ple"><input id="epl" data-place="1" data-pid="${esc(a.pid || '')}" data-plid="${esc(a.id)}" autocomplete="off" enterkeyhint="done" placeholder="📍 Ort suchen, z. B. Blue Grotto" maxlength="80" value="${esc(a.place || '')}">
+  <div class="plb">${a.place ? `<button class="tx dz" data-pldel="${esc(a.id)}">Ort entfernen</button>` : ''}<span></span><button class="tx mu" data-plcancel="1">Abbrechen</button><button class="sm2" data-plsave="${esc(a.id)}">Speichern</button></div></div>`;
 const resForm = a => { const r = a.res || {}; return `<div class="resf"><input type="time" id="ert" value="${esc(r.t || '')}"><input type="number" id="erp" min="1" max="99" placeholder="Personen" value="${esc(r.p || '')}"><button data-ressave="${esc(a.id)}">Speichern</button>${a.res ? `<button class="o" data-resdel="${esc(a.id)}">Entfernen</button>` : ''}<button class="o" data-rescancel="1">Abbrechen</button></div>`; };
 
 // ⋯-Menü pro Karte: seltene Aktionen gebündelt
@@ -705,7 +709,7 @@ $('list').onclick = async e => {
     catch (err) { toast(FAIL, 1); b.disabled = false; }
     return;
   }
-  if (b.dataset.pl) { editPlace = b.dataset.pl; editRes = null; render(true); const i = $('epl'); if (i) i.focus(); return; }
+  if (b.dataset.pl) { editPlace = b.dataset.pl; editRes = null; render(true); const i = $('epl'); if (i) { i.focus(); i.select(); } return; }
   if (b.dataset.plcancel) { editPlace = null; render(true); return; }
   if (b.dataset.pldel || b.dataset.plsave) {
     const id = b.dataset.pldel || b.dataset.plsave, place = b.dataset.plsave ? $('epl').value.trim() : '', pid = place ? ($('epl').dataset.pid || '') : '';
@@ -752,6 +756,7 @@ async function addShop(id) {
 }
 $('list').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.dataset.sinp) { e.preventDefault(); addShop(e.target.dataset.sinp); }
   if (e.key === 'Enter' && e.target.dataset.cminp) { e.preventDefault(); addComment(e.target.dataset.cminp); }
+  if (e.target.id === 'epl' && (e.key === 'Enter' || e.key === 'Escape')) { e.preventDefault(); const b = document.querySelector(e.key === 'Enter' ? '[data-plsave]' : '[data-plcancel]'); if (b) b.click(); }
   if (e.key === 'Enter' && (e.target.id === 'cf-amt' || e.target.id === 'cf-t')) { e.preventDefault(); saveCost(); } });
 // Updates, die während des Tippens kamen, nachholen, sobald das Feld verlassen wird
 $('list').addEventListener('focusout', () => setTimeout(() => { if (pending) render(); }, 0));
@@ -855,6 +860,7 @@ document.addEventListener('pointerdown', async e => {
   e.preventDefault();
   const pp = acList[+b.dataset.i].placePrediction, i = acInput;
   i.value = pp.mainText ? pp.mainText.text : pp.text.text; i.dataset.pid = pp.placeId; acClose();
+  if (i.id === 'epl') { const sv = document.querySelector('[data-plsave]'); if (sv) sv.click(); }
   try { await pp.toPlace().fetchFields({ fields: ['id'] }); } catch (err) {}
   acToken = null;
 });
