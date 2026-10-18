@@ -732,13 +732,33 @@ const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 // Höhe weich animieren (gemessen, statt max-height zu raten); Abschneiden nur während der Animation
 // Während etwas gleitet, warten Live-Updates mit dem Neuaufbau (sonst bricht die Animation ab und es springt)
 let slides = 0, slideWait = false;
+// Dauer wächst mit der Strecke: kurze Wege bleiben flott, lange Listen hetzen nicht (höchstens 0,56 s)
+const slideMs = (from, to, ms) => Math.round(Math.min(560, Math.max(ms, 200 + Math.abs(to - from) * .45)));
+const EASE_OPEN = [.45, 0, .15, 1], EASE_CLOSE = [.4, 0, .2, 1];
+// dieselbe Kurve in JavaScript (für mitlaufendes Scrollen im gleichen Takt)
+function bez([x1, y1, x2, y2], x) {
+  const c = (a, b, t) => 3 * a * t * (1 - t) ** 2 + 3 * b * t * t * (1 - t) + t ** 3;
+  let lo = 0, hi = 1, t = x; for (let k = 0; k < 20; k++) { t = (lo + hi) / 2; if (c(x1, x2, t) < x) lo = t; else hi = t; }
+  return c(y1, y2, t);
+}
+function glideScroll(dy, ms) {
+  if (!dy || calm()) return; const y0 = scrollY, t0 = performance.now();
+  const f = now => { const x = Math.min(1, (now - t0) / ms); scrollTo(0, y0 + dy * bez(EASE_OPEN, x)); if (x < 1) requestAnimationFrame(f); };
+  requestAnimationFrame(f);
+}
 function slideHeight(el, from, to, ms = 300) {
   if (!el || calm()) return Promise.resolve();
+  ms = slideMs(from, to, ms); const open = from < to;
   el.style.overflow = 'hidden'; slides++;
   // gleiche weiche Kurven wie die Reise-Info: sanfter Anlauf, weiches Auslaufen
-  const an = el.animate([{ height: from + 'px', opacity: from < to ? .35 : 1 }, { height: to + 'px', opacity: from < to ? 1 : .35 }], { duration: ms, easing: from < to ? 'cubic-bezier(.45,0,.15,1)' : 'cubic-bezier(.4,0,.2,1)' });
+  const an = el.animate([{ height: from + 'px' }, { height: to + 'px' }], { duration: ms, easing: `cubic-bezier(${open ? EASE_OPEN : EASE_CLOSE})` });
+  // Kopfzeile (erstes Kind) bleibt ruhig; der Rest blendet beim Öffnen nacheinander leicht ein, beim Schließen schnell aus
+  const kids = [...el.children].slice(1).map((c, i) => c.animate(open
+    ? [{ opacity: 0, transform: 'translateY(-4px)' }, { opacity: 1, transform: 'none' }]
+    : [{ opacity: 1 }, { opacity: 0 }],
+    open ? { duration: 260, delay: 40 + Math.min(i, 8) * 24, easing: 'ease-out', fill: 'backwards' } : { duration: Math.round(ms * .6), easing: 'ease-in', fill: 'forwards' }));
   // Sicherheitsnetz: spätestens nach der Dauer weitermachen, falls der Browser das Ende nicht meldet
-  return Promise.race([an.finished.catch(() => {}), new Promise(r => setTimeout(r, ms + 60))]).then(() => { an.cancel(); el.style.overflow = '';
+  return Promise.race([an.finished.catch(() => {}), new Promise(r => setTimeout(r, ms + 60))]).then(() => { an.cancel(); kids.forEach(k => k.cancel()); el.style.overflow = '';
     if (--slides <= 0) { slides = 0; if (slideWait) { slideWait = false; setTimeout(() => render(), 0); } } });
 }
 const cmBox = id => { const t = document.querySelector(`#list [data-cmt="${CSS.escape(id)}"]`); return t && t.closest('.cmts'); };
@@ -746,7 +766,12 @@ async function openComments(id, fromH, focus) {
   cmOpen.add(id); readCm(id); render(true);
   const box = cmBox(id), i = $('cmin-' + id);
   if (focus && i) i.focus({ preventScroll: true });
-  if (box) await slideHeight(box, fromH, box.offsetHeight, 320);
+  if (!box) return;
+  // Liegt das Aufgeklappte unterhalb des Bildschirms, scrollt die Seite im selben Takt mit (Kopfzeile bleibt im Bild)
+  const H = box.offsetHeight, top = box.getBoundingClientRect().top, over = top + H - (innerHeight - 20);
+  // beim Schreiben (über das ⋯-Menü) bis zum Eingabefeld unten, sonst nur so weit, dass die Kopfzeile oben bleibt
+  if (over > 0) glideScroll(focus ? over : Math.max(0, Math.min(over, top - 110)), slideMs(fromH, H, 320));
+  await slideHeight(box, fromH, H, 320);
 }
 const cmItems = a => Object.entries(a.cm || {}).filter(([, v]) => v && v.t).map(([id, v]) => ({ id, ...v })).sort((x, y) => (x.ts || 0) - (y.ts || 0));
 function cmBlock(a) {
