@@ -38,7 +38,7 @@ Nur drei Sammlungen: `activities`, `people`, `signups` (neue Sammlungen bräucht
 - **„Neu“**: Vorschlag anderer bleibt „Neu“, bis er wirklich im Bild war (≥ halb sichtbar, 0,8 s; `IntersectionObserver`, `people.sn`); Pille bleibt bis zum Reiterwechsel. Kommentare „N neu“ bis zum Aufklappen (`people.cmr`). Oranger Punkt am Reiter bei Ungesehenem **oder** Ungelesenem (Lars: so lassen). Älter als `NB0` bzw. `nbase` (Registrierung) = gesehen.
 - **Einkauf**: allgemeine Liste + Listen aller Kochvorschläge, Vorschläge aus `RECIPES` (Abgleich über den Titel; Treffer, die nur Teil eines längeren sind, fallen weg). Umschalter Liste | Kosten: Stand, Balken, wenige Überweisungen (`balances`/`settle`), Beträge über `parseAmt()` („1.234,56“).
 - **Mein Plan**: eigene Aktivitäten + alle Essen mit festem Tag, nach Tag/Tageszeit; Tipp springt zur Kachel (`goToCard`, Aufleuchten).
-- **Karte**: Google Maps Vollbild, Filter, eigener Hell/Dunkel-Schalter. **Ortsvorschläge** per Google beim Tippen (Malta bevorzugt, nicht gesperrt).
+- **Karte**: Google Maps Vollbild (Knopf in Aktivitäten, Essen, Mein Plan; Filter startet passend: Aktivitäten/Essen/Meine), eigener Hell/Dunkel-Schalter, Googles Orts-Symbole aus. Pins = eigene HTML-Ebene (`pinLayer`, eine `OverlayView`, keine Google-Marker): farbige Perle mit weißem Symbol (`GP_IC`), Größe nach Zoom (`pinSize`), Namen ab Zoom 13 nur wo Platz (`pinLabels`), Überlappende → Perle mit Zahl, Tipp zoomt (`pinCluster`), was die Villa verdeckt, rückt daneben; eigene mit goldenem Rand; angetippt hebt sich die Perle als Stecknadel (`.sel`). Fenster: Luftlinie zur Villa, „Zum Vorschlag“ (`mapGo` → `goToCard`, erst nach dem Zurück im Verlauf), „Route ab Villa ↗“. „N ohne Kartenpunkt“ aufklappbar, Namen springen zur Kachel. **Ortsvorschläge** per Google beim Tippen (Malta bevorzugt, nicht gesperrt).
 - Profil: Farbe, Name ändern (mit PIN), Tour (`TOUR`, 7 Schritte) + Tipps beim ersten Besuch (`TIPS`), Statistik (Admin). Easter Egg: Tipp auf Flagge.
 - **Update-Hinweis**: prüft ETag von `index.html` beim Zurückkommen/alle 15 Min. → „✨ Neue Version · tippen zum Aktualisieren“ (lädt mit `?v=`). Web-App: `html.pwa` → Verlauf hinter der Reiter-Leiste.
 - **Bewusst nicht gewollt**: Detail-Blatt/Overlay pro Kachel, Preisstufen, Malta-Sperre bei Orten, WLAN/Mietwagen/Notruf in der Reise-Info, Chips statt Dropdowns für Tag/Tageszeit, Push-Benachrichtigungen, Home-Bildschirm-Werbung, „Heute“-Ansicht, „Wer kocht?“, Funktionen, die auf festen Tagen/Uhrzeiten aufbauen.
@@ -69,5 +69,5 @@ Nur drei Sammlungen: `activities`, `people`, `signups` (neue Sammlungen bräucht
 - Cloud-Sitzung (iPhone): kein Browser-Fenster für Lars → nur kleine Änderungen, per Skript testen, kurz beschreiben, erst nach OK pushen.
 
 ## Offene Kleinigkeiten / Ideen
-- Paket 3: Kachel-Kontrast, Google-Logo unter „Ohne Kartenpunkt“, Tour aus dem Profilmenü während der Farbwahl, VoiceOver-Angaben, CSS aufräumen.
+- Paket 3: Kachel-Kontrast, Tour aus dem Profilmenü während der Farbwahl, VoiceOver-Angaben, CSS aufräumen.
 - Ideen: „Wer bringt was mit?“, Umfragen, Ernährungsangaben/Allergien im Profil.
