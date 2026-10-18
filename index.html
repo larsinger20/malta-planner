@@ -730,12 +730,16 @@ const costChip = a => { const c = COSTS().filter(x => x.act === a.id && x.kind !
 const cmOpen = new Set(); let cmNew = null;
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 // Höhe weich animieren (gemessen, statt max-height zu raten); Abschneiden nur während der Animation
+// Während etwas gleitet, warten Live-Updates mit dem Neuaufbau (sonst bricht die Animation ab und es springt)
+let slides = 0, slideWait = false;
 function slideHeight(el, from, to, ms = 300) {
   if (!el || calm()) return Promise.resolve();
-  el.style.overflow = 'hidden';
-  const an = el.animate([{ height: from + 'px', opacity: from < to ? .35 : 1 }, { height: to + 'px', opacity: from < to ? 1 : .35 }], { duration: ms, easing: 'cubic-bezier(.3,1,.4,1)' });
+  el.style.overflow = 'hidden'; slides++;
+  // gleiche weiche Kurven wie die Reise-Info: sanfter Anlauf, weiches Auslaufen
+  const an = el.animate([{ height: from + 'px', opacity: from < to ? .35 : 1 }, { height: to + 'px', opacity: from < to ? 1 : .35 }], { duration: ms, easing: from < to ? 'cubic-bezier(.45,0,.15,1)' : 'cubic-bezier(.4,0,.2,1)' });
   // Sicherheitsnetz: spätestens nach der Dauer weitermachen, falls der Browser das Ende nicht meldet
-  return Promise.race([an.finished.catch(() => {}), new Promise(r => setTimeout(r, ms + 60))]).then(() => { an.cancel(); el.style.overflow = ''; });
+  return Promise.race([an.finished.catch(() => {}), new Promise(r => setTimeout(r, ms + 60))]).then(() => { an.cancel(); el.style.overflow = '';
+    if (--slides <= 0) { slides = 0; if (slideWait) { slideWait = false; setTimeout(() => render(), 0); } } });
 }
 const cmBox = id => { const t = document.querySelector(`#list [data-cmt="${CSS.escape(id)}"]`); return t && t.closest('.cmts'); };
 async function openComments(id, fromH, focus) {
@@ -838,6 +842,7 @@ function tabDots() {
 }
 function render(force) {
   if (!ppl[me]) return;
+  if (!force && slides) { slideWait = true; return; }
   const ae = document.activeElement;
   if (!force && ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && $('list').contains(ae)) { pending = true; return; }
   pending = false;
