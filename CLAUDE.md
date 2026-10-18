@@ -52,6 +52,10 @@ Drei Sammlungen: `activities`, `people`, `signups`. **Neue Sammlungen funktionie
 - Animationen dezent (Lars mag Wobbeln/Glas, aber nicht übertrieben), immer `prefers-reduced-motion` beachten. Animationen nur beim auslösenden Element abspielen, nicht bei jedem Neuaufbau.
 - In Texten für Nutzer die Vorschlagskacheln nie „Karte“ nennen (Verwechslung mit der Landkarte).
 
+- **Aufklapp-Zeilen** (Kommentare, Vorschläge, Einkaufsliste bei Kochvorschlägen, Reise-Info): ganze Zeile antippbar (volle Breite, min. 44 px), Text bleibt in beiden Zuständen gleich, nur ein Linien-Pfeil dreht sich (`chev(key, open)`, Klasse `.op` am Knopf, `chevMark(key)` vor dem Neuaufbau; zum Zuklappen mit Gleiten `.cl`). Alle gleiten per `slideHeight` auf/zu; auch zugeklappt steckt der Knopf in seiner Hülle (`.cmts`/`.sug`/`.shop`), sonst springt der Abstand. Vorschläge: Zusatz („Urlaubs-Basics …“ / „Passt zu …“) klein im Kasten (`.sgl`).
+- **Einkauf-Animationen**: Vorschlag antippen → Chip schrumpft weg, neuer Eintrag gleitet herein (`justAdded`, `.si.new`, auch bei getippten Einträgen); Löschen → Zeile schrumpft weg, ein zurückkehrender Vorschlags-Chip poppt auf (`justBack`, `.chip.back`). Grundsatz: Animationen nur für das gerade angetippte Element über kurzlebige Merker, nie bei jedem Neuaufbau.
+- **Wetter** (Reise-Info): ruhige, gleich hohe Wisch-Kacheln (Tag, Symbol, max/min, Regen nur ab 20 %), Tag antippbar (`wxSel`, `.wxd.sel`, ohne Neuaufbau), darunter Detailkasten `#wxdet` mit Datum + Sonnenauf-/-untergang (`sunrise`/`sunset` von Open-Meteo) und vier festen Spalten Regen · Wind · Wellen · Wasser („folgt“, solange die Meeresvorhersage nicht reicht). Angetippte Kachel scrollt ganz ins Bild, Wisch-Position bleibt bei Live-Updates erhalten. Lars fand eine Liste pro Tag zu lang.
+
 ## Fallstricke im Code
 - `render()` wird übersprungen, solange ein Eingabefeld Fokus hat (`pending`), und beim `focusout` nachgeholt. Eigene Aktionen rufen `render(true)`.
 - `$('list').onclick` ist ein großer Verteiler: **neue Knöpfe in der Liste brauchen einen eigenen Fall** (oder früh `return`), sonst landen sie beim Mitmachen-Code (der ist mit `if (!a) return;` abgesichert).
