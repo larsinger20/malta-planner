@@ -40,7 +40,7 @@ Drei Sammlungen: `activities`, `people`, `signups`. **Neue Sammlungen funktionie
 - Karten mit ⋯-Menü (Bearbeiten, Ort, Kommentar, Ausgabe, Löschen). Ersteller wird automatisch eingetragen.
 - Ortsvorschläge per Google, Karte aller Orte (Google Maps, eigener Hell/Dunkel-Schalter), Einkaufs-Vorschläge aus eingebauter Rezeptliste `RECIPES`.
 - Profilfarben (jede nur einmal), Tour für neue Nutzer (7 Schritte, `TOUR`) + kleine Tipps beim ersten Besuch (`TIPS`), Statistik für den Admin, Easter Egg (Tipp auf Flagge).
-- Bewusst **nicht** gewollt bzw. verworfen: Detail-Blatt/Overlay pro Karte („zu overengineered“), Preisstufen bei Restaurants, Malta-Sperre bei Ortsvorschlägen, WLAN/Mietwagen/Notruf in der Reise-Info, Chips statt Dropdowns für Tag/Tageszeit, Push-Benachrichtigungen, Home-Bildschirm-Werbung.
+- Bewusst **nicht** gewollt bzw. verworfen: Detail-Blatt/Overlay pro Karte („zu overengineered“), Preisstufen bei Restaurants, Malta-Sperre bei Ortsvorschlägen, WLAN/Mietwagen/Notruf in der Reise-Info, Chips statt Dropdowns für Tag/Tageszeit, Push-Benachrichtigungen, Home-Bildschirm-Werbung, „Heute“-Ansicht im Urlaub, „Wer kocht?“ (18.10.2026: „kein Fan“).
 
 ## Design-Regeln
 - Stil: **Apple-Formen + Urlaubsfarben**. Sand `#f6f4ef` / dunkel `#0b0f10`, Karten `#fff` / `#20282b` mit feinem Rahmen, Radius 20 px, Akzent **Meerestürkis** (`--acb`/`--ac`). Alle Farben nur über CSS-Variablen in `:root`; **Dunkelmodus immer mitpflegen und prüfen**.
@@ -92,8 +92,8 @@ Drei Sammlungen: `activities`, `people`, `signups`. **Neue Sammlungen funktionie
 - Prüfen in 375 px Breite, hell **und** dunkel. Die Testumgebung spielt Animationen oft nicht ab: Werte und Abläufe per JavaScript nachmessen statt nur Screenshots zu vertrauen.
 - **Cloud-Sitzung (z. B. vom iPhone)**: Dort gibt es kein Browser-Fenster für Lars. Kleine Änderungen (Texte, Farben, kleine Korrekturen) sind ok, mit Test per Skript und kurzer Beschreibung für Lars. Größere Umbauten lieber am PC mit sichtbarer Testversion. Auch in der Cloud gilt: erst nach Lars' OK pushen.
 
+- **Wie die Gruppe plant** (18.10.2026, Lars): Die meisten Vorschläge haben **keinen Tag und keine Uhrzeit**, vieles wird spontan entschieden. Die Seite ist vor allem Ideensammlung + Abstimmung, kein Terminkalender. Keine Funktionen bauen, die auf festen Tagen/Uhrzeiten aufbauen.
+
 ## Mögliche nächste Features
-- „Wer kocht?“ / Koch-Team bei Kochvorschlägen
-- „Wer bringt was mit?“-Liste, Umfragen, Heute-Ansicht während des Urlaubs
+- „Wer bringt was mit?“-Liste, Umfragen
 - Ernährungsangaben/Allergien im Profil
-- Rückblick nach dem Urlaub
