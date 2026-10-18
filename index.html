@@ -8,6 +8,7 @@
 <link rel="shortcut icon" href="favicon.ico">
 <link rel="apple-touch-icon" sizes="180x180" href="malta-touch-180.png">
 <meta name="apple-mobile-web-app-title" content="Malta Planner">
+<script>try { if (navigator.standalone || matchMedia('(display-mode: standalone)').matches) document.documentElement.classList.add('pwa'); } catch (e) {}</script>
 <meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0b0f10" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -47,7 +48,7 @@ input[type=checkbox]{-webkit-appearance:auto;appearance:auto;accent-color:var(--
 textarea{resize:vertical;max-width:100%;min-height:70px}
 
 /* Reiter: iOS-Segment-Schalter in einer Milchglas-Leiste */
-.tabs{position:sticky;top:0;z-index:4;margin:0 0 12px;padding:8px 0;padding-top:max(8px,env(safe-area-inset-top))}
+.tabs{position:sticky;top:0;z-index:4;margin:0 0 12px;padding:8px 0;padding-top:max(8px,env(safe-area-inset-top))}html.pwa .tabs::before{content:'';position:absolute;z-index:-1;left:-16px;right:-16px;top:0;bottom:-14px;pointer-events:none;background:linear-gradient(to bottom,var(--bg) 0,var(--bg) 45%,color-mix(in srgb,var(--bg) 70%,transparent) 72%,transparent)}
 /* Liquid Glass: Kapsel mit starker Unschärfe, Lichtkante oben, weicher Schatten */
 .seg{position:relative;display:flex;padding:4px;border-radius:999px;background:var(--lg);-webkit-backdrop-filter:blur(22px) saturate(190%);backdrop-filter:blur(22px) saturate(190%);
   box-shadow:inset 0 0 0 .5px var(--lgbd),inset 0 1px 0 var(--lghi),inset 0 -1px 1px rgba(255,255,255,.08),var(--lgsh)}
@@ -202,7 +203,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
 .pm small{color:var(--mu);font-size:13px}.sw{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin:6px 0 12px}.swc{width:26px;height:26px;padding:0;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}.sw.big{grid-template-columns:repeat(7,minmax(0,1fr));gap:clamp(4px,2vw,10px);margin:14px 0 4px;justify-items:center}.sw.big .swc{width:36px;height:36px;font-size:13px}
 .swc.on{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--tx)}.swc.tk{color:#fff;font-size:11px;font-weight:700;opacity:.45;cursor:not-allowed}.swc.tk:active{transform:none}.pm b{display:block;margin-bottom:10px}.pm button{width:100%;white-space:nowrap}
 .toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translate(-50%,24px) scale(.96);opacity:0;transition:opacity .25s,transform .35s cubic-bezier(.3,1.3,.5,1);background:rgba(29,29,31,.88);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:#fff;padding:12px 20px;border-radius:999px;font-size:15px;font-weight:500;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.14),inset 0 1px 0 rgba(255,255,255,.22),0 8px 30px rgba(0,0,0,.25);z-index:20;width:max-content;max-width:calc(100% - 32px);text-align:center;pointer-events:none}
-.toast.on{opacity:1;transform:translate(-50%,0) scale(1)}.toast.err{background:var(--rdb)}
+.toast.on{opacity:1;transform:translate(-50%,0) scale(1)}.toast.upd{pointer-events:auto;z-index:19;font-family:var(--font);cursor:pointer}.toast.upd:active{transform:translate(-50%,0) scale(.96)}.toast.err{background:var(--rdb)}
 @media(prefers-color-scheme:dark){.toast{background:rgba(58,58,60,.9)}}
 .fx{position:fixed;left:0;top:0;pointer-events:none;z-index:50;font-size:30px;line-height:1;will-change:transform}.fx img{width:36px;height:24px;border-radius:3px;box-shadow:0 0 0 1px rgba(0,0,0,.1);display:block}
 
@@ -276,6 +277,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
 <div id="list" hidden><div class="m">Lädt…</div></div>
 </main>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<button class="toast upd" id="upd" hidden>✨ Neue Version · tippen zum Aktualisieren</button>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -717,7 +719,7 @@ const costChip = a => { const c = COSTS().filter(x => x.act === a.id && x.kind !
 
 // ===== Kommentare an Vorschlägen =====
 // Feld cm im Vorschlag: { commentId: { u, t, ts } }, Einträge einzeln gemerged (wie die Einkaufsliste)
-const cmOpen = new Set(), cmRead = {}; let cmNew = null;   // cmRead: wann man die Kommentare eines Vorschlags zuletzt aufgeklappt hat (dann sind sie gelesen)
+const cmOpen = new Set(); let cmNew = null;
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 // Höhe weich animieren (gemessen, statt max-height zu raten); Abschneiden nur während der Animation
 function slideHeight(el, from, to, ms = 300) {
@@ -729,7 +731,7 @@ function slideHeight(el, from, to, ms = 300) {
 }
 const cmBox = id => { const t = document.querySelector(`#list [data-cmt="${CSS.escape(id)}"]`); return t && t.closest('.cmts'); };
 async function openComments(id, fromH, focus) {
-  cmOpen.add(id); cmRead[id] = Date.now(); render(true);
+  cmOpen.add(id); readCm(id); render(true);
   const box = cmBox(id), i = $('cmin-' + id);
   if (focus && i) i.focus({ preventScroll: true });
   if (box) await slideHeight(box, fromH, box.offsetHeight, 320);
@@ -738,7 +740,7 @@ const cmItems = a => Object.entries(a.cm || {}).filter(([, v]) => v && v.t).map(
 function cmBlock(a) {
   const items = cmItems(a), id = esc(a.id), open = cmOpen.has(a.id);
   if (!items.length && !open) return '';
-  const nn = seenPrev ? newCm(a, Math.max(seenPrev[catOf(a)], cmRead[a.id] || 0)) : 0;
+  const nn = unreadCm(a);
   const label = (items.length ? `💬 ${items.length} ${items.length === 1 ? 'Kommentar' : 'Kommentare'}` : '💬 Kommentare') + (nn ? `<span class="nb cm">${nn} neu</span>` : '');
   // gleicher Rahmen zu und offen → der Abstand nach oben springt nie
   if (!open) return `<div class="cmts"><button class="tx" data-cmt="${id}">${label}${chev('c' + a.id, false)}</button></div>`;
@@ -781,41 +783,58 @@ function restoreFields(m) {
     if (e.value !== m[id].v) e.value = m[id].v; if (e.type === 'checkbox') e.checked = m[id].c; Object.assign(e.dataset, m[id].d); }
   const ek = $('ek'); if (ek) $('list').querySelectorAll('[data-ekv]').forEach(x => x.classList.toggle('on', x.dataset.ekv === ek.value));
 }
-// ===== „Neu“-Abzeichen: Vorschläge und Kommentare anderer, die seit dem letzten Besuch des Reiters dazukamen =====
-// people/{uid}.lastAct / lastFood = Zeitpunkt, zu dem man den Reiter zuletzt verlassen bzw. betreten hat.
-// seenPrev hält den Stand vom Betreten fest, damit die Abzeichen während des Besuchs stehen bleiben.
-const SEEN_KEY = { act: 'lastAct', food: 'lastFood' };
-let seenPrev = null;
-function initSeen() {
-  if (seenPrev || !ppl[me] || !pdat[me]) return;
-  const P = pdat[me], now = Date.now(), up = {}; seenPrev = {};
-  for (const c in SEEN_KEY) { const v = P[SEEN_KEY[c]]; seenPrev[c] = v || now; if (!v) up[SEEN_KEY[c]] = now; }   // erster Besuch: nichts ist „neu“
-  if (SEEN_KEY[tab]) up[SEEN_KEY[tab]] = now;
-  Object.assign(P, up); setDoc(doc(db, 'people', me), up, { merge: true }).catch(() => {});
+// ===== „Neu“-Abzeichen =====
+// Ein Vorschlag eines anderen ist „neu“, bis er wirklich auf dem Bildschirm war (mind. halb sichtbar, 0,8 s lang).
+// Gemerkt pro Vorschlag in people/{uid}.sn.{id}. Die Pille bleibt bis zum Reiterwechsel stehen (shownNew),
+// der Punkt am Reiter verschwindet, sobald alles Neue dort gesehen ist. Vorschläge von vor NB0 (Start der Funktion)
+// bzw. vor der eigenen Registrierung (nbase) gelten als gesehen.
+const NB0 = Date.UTC(2026, 9, 18, 16, 28);
+const nbBase = () => Math.max(NB0, (pdat[me] && pdat[me].nbase) || 0);
+const inCat = (a, c) => !!a.title && (c === 'food' ? a.cat === 'food' : (a.cat || 'act') === 'act');
+const unseen = a => !!pdat[me] && a.by !== me && (a.ts || 0) > nbBase() && !(pdat[me].sn || {})[a.id];
+const shownNew = new Set();
+const isNewAct = a => { if (unseen(a)) shownNew.add(a.id); return shownNew.has(a.id); };
+function seeCard(id) {
+  if (!ppl[me] || !pdat[me] || (pdat[me].sn || {})[id]) return;
+  const now = Date.now(); (pdat[me].sn = pdat[me].sn || {})[id] = now;
+  setDoc(doc(db, 'people', me), { sn: { [id]: now } }, { merge: true }).catch(() => {});
+  tabDots();
 }
-function markTabSeen(c) {
-  if (!seenPrev || !SEEN_KEY[c] || !pdat[me]) return;
-  const now = Date.now(); pdat[me][SEEN_KEY[c]] = now; setDoc(doc(db, 'people', me), { [SEEN_KEY[c]]: now }, { merge: true }).catch(() => {});
+const nbTimers = {};
+const nbObs = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => {
+  const id = e.target.dataset.card; if (!id) return;
+  const vis = e.isIntersecting && (e.intersectionRatio >= .5 || e.intersectionRect.height >= innerHeight * .4);
+  if (vis && !nbTimers[id]) nbTimers[id] = setTimeout(() => { delete nbTimers[id]; if (!document.hidden && document.querySelector(`#list [data-card="${CSS.escape(id)}"]`)) seeCard(id); }, 800);
+  if (!vis && nbTimers[id]) { clearTimeout(nbTimers[id]); delete nbTimers[id]; }
+}), { threshold: [0, .25, .5, .75, 1] }) : null;
+// nach jedem Neuaufbau die noch ungesehenen Kacheln beobachten
+function watchNew() {
+  if (!nbObs) return; nbObs.disconnect();
+  const ids = new Set();
+  $('list').querySelectorAll('.card[data-card]').forEach(el => { const a = acts.find(x => x.id === el.dataset.card); if (a && unseen(a)) { ids.add(a.id); nbObs.observe(el); } });
+  for (const id in nbTimers) if (!ids.has(id)) { clearTimeout(nbTimers[id]); delete nbTimers[id]; }
 }
-function enterTab(c) { if (!seenPrev || !SEEN_KEY[c] || !pdat[me]) return; seenPrev[c] = pdat[me][SEEN_KEY[c]] || Date.now(); markTabSeen(c); }
-const catOf = a => a.cat === 'food' ? 'food' : 'act';
-const isNewAct = a => !!seenPrev && a.by !== me && (a.ts || 0) > seenPrev[catOf(a)];
+document.addEventListener('visibilitychange', () => { if (!document.hidden) watchNew(); });
 const newCm = (a, since) => cmItems(a).filter(c => c.u !== me && (c.ts || 0) > since).length;
-// Punkt am Reiter: dort gibt es seit dem letzten Besuch Neues (für den Reiter, in dem man gerade ist, kein Punkt)
-function tabDots() {
-  for (const c in SEEN_KEY) { const b = document.querySelector(`.tb[data-tab="${c}"]`); if (!b) continue;
-    const since = pdat[me] && pdat[me][SEEN_KEY[c]];
-    const has = !!seenPrev && c !== tab && !!since && acts.some(a => a.title && (c === 'food' ? a.cat === 'food' : (a.cat || 'act') === 'act') && ((a.by !== me && (a.ts || 0) > since) || newCm(a, since)));
-    b.classList.toggle('hasnew', has); }
+// Kommentare gelten erst als gelesen, wenn man sie aufklappt (pro Vorschlag gemerkt in people/{uid}.cmr.{id})
+const unreadCm = a => { if (!pdat[me]) return 0; return newCm(a, Math.max(nbBase(), (pdat[me].cmr || {})[a.id] || 0)); };
+function readCm(id) {
+  if (!ppl[me] || !pdat[me]) return;
+  const now = Date.now(); (pdat[me].cmr = pdat[me].cmr || {})[id] = now;
+  setDoc(doc(db, 'people', me), { cmr: { [id]: now } }, { merge: true }).catch(() => {});
 }
-document.addEventListener('visibilitychange', () => { if (document.hidden) markTabSeen(tab); else { enterTab(tab); render(true); } });
+// Punkt am Reiter: dort gibt es noch ungesehene Vorschläge oder ungelesene Kommentare
+function tabDots() {
+  for (const c of ['act', 'food']) { const b = document.querySelector(`.tb[data-tab="${c}"]`); if (!b) continue;
+    b.classList.toggle('hasnew', !!pdat[me] && acts.some(a => inCat(a, c) && (unseen(a) || unreadCm(a)))); }
+}
 function render(force) {
   if (!ppl[me]) return;
   const ae = document.activeElement;
   if (!force && ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && $('list').contains(ae)) { pending = true; return; }
   pending = false;
   keepForm(); const kept = freshForm ? {} : keepFields(); freshForm = false;
-  renderList(); restoreFields(kept); growNew();
+  renderList(); restoreFields(kept); growNew(); watchNew();
 }
 const shown = (id, item) => !!$('list').querySelector(`[data-sdel="${CSS.escape(id + '|' + item)}"]`);
 function growNew() {
@@ -866,7 +885,7 @@ function renderList() {
   }).join('');
 }
 
-onSnapshot(collection(db, 'people'), q => { ppl = {}; pins = {}; seen = {}; pcol = {}; pdat = {}; q.docs.forEach(d => { pdat[d.id] = d.data(); ppl[d.id] = d.data().name; pins[d.id] = d.data().ph || ''; seen[d.id] = d.data().seen || 0; pcol[d.id] = d.data().col || ''; }); initSeen(); top(); render(); countVisit(); markSeen(); renderStats(); maybeTour(); },
+onSnapshot(collection(db, 'people'), q => { ppl = {}; pins = {}; seen = {}; pcol = {}; pdat = {}; q.docs.forEach(d => { pdat[d.id] = d.data(); ppl[d.id] = d.data().name; pins[d.id] = d.data().ph || ''; seen[d.id] = d.data().seen || 0; pcol[d.id] = d.data().col || ''; }); top(); render(); countVisit(); markSeen(); renderStats(); maybeTour(); },
   e => { $('list').hidden = false; $('list').innerHTML = '<div class="m">Verbindung zur Datenbank fehlgeschlagen. Prüfe Config und Regeln.</div>'; console.error(e); });
 onSnapshot(collection(db, 'activities'), q => { acts = q.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.ts || 0) - (b.ts || 0)); render(); renderTrip(); renderStats(); if (mapOpen && !infoOpen) renderMap(false); });
 onSnapshot(collection(db, 'signups'), q => { sig = q.docs.map(d => d.data()); render(); });
@@ -888,7 +907,7 @@ $('ns').onclick = async () => {
       toast(pins[oid] ? 'Der Name ist vergeben und der PIN passt nicht. Bist du es? Dann prüfe deinen PIN, sonst nimm einen anderen Namen.' : 'Dieser Name ist schon vergeben. Nimm einen anderen.', 1);
       return;
     }
-    await setDoc(doc(db, 'people', me), { name: v, ph: h }, { merge: true });
+    await setDoc(doc(db, 'people', me), { name: v, ph: h, ...(ppl[me] ? {} : { nbase: Date.now() }) }, { merge: true });   // neu registriert: Älteres gilt nicht als „neu“
     ppl[me] = v; pins[me] = h; editing = false; $('pin').value = ''; top(); render();
   } catch (e) { toast(FAIL, 1); }
 };
@@ -946,7 +965,7 @@ $('list').onclick = async e => {
   if (b.dataset.cm) { const id = b.dataset.cm; if (!cmOpen.has(id)) { const t = document.querySelector(`#list [data-cmt="${CSS.escape(id)}"]`); await openComments(id, t ? t.offsetHeight : 0, true); } else { const i = $('cmin-' + id); if (i) i.focus({ preventScroll: true }); } return; }
   if (b.dataset.cmt) { const id = b.dataset.cmt;
     // Weich auf- und zuklappen: Höhe vom Knopf bis zur ganzen Liste und zurück
-    if (cmOpen.has(id)) { b.classList.add('cl'); const box = b.closest('.cmts'); if (box) await slideHeight(box, box.offsetHeight, b.offsetHeight, 240); cmOpen.delete(id); render(true); }
+    if (cmOpen.has(id)) { b.classList.add('cl'); const box = b.closest('.cmts'); if (box) await slideHeight(box, box.offsetHeight, b.offsetHeight, 240); readCm(id); cmOpen.delete(id); render(true); }
     else { chevMark('c' + id); await openComments(id, b.offsetHeight); }
     return; }
   if (b.dataset.cmadd) { addComment(b.dataset.cmadd); return; }
@@ -1113,7 +1132,7 @@ addEventListener('resize', moveInd);
 const animList = () => { const l = $('list'); l.classList.remove('anim'); void l.offsetWidth; l.classList.add('anim'); clearTimeout(animList.t); animList.t = setTimeout(() => l.classList.remove('anim'), 800); };
 
 function setTab(t) {
-  if (t !== tab) { markTabSeen(tab); enterTab(t); closeTrip(); scrollTo(0, 0); }   // neuer Reiter = Anfang der Seite, nie irgendwo mitten in der Liste
+  if (t !== tab) { shownNew.clear(); closeTrip(); scrollTo(0, 0); }   // neuer Reiter = Anfang der Seite, nie irgendwo mitten in der Liste
   tab = t;
   document.querySelectorAll('.tb').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
   const food = t === 'food';
@@ -1459,6 +1478,22 @@ function markSeen() {
   setDoc(doc(db, 'people', me), { seen: Date.now() }, { merge: true }).catch(() => {});
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') markSeen(); });
+// ===== Neue Version der Seite erkennen (wichtig für die Web-App auf dem Home-Bildschirm, die man nicht neu laden kann) =====
+// Merkt sich beim Start die Kennung der Datei (ETag/Last-Modified von GitHub) und vergleicht beim Zurückkommen in die App.
+let verBase = null, verLast = 0;
+const verOf = async () => { try { const r = await fetch(location.pathname, { method: 'HEAD', cache: 'no-store' }); return r.ok ? (r.headers.get('etag') || r.headers.get('last-modified')) : null; } catch (e) { return null; } };
+async function checkVer() {
+  if (Date.now() - verLast < 60000) return; verLast = Date.now();      // höchstens einmal pro Minute nachsehen
+  const v = await verOf(); if (!v) return;
+  if (!verBase) { verBase = v; return; }
+  if (v !== verBase && $('upd').hidden) { $('upd').hidden = false; requestAnimationFrame(() => requestAnimationFrame(() => $('upd').classList.add('on'))); }
+}
+// neu laden mit Anhang, damit sicher die frische Datei kommt (nicht die zwischengespeicherte), danach Anhang wieder entfernen
+$('upd').onclick = () => { location.replace(location.pathname + '?v=' + Date.now()); };
+if (/[?&]v=\d+/.test(location.search)) history.replaceState(null, '', location.pathname + location.hash);
+checkVer();
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkVer(); });
+setInterval(() => { if (!document.hidden) checkVer(); }, 15 * 60000);
 const ago = t => { if (!t) return '–'; const m = Math.floor((Date.now() - t) / 60000);
   if (m < 2) return 'gerade eben'; if (m < 60) return `vor ${m} Min.`; if (m < 24 * 60 && dayKey(t) === dayKey()) return `heute ${new Date(t).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`;
   if (dayKey(t) === dayKey(Date.now() - 864e5)) return `gestern ${new Date(t).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`;
