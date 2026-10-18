@@ -141,7 +141,7 @@ button.tx[data-cmt],button.tx[data-sugt],button.tx[data-shop]{display:flex;align
 .mapb{position:fixed;left:50%;bottom:max(22px,calc(env(safe-area-inset-bottom) + 10px));transform:translateX(-50%);z-index:15;background:var(--lg);-webkit-backdrop-filter:blur(22px) saturate(190%);backdrop-filter:blur(22px) saturate(190%);color:var(--tx);padding:11px 20px;font-size:15px;font-weight:500;box-shadow:var(--lgring),var(--lgsh)}.mapb:active{transform:translateX(-50%) scale(.96)}
 
 main{padding-bottom:90px}
-.mapv{position:fixed;inset:0;z-index:35;background:var(--bg);display:flex;flex-direction:column}
+.mapv{position:fixed;inset:0;z-index:35;background:var(--bg);display:flex;flex-direction:column}.mapdim{position:fixed;inset:0;z-index:34;background:#000;opacity:0;pointer-events:none}
 .mapbar{position:absolute;top:0;left:0;right:0;display:flex;align-items:flex-start;gap:8px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));z-index:2;pointer-events:none}.mapbar>*{pointer-events:auto}
 .mglass{background:var(--lg);-webkit-backdrop-filter:blur(22px) saturate(190%);backdrop-filter:blur(22px) saturate(190%);box-shadow:var(--lgring),var(--lgsh)}
 .mbtns{display:flex;flex-direction:column;gap:8px}.mapbar .x{width:42px;height:42px;flex-shrink:0;border-radius:50%;color:var(--tx);font-size:20px}.mapbar .x:active{transform:scale(.92)}
@@ -288,7 +288,6 @@ html.noscroll,html.noscroll body{overflow:hidden}
 <button id="ps">PIN speichern</button></div>
 
 <button class="mapb" id="mapBtn" hidden aria-label="Karte mit allen Orten"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7l6-3l6 3l6-3v13l-6 3l-6-3l-6 3v-13"/><path d="M9 4v13"/><path d="M15 7v13"/></svg>Karte</button>
-<div class="mapv" id="mapv" hidden><div class="mapbar"><div class="mapf mglass" id="mapf"></div><div class="mbtns"><button class="x mglass" id="mapx" aria-label="Karte schließen">×</button><button class="x mth mglass" id="mapth" aria-label="Kartenansicht hell/dunkel umschalten">🌙</button></div></div><div id="mapc"></div><div class="mapmiss mglass" id="mapmiss"></div></div>
 <button class="addb" id="addOpen" hidden>+ Neue Aktivität vorschlagen</button>
 
 <div class="c addc" id="add" hidden><div class="ah"><h2 id="ah">Neue Aktivität vorschlagen</h2><button class="x" id="addClose" aria-label="Schließen">×</button></div>
@@ -305,6 +304,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
 
 <div id="list" hidden><div class="m">Lädt…</div></div>
 </main>
+<div class="mapv" id="mapv" hidden><div class="mapbar"><div class="mapf mglass" id="mapf"></div><div class="mbtns"><button class="x mglass" id="mapx" aria-label="Karte schließen">×</button><button class="x mth mglass" id="mapth" aria-label="Kartenansicht hell/dunkel umschalten">🌙</button></div></div><div id="mapc"></div><div class="mapmiss mglass" id="mapmiss"></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <button class="toast upd" id="upd" hidden>✨ Neue Version · tippen zum Aktualisieren</button>
 
@@ -1424,8 +1424,8 @@ function flyTo(ll, z, done) {
   const after = (ms, fn) => { let go = false; const f = () => { if (!go) { go = true; fn(); } }; google.maps.event.addListenerOnce(gmap, 'idle', f); setTimeout(f, ms); };
   const step = () => { if (id !== flyN) return; const cur = gmap.getZoom() || 11;
     if (cur >= z) { after(400, fin); return; }
-    gmap.setZoom(cur + 1); setTimeout(step, 190); };
-  gmap.panTo(ll); after(450, step);
+    gmap.setZoom(cur + 1); setTimeout(step, 130); };
+  gmap.panTo(ll); after(300, step);
 }
 // größter Zoom (höchstens 17), bei dem alle Punkte mit Rand ins Bild passen
 function zoomFor(lls) {
@@ -1508,23 +1508,41 @@ function renderMiss() {
       + (missOpen ? `<div class="mml">${missing.map(a => `<button class="mmi" data-mgo="${esc(a.id)}">${esc(a.title)}</button>`).join('')}<small>Tippe auf einen Vorschlag und wähle dort über ⋯ → „Ort ändern“ einen Ort aus den Vorschlägen.</small></div>` : '') : ''; }
   mm.hidden = !missing.length;
 }
-// Öffnen/Schließen: die Karte wächst aus dem Karte-Knopf auf den ganzen Bildschirm und schrumpft wieder hinein
+// Öffnen/Schließen wie eine App auf dem iPhone: die Karte wächst aus dem Karte-Knopf, ihr Inhalt zoomt mit (feines Federn),
+// die Seite dahinter weicht zurück und dunkelt ab. Schließen genau umgekehrt.
 let mapRun = null, mapFrom = null, mapFx = [];
+function mapStop() {
+  if (mapRun) { mapRun.cancel(); mapRun = null; } mapFx.forEach(a => a.cancel()); mapFx = [];
+  document.querySelectorAll('.mapdim').forEach(e => e.remove()); $('mapc').style.transformOrigin = ''; const m = document.querySelector('main'); if (m) m.style.transformOrigin = '';
+}
 function mapAnim(open) {
-  const v = $('mapv'); if (mapRun) { mapRun.cancel(); mapRun = null; } mapFx.forEach(a => a.cancel()); mapFx = [];
+  const v = $('mapv'), m = document.querySelector('main'); mapStop();
   if (calm() || !v.animate) return Promise.resolve();
   const b = $('mapBtn').hidden ? mapFrom : $('mapBtn').getBoundingClientRect(); if (open && b) mapFrom = b;
   const W = innerWidth, H = innerHeight, r = b && b.width ? b : { top: H - 70, bottom: H - 26, left: W / 2 - 50, right: W / 2 + 50, height: 44 };
   const small = `inset(${r.top}px ${W - r.right}px ${H - r.bottom}px ${r.left}px round ${r.height / 2}px)`, full = 'inset(0px 0px 0px 0px round 0px)';
-  const an = v.animate({ clipPath: open ? [small, full] : [full, small] }, { duration: open ? 340 : 260, easing: open ? 'cubic-bezier(.45,0,.15,1)' : 'cubic-bezier(.4,0,.2,1)' });
+  const ms = open ? 420 : 300, ease = open ? 'cubic-bezier(.32,.72,0,1)' : 'cubic-bezier(.4,0,.2,1)', ox = (r.left + r.right) / 2, oy = (r.top + r.bottom) / 2;
+  const dim = document.createElement('div'); dim.className = 'mapdim'; v.before(dim);
+  const an = v.animate({ clipPath: open ? [small, full] : [full, small] }, { duration: ms, easing: ease });
+  const fx = (el, kf, o) => { if (el) mapFx.push(el.animate(kf, { duration: ms, easing: ease, ...o })); };
+  // Karteninhalt zoomt vom Knopf aus mit, beim Öffnen mit einem Hauch Federn
+  fx($('mapc'), open ? [{ scale: .88, offset: 0 }, { scale: 1.012, offset: .72 }, { scale: 1 }] : [{ scale: 1 }, { scale: .9 }]);
+  $('mapc').style.transformOrigin = `${ox}px ${oy}px`;
+  // Seite dahinter weicht zurück und dunkelt ab
+  if (m) { m.style.transformOrigin = `50% ${scrollY + H / 2}px`; fx(m, open ? [{ scale: 1 }, { scale: .94 }] : [{ scale: .94 }, { scale: 1 }]); }
+  fx(dim, open ? [{ opacity: 0 }, { opacity: .32 }] : [{ opacity: .32 }, { opacity: 0 }]);
   // Bedienelemente blenden beim Öffnen leicht verzögert ein, beim Schließen gleich aus
-  v.querySelectorAll('.mapbar,.mapmiss').forEach(e => mapFx.push(e.animate(open ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 1 }, { opacity: 0 }],
-    open ? { duration: 220, delay: 160, easing: 'ease-out', fill: 'backwards' } : { duration: 120, easing: 'ease-in', fill: 'forwards' })));
-  mapRun = an; return an.finished.then(() => { if (mapRun === an) { mapRun = null; mapFx.forEach(a => a.cancel()); mapFx = []; } }, () => {});
+  v.querySelectorAll('.mapbar,.mapmiss').forEach(e => fx(e, open ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 1 }, { opacity: 0 }],
+    open ? { duration: 240, delay: 180, easing: 'ease-out', fill: 'backwards' } : { duration: 130, easing: 'ease-in', fill: 'forwards' }));
+  mapRun = an;
+  return an.finished.then(() => { if (mapRun === an) mapStop(); }, () => {});
 }
 async function openMap() {
   if (!MAPS_KEY) { toast('Die Karte ist noch nicht eingerichtet.', 1); return; }
-  mapOpen = true; $('mapv').hidden = false; document.documentElement.classList.add('noscroll'); mapAnim(true);
+  mapOpen = true; $('mapv').hidden = false; document.documentElement.classList.add('noscroll');
+  // Safari zeichnet Kartenbilder, die während der Animation aus dem Zwischenspeicher kommen, teils erst nach einer Berührung:
+  // danach einmal unsichtbar um 1 px hin und zurück schieben, das erzwingt das Neuzeichnen
+  mapAnim(true).then(() => { if (mapOpen && gmap) { gmap.panBy(0, 1); setTimeout(() => { if (gmap) gmap.panBy(0, -1); }, 80); } });
   // Filter passt zum Reiter, aus dem die Karte geöffnet wird
   mapFilter = tab === 'food' ? 'food' : tab === 'plan' ? 'mine' : 'act'; mfPrev = null; missOpen = false;
   try { history.pushState({ map: 1 }, ''); } catch (e) {}
@@ -1554,7 +1572,7 @@ function closeMap(fromPop) {
   if (!mapOpen) return; mapOpen = false; closeInfo(); hideTip();
   // Zurück-Wischen (Verlauf) zeigt schon eine eigene Bewegung: dann sofort weg
   const done = () => { if (mapOpen) return; $('mapv').hidden = true; document.documentElement.classList.remove('noscroll'); };
-  if (fromPop) { if (mapRun) mapRun.cancel(); done(); } else mapAnim(false).then(done);
+  if (fromPop) { mapStop(); done(); } else mapAnim(false).then(done);
   if (!fromPop && history.state && history.state.map) { try { history.back(); } catch (e) {} }
 }
 // Von der Karte zum Vorschlag: Karte zu, dann zur Kachel springen und aufleuchten lassen.
