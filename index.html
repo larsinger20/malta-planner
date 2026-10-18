@@ -141,7 +141,7 @@ button.tx[data-cmt],button.tx[data-sugt],button.tx[data-shop]{display:flex;align
 .mapb{position:fixed;left:50%;bottom:max(22px,calc(env(safe-area-inset-bottom) + 10px));transform:translateX(-50%);z-index:15;background:var(--lg);-webkit-backdrop-filter:blur(22px) saturate(190%);backdrop-filter:blur(22px) saturate(190%);color:var(--tx);padding:11px 20px;font-size:15px;font-weight:500;box-shadow:var(--lgring),var(--lgsh)}.mapb:active{transform:translateX(-50%) scale(.96)}
 
 main{padding-bottom:90px}
-.mapv{position:fixed;inset:0;z-index:35;background:var(--bg);display:flex;flex-direction:column;animation:mapIn .25s ease-out}@keyframes mapIn{from{transform:translateY(16px)}}
+.mapv{position:fixed;inset:0;z-index:35;background:var(--bg);display:flex;flex-direction:column}
 .mapbar{position:absolute;top:0;left:0;right:0;display:flex;align-items:flex-start;gap:8px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));z-index:2;pointer-events:none}.mapbar>*{pointer-events:auto}
 .mglass{background:var(--lg);-webkit-backdrop-filter:blur(22px) saturate(190%);backdrop-filter:blur(22px) saturate(190%);box-shadow:var(--lgring),var(--lgsh)}
 .mbtns{display:flex;flex-direction:column;gap:8px}.mapbar .x{width:42px;height:42px;flex-shrink:0;border-radius:50%;color:var(--tx);font-size:20px}.mapbar .x:active{transform:scale(.92)}
@@ -1381,9 +1381,7 @@ function pinCluster() {
     el.innerHTML = `<div class="gpb"><b>${g.m.length}</b></div>`;
     el.addEventListener('pointerdown', () => { pinDown = Date.now(); });
     el.addEventListener('click', () => { pinDown = Date.now(); closeInfo(); const b = new google.maps.LatLngBounds(); g.m.forEach(it => b.extend(it.ll));
-      const ne = b.getNorthEast(), sw = b.getSouthWest();
-      if (Math.abs(ne.lat() - sw.lat()) + Math.abs(ne.lng() - sw.lng()) < .002) { gmap.panTo(b.getCenter()); gmap.setZoom(Math.max(16, (gmap.getZoom() || 11) + 2)); }
-      else gmap.fitBounds(b, { top: 110, bottom: 110, left: 60, right: 60 }); });
+      flyTo(b.getCenter(), Math.max((gmap.getZoom() || 11) + 1, zoomFor(g.m.map(it => it.ll)))); });
     L.box.appendChild(el); L.clusters.push({ x: g.x, y: g.y, el, size: Math.max(22, ps + 6) });
   });
   L.items.forEach(it => { it.el.classList.toggle('hid', it.hid); it.ex = it.x; it.ey = it.y; it.el.style.translate = ''; });
@@ -1415,8 +1413,29 @@ function pinZoom() {
   if (!gLayer) return; const z = gmap.getZoom() || 11;
   gLayer.box.style.setProperty('--ps', pinSize(z) + 'px'); gLayer.box.classList.toggle('nogl', pinSize(z) < 20);
 }
+// Weich hinfliegen: erst schwenken, dann Stufe für Stufe hineinzoomen (Google zoomt nur einzelne Stufen weich).
+// Eigenes Wischen/Zoomen oder ein anderer Tipp bricht den Flug ab.
+const PIN_ZOOM = 15;
+let flyN = 0;
+function flyTo(ll, z, done) {
+  const id = ++flyN, fin = () => { if (id === flyN && done) done(); };
+  if (calm()) { gmap.moveCamera({ center: ll, zoom: Math.max(gmap.getZoom() || 11, z) }); setTimeout(fin, 0); return; }
+  // ein Ereignis abwarten, aber höchstens ms (Google meldet „idle“ nicht, wenn sich nichts bewegt)
+  const after = (ms, fn) => { let go = false; const f = () => { if (!go) { go = true; fn(); } }; google.maps.event.addListenerOnce(gmap, 'idle', f); setTimeout(f, ms); };
+  const step = () => { if (id !== flyN) return; const cur = gmap.getZoom() || 11;
+    if (cur >= z) { after(400, fin); return; }
+    gmap.setZoom(cur + 1); setTimeout(step, 190); };
+  gmap.panTo(ll); after(450, step);
+}
+// größter Zoom (höchstens 17), bei dem alle Punkte mit Rand ins Bild passen
+function zoomFor(lls) {
+  const W = $('mapc').clientWidth - 120, H = $('mapc').clientHeight - 240, my = lat => Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
+  const la = lls.map(l => l.lat()), lo = lls.map(l => l.lng());
+  const dx = (Math.max(...lo) - Math.min(...lo)) / 360, dy = (my(Math.max(...la)) - my(Math.min(...la))) / (2 * Math.PI);
+  let z = 17; while (z > 3 && (dx * 256 * 2 ** z > W || dy * 256 * 2 ** z > H)) z--; return z;
+}
 function closeInfo() {
-  if (gInfo) gInfo.close(); infoOpen = false;
+  flyN++; if (gInfo) gInfo.close(); infoOpen = false;
   document.querySelectorAll('.gp.sel').forEach(el => { el.classList.remove('sel'); el.style.zIndex = el.dataset.z; });
 }
 // Glasperle unter dem gewählten Filter: gleitet und wobbelt wie bei den Reitern
@@ -1443,14 +1462,17 @@ function renderMap(fit) {
     el.addEventListener('pointerdown', () => { pinDown = Date.now(); });
     el.addEventListener('click', () => {
       pinDown = Date.now(); const was = el.classList.contains('sel'); closeInfo(); if (was) return;   // nochmal tippen = zu
-      el.classList.add('sel'); el.style.zIndex = 50;
-      gInfo.setContent(`<div class="gin"><button class="ginx" aria-label="Schließen">×</button>${html}</div>`);
-      gInfo.setOptions({ position: pos, pixelOffset: new google.maps.Size(0, -54) }); gInfo.open({ map: gmap }); infoOpen = true;
-      // Google schiebt das Fenster nur in den Kartenrand; unsere Knöpfe oben dürfen es auch nicht verdecken
-      google.maps.event.addListenerOnce(gInfo, 'domready', () => setTimeout(() => { const w = document.querySelector('.gm-style-iw-c'); if (!w) return;
-        const r = w.getBoundingClientRect(), bar = $('mapth').getBoundingClientRect(), x = $('mapx').getBoundingClientRect();
-        const lim = r.right > x.left - 4 ? bar.bottom + 10 : document.querySelector('#mapf').getBoundingClientRect().bottom + 10;
-        if (r.top < lim) gmap.panBy(0, r.top - lim); }, 350));
+      el.classList.add('sel'); el.style.zIndex = 50; infoOpen = true;
+      const show = () => { if (!el.classList.contains('sel')) return;
+        gInfo.setContent(`<div class="gin"><button class="ginx" aria-label="Schließen">×</button>${html}</div>`);
+        gInfo.setOptions({ position: pos, pixelOffset: new google.maps.Size(0, -54) }); gInfo.open({ map: gmap });
+        // Google schiebt das Fenster nur in den Kartenrand; unsere Knöpfe oben dürfen es auch nicht verdecken
+        google.maps.event.addListenerOnce(gInfo, 'domready', () => setTimeout(() => { const w = document.querySelector('.gm-style-iw-c'); if (!w) return;
+          const r = w.getBoundingClientRect(), bar = $('mapth').getBoundingClientRect(), x = $('mapx').getBoundingClientRect();
+          const lim = r.right > x.left - 4 ? bar.bottom + 10 : document.querySelector('#mapf').getBoundingClientRect().bottom + 10;
+          if (r.top < lim) gmap.panBy(0, r.top - lim); }, 350)); };
+      // Von weiter weg: erst weich zum Pin hineinzoomen (Straßenebene), dann das Fenster
+      if ((gmap.getZoom() || 11) < PIN_ZOOM) flyTo(new google.maps.LatLng(pos.lat, pos.lng), PIN_ZOOM, show); else show();
     });
     L.box.appendChild(el); L.items.push({ el, ll: new google.maps.LatLng(pos.lat, pos.lng), z, food, vil: cls === 'vil', mine: cls === 'mine' }); bounds.extend(pos); n++; };
   const vil = T.vlat != null ? { lat: T.vlat, lng: T.vlng } : null, home = [];
@@ -1486,9 +1508,23 @@ function renderMiss() {
       + (missOpen ? `<div class="mml">${missing.map(a => `<button class="mmi" data-mgo="${esc(a.id)}">${esc(a.title)}</button>`).join('')}<small>Tippe auf einen Vorschlag und wähle dort über ⋯ → „Ort ändern“ einen Ort aus den Vorschlägen.</small></div>` : '') : ''; }
   mm.hidden = !missing.length;
 }
+// Öffnen/Schließen: die Karte wächst aus dem Karte-Knopf auf den ganzen Bildschirm und schrumpft wieder hinein
+let mapRun = null, mapFrom = null, mapFx = [];
+function mapAnim(open) {
+  const v = $('mapv'); if (mapRun) { mapRun.cancel(); mapRun = null; } mapFx.forEach(a => a.cancel()); mapFx = [];
+  if (calm() || !v.animate) return Promise.resolve();
+  const b = $('mapBtn').hidden ? mapFrom : $('mapBtn').getBoundingClientRect(); if (open && b) mapFrom = b;
+  const W = innerWidth, H = innerHeight, r = b && b.width ? b : { top: H - 70, bottom: H - 26, left: W / 2 - 50, right: W / 2 + 50, height: 44 };
+  const small = `inset(${r.top}px ${W - r.right}px ${H - r.bottom}px ${r.left}px round ${r.height / 2}px)`, full = 'inset(0px 0px 0px 0px round 0px)';
+  const an = v.animate({ clipPath: open ? [small, full] : [full, small] }, { duration: open ? 340 : 260, easing: open ? 'cubic-bezier(.45,0,.15,1)' : 'cubic-bezier(.4,0,.2,1)' });
+  // Bedienelemente blenden beim Öffnen leicht verzögert ein, beim Schließen gleich aus
+  v.querySelectorAll('.mapbar,.mapmiss').forEach(e => mapFx.push(e.animate(open ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 1 }, { opacity: 0 }],
+    open ? { duration: 220, delay: 160, easing: 'ease-out', fill: 'backwards' } : { duration: 120, easing: 'ease-in', fill: 'forwards' })));
+  mapRun = an; return an.finished.then(() => { if (mapRun === an) { mapRun = null; mapFx.forEach(a => a.cancel()); mapFx = []; } }, () => {});
+}
 async function openMap() {
   if (!MAPS_KEY) { toast('Die Karte ist noch nicht eingerichtet.', 1); return; }
-  mapOpen = true; $('mapv').hidden = false; document.documentElement.classList.add('noscroll');
+  mapOpen = true; $('mapv').hidden = false; document.documentElement.classList.add('noscroll'); mapAnim(true);
   // Filter passt zum Reiter, aus dem die Karte geöffnet wird
   mapFilter = tab === 'food' ? 'food' : tab === 'plan' ? 'mine' : 'act'; mfPrev = null; missOpen = false;
   try { history.pushState({ map: 1 }, ''); } catch (e) {}
@@ -1501,7 +1537,7 @@ async function openMap() {
       gInfo = new gLib.InfoWindow({ headerDisabled: true, minWidth: 272, maxWidth: 280 }); gInfo.addListener('closeclick', closeInfo);
       // Tipp auf die Karte schließt das Fenster, aber nicht der Tipp auf einen Punkt selbst
       gmap.addListener('click', e => { const t = e && e.domEvent && e.domEvent.target; if (t && t.closest && t.closest('.gm-style-iw-c')) return; if (Date.now() - pinDown > 600) closeInfo(); });
-      gmap.addListener('zoom_changed', pinZoom);
+      gmap.addListener('zoom_changed', pinZoom); gmap.addListener('dragstart', () => { flyN++; });
     } else gmap.setOptions({ styles });
     renderMap(true); showTip('map');
   } catch (e) { console.warn(e); closeMap(); toast('Die Karte konnte nicht geladen werden.', 1); }
@@ -1515,8 +1551,10 @@ function applyMapTheme() {
 }
 $('mapth').onclick = () => { const d = !mapDark(); try { localStorage.setItem('mapTheme', d ? 'dark' : 'light'); } catch (e) {} applyMapTheme(); };
 function closeMap(fromPop) {
-  if (!mapOpen) return; mapOpen = false; closeInfo();
-  $('mapv').hidden = true; document.documentElement.classList.remove('noscroll'); hideTip();
+  if (!mapOpen) return; mapOpen = false; closeInfo(); hideTip();
+  // Zurück-Wischen (Verlauf) zeigt schon eine eigene Bewegung: dann sofort weg
+  const done = () => { if (mapOpen) return; $('mapv').hidden = true; document.documentElement.classList.remove('noscroll'); };
+  if (fromPop) { if (mapRun) mapRun.cancel(); done(); } else mapAnim(false).then(done);
   if (!fromPop && history.state && history.state.map) { try { history.back(); } catch (e) {} }
 }
 // Von der Karte zum Vorschlag: Karte zu, dann zur Kachel springen und aufleuchten lassen.
