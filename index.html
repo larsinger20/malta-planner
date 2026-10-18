@@ -142,6 +142,9 @@ button.tx[data-cmt],button.tx[data-sugt],button.tx[data-shop]{display:flex;align
 
 main{padding-bottom:90px}
 .mapv{position:fixed;inset:0;z-index:35;background:var(--bg);display:flex;flex-direction:column}.mapdim{position:fixed;inset:0;z-index:34;background:#000;opacity:0;pointer-events:none}
+/* Geschlossen nur unsichtbar statt display:none: so behält die Karte ihre Größe. Sonst lädt Safari nach einem Zoomwechsel
+   (z. B. nach „Zum Vorschlag“) beim Wiederöffnen keine Kartenbilder, bis man die Karte berührt. */
+.mapv.moff,.mapv.moff *{visibility:hidden!important;pointer-events:none!important}
 .mapbar{position:absolute;top:0;left:0;right:0;display:flex;align-items:flex-start;gap:8px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));z-index:2;pointer-events:none}.mapbar>*{pointer-events:auto}
 .mglass{background:var(--lg);-webkit-backdrop-filter:blur(22px) saturate(190%);backdrop-filter:blur(22px) saturate(190%);box-shadow:var(--lgring),var(--lgsh)}
 .mbtns{display:flex;flex-direction:column;gap:8px}.mapbar .x{width:42px;height:42px;flex-shrink:0;border-radius:50%;color:var(--tx);font-size:20px}.mapbar .x:active{transform:scale(.92)}
@@ -304,7 +307,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
 
 <div id="list" hidden><div class="m">Lädt…</div></div>
 </main>
-<div class="mapv" id="mapv" hidden><div class="mapbar"><div class="mapf mglass" id="mapf"></div><div class="mbtns"><button class="x mglass" id="mapx" aria-label="Karte schließen">×</button><button class="x mth mglass" id="mapth" aria-label="Kartenansicht hell/dunkel umschalten">🌙</button></div></div><div id="mapc"></div><div class="mapmiss mglass" id="mapmiss"></div></div>
+<div class="mapv moff" id="mapv"><div class="mapbar"><div class="mapf mglass" id="mapf"></div><div class="mbtns"><button class="x mglass" id="mapx" aria-label="Karte schließen">×</button><button class="x mth mglass" id="mapth" aria-label="Kartenansicht hell/dunkel umschalten">🌙</button></div></div><div id="mapc"></div><div class="mapmiss mglass" id="mapmiss"></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <button class="toast upd" id="upd" hidden>✨ Neue Version · tippen zum Aktualisieren</button>
 
@@ -1424,8 +1427,8 @@ function flyTo(ll, z, done) {
   const after = (ms, fn) => { let go = false; const f = () => { if (!go) { go = true; fn(); } }; google.maps.event.addListenerOnce(gmap, 'idle', f); setTimeout(f, ms); };
   const step = () => { if (id !== flyN) return; const cur = gmap.getZoom() || 11;
     if (cur >= z) { after(400, fin); return; }
-    gmap.setZoom(cur + 1); setTimeout(step, 130); };
-  gmap.panTo(ll); after(300, step);
+    gmap.setZoom(cur + 1); setTimeout(step, 90); };
+  gmap.panTo(ll); after(200, step);
 }
 // größter Zoom (höchstens 17), bei dem alle Punkte mit Rand ins Bild passen
 function zoomFor(lls) {
@@ -1539,10 +1542,7 @@ function mapAnim(open) {
 }
 async function openMap() {
   if (!MAPS_KEY) { toast('Die Karte ist noch nicht eingerichtet.', 1); return; }
-  mapOpen = true; $('mapv').hidden = false; document.documentElement.classList.add('noscroll');
-  // Safari zeichnet Kartenbilder, die während der Animation aus dem Zwischenspeicher kommen, teils erst nach einer Berührung:
-  // danach einmal unsichtbar um 1 px hin und zurück schieben, das erzwingt das Neuzeichnen
-  mapAnim(true).then(() => { if (mapOpen && gmap) { gmap.panBy(0, 1); setTimeout(() => { if (gmap) gmap.panBy(0, -1); }, 80); } });
+  mapOpen = true; $('mapv').classList.remove('moff'); document.documentElement.classList.add('noscroll'); mapAnim(true);
   // Filter passt zum Reiter, aus dem die Karte geöffnet wird
   mapFilter = tab === 'food' ? 'food' : tab === 'plan' ? 'mine' : 'act'; mfPrev = null; missOpen = false;
   try { history.pushState({ map: 1 }, ''); } catch (e) {}
@@ -1571,7 +1571,7 @@ $('mapth').onclick = () => { const d = !mapDark(); try { localStorage.setItem('m
 function closeMap(fromPop) {
   if (!mapOpen) return; mapOpen = false; closeInfo(); hideTip();
   // Zurück-Wischen (Verlauf) zeigt schon eine eigene Bewegung: dann sofort weg
-  const done = () => { if (mapOpen) return; $('mapv').hidden = true; document.documentElement.classList.remove('noscroll'); };
+  const done = () => { if (mapOpen) return; $('mapv').classList.add('moff'); document.documentElement.classList.remove('noscroll'); };
   if (fromPop) { mapStop(); done(); } else mapAnim(false).then(done);
   if (!fromPop && history.state && history.state.map) { try { history.back(); } catch (e) {} }
 }
