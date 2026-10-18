@@ -68,6 +68,8 @@ Drei Sammlungen: `activities`, `people`, `signups`. **Neue Sammlungen funktionie
   - Einkauf: neue Zeile öffnet sich einmal weich in der Höhe (`growNew()`, Merker `justAdded` wird beim ersten Zeichnen verbraucht), Leuchten klingt aus (`siGlow`). Vorschlagsformular gleitet auf/zu (`closeAdd()`, `addAnim`).
   - Noch offen (Paket 2/3): Abflug-Text bis zur Landung, Vorschlags-Teilwort-Treffer (Flammkuchen → Backpulver), Tippflächen < 44 px, Kachel-Kontrast, Google-Logo unter „Ohne Kartenpunkt“, Profilmenü schließt bei Snapshots, Tour aus Profilmenü während Farbwahl, VoiceOver-Angaben, CSS-Aufräumen.
 
+- **Reise-Info in drei Abschnitten** (`.tsec`, 18.10.2026): 🏡 Unsere Unterkunft (Name, Adresse → Maps, Knopf „Auf Airbnb ansehen ↗“ aus `tripinfo.vlink`, Check-in/-out nebeneinander `.tgrid`), ✈️ Unsere Flüge, 🚗 Hinfahrt zum Flughafen (`tripinfo.ride = [{d, p, k}]` = Fahrer, Personen, Koffer als freier Text; Anzahl wird gezählt, `rideNames`). Persönlicher Hinweis oben (`isMeName`, Vorname bzw. Präfix wie „Dani“ = „Daniel“): „🙋 Du fährst selbst, mit dir fährt …“ / „🙋 Du fährst bei X mit.“ und „🧳 Dein Koffer ist im selben Auto.“ / „… fährt im Auto von X mit.“ Airbnb-Link beim Speichern ohne Tracking-Anhänge, Prüfung: keine Leerzeichen, Host mit Punkt.
+
 ## Fallstricke im Code
 - `render()` wird übersprungen, solange ein Eingabefeld Fokus hat (`pending`), und beim `focusout` nachgeholt. Eigene Aktionen rufen `render(true)`.
 - `$('list').onclick` ist ein großer Verteiler: **neue Knöpfe in der Liste brauchen einen eigenen Fall** (oder früh `return`), sonst landen sie beim Mitmachen-Code (der ist mit `if (!a) return;` abgesichert).

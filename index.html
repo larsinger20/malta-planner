@@ -179,6 +179,11 @@ html.noscroll,html.noscroll body{overflow:hidden}
 .cd .efb button{background:#fff;color:#1d7a6b}.cd .efb button.o{background:transparent;color:#fff;box-shadow:inset 0 0 0 1px #fff}
 .cd .rih{display:inline-block;margin-top:8px;padding:2px 10px;border-radius:999px;background:rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 0 0 .5px rgba(255,255,255,.16);font-size:12px;font-weight:600;opacity:1}
 .trow{display:flex;gap:12px;padding:10px 0}
+.tsec{padding:12px 0 6px;box-shadow:inset 0 .5px 0 rgba(255,255,255,.2)}.tvn{font-weight:600;font-size:15px}.cd a.tad{display:flex;width:fit-content;gap:2px;align-items:baseline;margin:2px 0 8px;font-size:15px}.tbtn{display:inline-block;margin:0 0 10px;padding:7px 14px;border-radius:999px;background:rgba(255,255,255,.18);color:#fff;font-size:14px;font-weight:600;text-decoration:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}.tbtn:active{transform:scale(.96)}.tgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px;margin-bottom:6px}.tgrid>div{padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 .5px rgba(255,255,255,.12);font-size:14px;line-height:1.35}.cd .tgrid small{display:block;margin:0 0 1px;font-size:12px;opacity:.8}.tsec .rl{padding:3px 0}.rh{display:flex;align-items:center;gap:12px;margin-bottom:8px}.cd .rh b{font-size:16px}
+.rme{margin:0 0 8px;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.2);font-size:14px;font-weight:600;box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+.ride{margin:0 0 6px;padding:9px 12px;border-radius:14px;background:rgba(255,255,255,.1);box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 .5px rgba(255,255,255,.12)}.ride.mine{background:rgba(255,255,255,.17);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 0 0 1px rgba(255,255,255,.45)}
+.cd .ride b{display:block;font-size:15px;margin-bottom:2px}.rl{display:flex;gap:8px;font-size:14px;line-height:1.35;padding:1px 0}.cd .rl small{flex:0 0 86px;margin:0;font-size:12px;opacity:.75;padding-top:1px}.rl span{flex:1;min-width:0;overflow-wrap:anywhere}
+.rde{display:grid;gap:6px;margin:0 0 10px;padding:8px;border-radius:14px;background:rgba(255,255,255,.08)}.rde input{margin:0}.rsub{font-weight:400;opacity:.75}
 .tic{font-size:20px;width:26px;text-align:center;flex-shrink:0;line-height:1.3}.trow small{display:block;font-size:13px;color:var(--mu)}.tv{font-size:16px;overflow-wrap:anywhere}.tv .tx{min-height:0;padding:0 0 0 8px}
 .tlb{display:block;font-size:13px;color:var(--mu);margin:4px 0 4px 4px}
 .cd b{font-family:var(--disp);font-size:18px;font-weight:600;letter-spacing:-.01em}.cd small{display:block;font-size:14px;opacity:.85;margin-top:2px}
@@ -1454,7 +1459,7 @@ let tripOpen = false, tripEdit = false;
 const trip = () => acts.find(a => a.id === TRIP) || {};
 const rih = () => ppl[me] ? `<span class="rihs"><small class="rih${tripOpen ? ' op' : ''}">ℹ️ Reise-Info${chev('trip', tripOpen)}</small>${wxChip()}</span>` : wxChip();
 const villaUrl = T => mapUrl({ place: T.vaddr, pid: T.vpid });
-const TF = [['vname', '🏡 Name der Unterkunft', 'z. B. Villa Bella Vista'], ['vaddr', '📍 Adresse', 'Adresse der Villa'], ['cin', '🔑 Check-in', 'z. B. Sa 31.10. ab 15 Uhr'], ['cout', '🧳 Check-out', 'z. B. Sa 7.11. bis 10 Uhr'],
+const TF = [['vname', '🏡 Name der Unterkunft', 'z. B. Villa Bella Vista'], ['vaddr', '📍 Adresse', 'Adresse der Villa'], ['vlink', '🔗 Airbnb-Link', 'https://www.airbnb.de/rooms/…'], ['cin', '🔑 Check-in', 'z. B. Sa 31.10. ab 15 Uhr'], ['cout', '🧳 Check-out', 'z. B. Sa 7.11. bis 10 Uhr'],
   ['fout', '✈️ Hinflug', 'z. B. Sa 31.10. · KM 307 · München → Malta · 11:00 Uhr'], ['fback', '🛬 Rückflug', 'z. B. Sa 07.11. · KM 306 · Malta → München · 07:15 Uhr']];
 // Flugnummer im Text (z. B. "KM 307") macht den Eintrag automatisch zum Flightradar24-Link
 const flightLink = t => { if (!t) return ''; const m = String(t).match(/\b([A-Z]{2}|[A-Z]\d|\d[A-Z])\s?(\d{1,4})\b/);
@@ -1469,19 +1474,44 @@ function renderTrip(force) {
   if (tripEdit && isAdmin()) {
     box.innerHTML = `<div class="ah"><h2>✏️ Reise-Info bearbeiten</h2></div>` + TF.map(([k, l, ph]) => `<label class="tlb">${l}</label>` +
       `<input id="tf-${k}" maxlength="${k === 'vaddr' ? 120 : 80}" placeholder="${ph}" value="${esc(T[k] || '')}"${k === 'vaddr' ? ` data-place="1" data-pid="${esc(T.vpid || '')}" autocomplete="off"` : ''}>`).join('') +
+      `<label class="tlb">🚗 Hinfahrt zum Flughafen <span class="rsub">(ein Auto pro Block, leere Blöcke werden ignoriert)</span></label>` +
+      [...(Array.isArray(T.ride) ? T.ride : []), {}, {}].map((c, i) => `<div class="rde"><input id="rd-d-${i}" maxlength="40" placeholder="Fahrer / Auto, z. B. Lars" value="${esc(c.d || '')}"><input id="rd-p-${i}" maxlength="120" placeholder="Personen, z. B. Ricarda & Lars" value="${esc(c.p || '')}"><input id="rd-k-${i}" maxlength="120" placeholder="Koffer, z. B. Ricarda, Lars & Tim" value="${esc(c.k || '')}"></div>`).join('') +
       `<div class="efb"><button data-tsave="1">Speichern</button><button class="o" data-tcancel="1">Abbrechen</button></div>`;
     return;
   }
-  const row = (icon, label, val) => val ? `<div class="trow"><span class="tic">${icon}</span><div><small>${label}</small><div class="tv">${val}</div></div></div>` : '';
-  const rows = [
-    row('🏡', T.vname ? esc(T.vname) : 'Unterkunft', T.vaddr ? `<a class="lk" href="${esc(villaUrl(T))}" target="_blank" rel="noopener noreferrer">${esc(T.vaddr)}</a>` : (T.vname ? '–' : '')),
-    row('🔑', 'Check-in', esc(T.cin || '')), row('🧳', 'Check-out', esc(T.cout || '')),
-    row('✈️', 'Hinflug', flightLink(T.fout)), row('🛬', 'Rückflug', flightLink(T.fback))].join('');
+  // drei Abschnitte: Unterkunft (mit Check-in/-out nebeneinander + Airbnb), Flüge, Hinfahrt
+  const sec = (icon, title, body) => body ? `<div class="tsec"><div class="rh"><span class="tic">${icon}</span><b>${title}</b></div>${body}</div>` : '';
+  const link = /^https?:\/\//i.test(T.vlink || '') ? T.vlink : '';
+  const villa = (T.vname ? `<div class="tvn">${esc(T.vname)}</div>` : '') +
+    (T.vaddr ? `<a class="lk tad" href="${esc(villaUrl(T))}" target="_blank" rel="noopener noreferrer">${IC_PIN}${esc(T.vaddr)}</a>` : '') +
+    (link ? `<a class="tbtn" href="${esc(link)}" target="_blank" rel="noopener noreferrer">Auf Airbnb ansehen ↗</a>` : '') +
+    (T.cin || T.cout ? `<div class="tgrid">${T.cin ? `<div><small>🔑 Check-in</small><span>${esc(T.cin)}</span></div>` : ''}${T.cout ? `<div><small>🧳 Check-out</small><span>${esc(T.cout)}</span></div>` : ''}</div>` : '');
+  const fl = (lbl, t) => t ? `<div class="rl"><small>${lbl}</small><span>${flightLink(t)}</span></div>` : '';
+  const rows = sec('🏡', 'Unsere Unterkunft', villa) + sec('✈️', 'Unsere Flüge', fl('Hinflug', T.fout) + fl('Rückflug', T.fback));
   const empty = !TF.some(([k]) => T[k]);
   const sl = box.querySelector('.wxs') ? box.querySelector('.wxs').scrollLeft : 0;
-  box.innerHTML = wxHtml() + (empty ? `<p class="none">${isAdmin() ? 'Trag hier Villa und Flüge ein.' : 'Lars trägt hier bald Villa und Flüge ein.'}</p>` : '') + rows
+  box.innerHTML = wxHtml() + (empty ? `<p class="none">${isAdmin() ? 'Trag hier Villa und Flüge ein.' : 'Lars trägt hier bald Villa und Flüge ein.'}</p>` : '') + rows + rideHtml(T)
     + (isAdmin() ? '<div class="tedit"><button class="tx" data-tedit="1">✏️ Bearbeiten</button></div>' : '');
   if (sl && box.querySelector('.wxs')) box.querySelector('.wxs').scrollLeft = sl;
+}
+// Hinfahrt zum Flughafen: tripinfo.ride = [{ d: Fahrer/Auto, p: Personen, k: Koffer }] (freier Text, Anzahl wird gezählt)
+const rideNames = t => String(t || '').split(/,|&|\bund\b|\+/).map(x => x.trim()).filter(Boolean);
+const isMeName = n => { const a = norm(n), b = norm(String(ppl[me] || '').trim().split(/\s+/)[0]);
+  return !!a && !!b && (a === b || (a.length >= 3 && b.startsWith(a)) || (b.length >= 3 && a.startsWith(b))); };   // „Dani“ passt auch zu „Daniel“
+function rideHtml(T) {
+  const cars = (Array.isArray(T.ride) ? T.ride : []).filter(c => c && (c.d || c.p || c.k)); if (!cars.length) return '';
+  const drive = cars.find(c => isMeName(c.d)), ride = drive || cars.find(c => rideNames(c.p).some(isMeName)), bag = cars.find(c => rideNames(c.k).some(isMeName));
+  // zwei klare Sätze: wo du sitzt und wo dein Koffer ist
+  const list = a => a.length > 1 ? a.slice(0, -1).join(', ') + ' und ' + a[a.length - 1] : a[0];
+  const lines = [];
+  if (drive) { const others = rideNames(drive.p).filter(n => !isMeName(n)).map(esc);
+    lines.push(`🙋 Du fährst selbst${others.length ? `, mit dir ${others.length === 1 ? 'fährt' : 'fahren'} ${list(others)}` : ''}.`); }
+  else if (ride) lines.push(`🙋 Du fährst bei ${esc(ride.d)} mit.`);
+  if (bag) lines.push(bag === ride ? '🧳 Dein Koffer ist im selben Auto.' : `🧳 Dein Koffer fährt im Auto von ${esc(bag.d)} mit.`);
+  const me1 = lines.map(l => `<div>${l}</div>`).join('');
+  const line = (lbl, t) => { const n = rideNames(t).length; return t ? `<div class="rl"><small>${lbl}${n ? ` · ${n}` : ''}</small><span>${esc(t)}</span></div>` : ''; };
+  return `<div class="tsec rides"><div class="rh"><span class="tic">🚗</span><b>Hinfahrt zum Flughafen</b></div>${me1 ? `<div class="rme">${me1}</div>` : ''}
+    ${cars.map(c => `<div class="ride${c === ride || c === bag ? ' mine' : ''}"><b>${esc(c.d || 'Auto')}</b>${line('Personen', c.p)}${line('Koffer', c.k)}</div>`).join('')}</div>`;
 }
 const toggleTrip = () => { chevMark('trip'); tripOpen = !tripOpen; if (!tripOpen) tripEdit = false; countdown(); renderTrip(true); };
 $('cdt').addEventListener('click', toggleTrip);
@@ -1493,6 +1523,9 @@ $('trip').addEventListener('click', async e => {
   if (b.dataset.tsave && isAdmin()) {
     const data = { cat: 'info', title: 'Reise-Info', ts: 0 };
     TF.forEach(([k]) => { data[k] = $('tf-' + k).value.trim(); });
+    if (data.vlink) { const u = /\s/.test(data.vlink) ? false : normLink(data.vlink); if (!u || !new URL(u).hostname.includes('.')) { toast('Der Airbnb-Link sieht nicht richtig aus.', 1); return; }
+      const x = new URL(u); ['unique_share_id', 'viralityEntryPoint', 's', 'source_impression_id'].forEach(k => x.searchParams.delete(k)); data.vlink = x.href; }
+    data.ride = []; for (let i = 0; $('rd-d-' + i); i++) { const c = { d: $('rd-d-' + i).value.trim(), p: $('rd-p-' + i).value.trim(), k: $('rd-k-' + i).value.trim() }; if (c.d || c.p || c.k) data.ride.push(c); }
     data.vpid = data.vaddr ? ($('tf-vaddr').dataset.pid || '') : '';
     Object.assign(data, geoFrom($('tf-vaddr'), trip(), 'vlat', 'vlng', 'vpid'));
     try { await setDoc(doc(db, 'activities', TRIP), data, { merge: true }); tripEdit = false; renderTrip(true); render(true); toast('Reise-Info gespeichert ✓'); }
