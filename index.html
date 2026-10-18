@@ -159,7 +159,8 @@ main{padding-bottom:90px}
 .gm-style .gm-style-iw-d{overflow:auto!important;padding:0!important;max-height:none!important}.gm-style .gm-style-iw-tc::after{background:color-mix(in srgb,var(--card) 78%,transparent)!important}
 .gin{font:14px/1.35 var(--font);color:var(--tx);padding:12px 14px 14px;position:relative}.gin b{display:block;font-size:15px;font-weight:600;padding-right:22px;margin-bottom:2px}.gin small{display:block;color:var(--mu);font-size:13px}
 .gin .gbtn{display:inline-block;margin-top:8px;padding:5px 12px;border-radius:999px;background:var(--fill);color:var(--ac);font-weight:600;font-size:13px;text-decoration:none}
-.gin .gbs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.gin .gbs .gbtn{position:relative;margin:0;padding:6px 12px;font:600 13px/1.3 var(--font);border:0;cursor:pointer}.gin .gbs .gbtn::after{content:'';position:absolute;inset:-7px -3px}.gin .gbtn.pri{background:var(--acb);color:#fff}
+.gin .gbs{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;padding-top:12px;box-shadow:inset 0 .5px 0 var(--bd)}
+.gin .gwho{margin-top:10px}.gin .gwc{font-size:14px;font-weight:600;color:var(--tx)}.gin .gwn{margin-top:2px;font-size:13px;line-height:1.4;color:var(--mu)}.gin .gwn b{display:inline;margin:0;padding:0;font-size:inherit;font-weight:600;color:var(--tx2,var(--tx))}.gin .gwho .stack i{width:24px;height:24px;margin-left:-7px;font-size:11px}.gin .gwho .stack i:first-child{margin-left:0}.gin .gbs .gbtn{position:relative;margin:0;padding:6px 12px;font:600 13px/1.3 var(--font);border:0;cursor:pointer}.gin .gbs .gbtn::after{content:'';position:absolute;inset:-7px -3px}.gin .gbtn.pri{background:var(--acb);color:#fff}
 /* Kartenpunkte im iOS-Stil: farbige Perle mit weißem Symbol und weißem Rand. Größe folgt dem Zoom (--ps),
    weit weg nur kleine Punkte, nah mit Namen darunter. Angetippt hebt sich die Perle als Stecknadel an. */
 .gpl0{position:absolute;left:0;top:0;--ps:22px}
@@ -177,7 +178,8 @@ main{padding-bottom:90px}
 .gp.vil.sel .gpb{box-shadow:0 0 0 2px #1d7a6b,0 2px 4px rgba(0,0,0,.2),0 8px 18px rgba(0,0,0,.25)}.gp.vil .gpt{background:#1d7a6b}
 .gpn{position:absolute;left:0;top:calc(var(--ps) / 2 + 5px);translate:-50% 0;width:max-content;max-width:120px;text-align:center;font:600 12px/1.2 var(--font);letter-spacing:-.01em;
   color:color-mix(in srgb,var(--pc) 70%,var(--tx));text-shadow:0 0 2px var(--bg),0 0 2px var(--bg),0 0 3px var(--bg),0 0 4px var(--bg);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;opacity:0;transition:opacity .25s;pointer-events:none}
-.gp.vil .gpn{color:var(--tx)}.gp.lv .gpn{opacity:1}.gp.sel .gpn{opacity:0}
+.gp.vil .gpn{color:var(--tx)}.gpk{position:absolute;top:-6px;right:-8px;min-width:17px;height:17px;padding:0 4px;box-sizing:border-box;border-radius:999px;background:#1d7a6b;color:#fff;font:700 11px/17px var(--font);font-style:normal;text-align:center;box-shadow:0 0 0 1.5px #fff;transition:opacity .25s}.nogl .gp:not(.sel) .gpk{opacity:0}
+.gin .gvl{margin-top:8px}.gin .gvl small{margin-bottom:2px}.gin .gvi{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;min-height:36px;padding:6px 0;background:none;border-radius:0;color:var(--ac);font:500 14px/1.3 var(--font);text-align:left;box-shadow:inset 0 -.5px 0 var(--bd)}.gin .gvi span{color:var(--mu);font-size:17px}.gin .gvi:active{transform:none;opacity:.6}.gp.lv .gpn{opacity:1}.gp.sel .gpn{opacity:0}
 #mapv.mdark .gp:not(.mine){--rc:rgba(255,255,255,.92)}
 .gin .ginx{position:absolute;right:4px;top:4px;width:26px;height:26px;padding:0;background:none;color:var(--mu);font-size:18px;line-height:1}
 html.noscroll,html.noscroll body{overflow:hidden}
@@ -1159,6 +1161,8 @@ $('k').onchange = formFields; $('rv').onchange = formFields;
 function goToCard(id) {
   const a = acts.find(x => x.id === id); if (!a) return; closeTrip();
   setTab(a.cat === 'food' ? 'food' : 'act');
+  // Live-Updates warten, bis das Aufleuchten vorbei ist (ein Neuaufbau würde die Kachel ersetzen, das Leuchten wäre weg)
+  slides++; setTimeout(() => { if (--slides <= 0) { slides = 0; if (slideWait) { slideWait = false; render(); } } }, 2400);
   requestAnimationFrame(() => { const c = document.querySelector(`#list [data-card="${CSS.escape(id)}"]`); if (!c) return;
     scrollTo({ top: Math.max(0, c.getBoundingClientRect().top + scrollY - 96), behavior: calm() ? 'auto' : 'smooth' });
     flashCard(c); });
@@ -1266,33 +1270,44 @@ function loadPlaces() {
   }
   return google.maps.importLibrary('places');
 }
+// „Unsere Villa“ als erster Vorschlag: bei leerem Feld und bei passender Eingabe (nicht im Villa-Feld der Reise-Info selbst)
+const IC_HOME = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12H3l9-9l9 9h-2"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/></svg>';
+function villaSug(i, q) {
+  const T = trip(); if (T.vlat == null || i.id.startsWith('tf-')) return null;
+  const n = norm(q.trim()); if (n && !['unsere villa', 'villa', 'bei uns', 'zuhause', 'zu hause', 'daheim', norm(T.vname || '')].some(w => w && (w.startsWith(n) || n.startsWith(w)))) return null;
+  return { villa: T };
+}
 const acClose = () => { document.querySelectorAll('.acl').forEach(x => x.remove()); acList = []; };
 function acShow(i, list) {
   acClose(); if (!list.length || document.activeElement !== i) return;
   acList = list; acInput = i;
   const box = document.createElement('div'); box.className = 'acl';
-  box.innerHTML = list.map((sg, n) => { const pp = sg.placePrediction;
-    return `<button type="button" class="aci" data-i="${n}"><b>${IC_PIN}${esc(pp.mainText ? pp.mainText.text : pp.text.text)}</b>${pp.secondaryText ? `<small>${esc(pp.secondaryText.text)}</small>` : ''}</button>`; }).join('') + '<div class="acg">Vorschläge von Google</div>';
+  box.innerHTML = list.map((sg, n) => { if (sg.villa) return `<button type="button" class="aci" data-i="${n}"><b>${IC_HOME}Unsere Villa</b><small>${esc([sg.villa.vname, sg.villa.vaddr].filter(Boolean).join(' · '))}</small></button>`;
+    const pp = sg.placePrediction;
+    return `<button type="button" class="aci" data-i="${n}"><b>${IC_PIN}${esc(pp.mainText ? pp.mainText.text : pp.text.text)}</b>${pp.secondaryText ? `<small>${esc(pp.secondaryText.text)}</small>` : ''}</button>`; }).join('') + (list.some(sg => !sg.villa) ? '<div class="acg">Vorschläge von Google</div>' : '');
   i.insertAdjacentElement('afterend', box);
 }
 document.addEventListener('input', e => {
   const i = e.target; if (!i.dataset || !i.dataset.place) return;
   i.dataset.pid = ''; i.dataset.lat = ''; i.dataset.lng = ''; clearTimeout(acTimer);
-  const q = i.value.trim(); if (!MAPS_KEY || q.length < 2) { acClose(); return; }
+  const q = i.value.trim(), vs = villaSug(i, q); if (!MAPS_KEY || q.length < 2) { if (vs) acShow(i, [vs]); else acClose(); return; }
   acTimer = setTimeout(async () => {
     try {
       const lib = await loadPlaces();
       if (!acToken) acToken = new lib.AutocompleteSessionToken();
       const { suggestions } = await lib.AutocompleteSuggestion.fetchAutocompleteSuggestions({ input: q, sessionToken: acToken, language: 'de', locationBias: MALTA });
-      if (i.value.trim() === q) acShow(i, suggestions.filter(sg => sg.placePrediction).slice(0, 5));
-    } catch (err) { console.warn(err); acClose(); }
+      if (i.value.trim() === q) acShow(i, [...(vs ? [vs] : []), ...suggestions.filter(sg => sg.placePrediction).slice(0, vs ? 4 : 5)]);
+    } catch (err) { console.warn(err); if (vs && i.value.trim() === q) acShow(i, [vs]); else acClose(); }
   }, 250);
 });
 // pointerdown statt click: so verliert das Feld den Fokus nicht, bevor der Vorschlag übernommen ist
 document.addEventListener('pointerdown', async e => {
   const b = e.target.closest('.aci'); if (!b || !acInput) return;
   e.preventDefault();
-  const pp = acList[+b.dataset.i].placePrediction, i = acInput;
+  const sg = acList[+b.dataset.i], i = acInput;
+  if (sg.villa) { const T = sg.villa; i.value = T.vname || 'Unsere Villa'; i.dataset.pid = T.vpid || ''; i.dataset.lat = T.vlat; i.dataset.lng = T.vlng; acClose();
+    if (i.id === 'epl') { const sv = document.querySelector('[data-plsave]'); if (sv) sv.click(); } return; }
+  const pp = sg.placePrediction;
   i.value = pp.mainText ? pp.mainText.text : pp.text.text; i.dataset.pid = pp.placeId; i.dataset.lat = ''; i.dataset.lng = ''; acClose();
   // Position für die Karte (Place Details Essentials, 10.000/Monat kostenlos); beendet zugleich die Sitzung
   try { const pl = pp.toPlace(); await pl.fetchFields({ fields: ['location'] }); if (pl.location) { i.dataset.lat = pl.location.lat(); i.dataset.lng = pl.location.lng(); } } catch (err) {}
@@ -1300,6 +1315,7 @@ document.addEventListener('pointerdown', async e => {
   acToken = null;
 });
 document.addEventListener('focusout', e => { if (e.target.dataset && e.target.dataset.place) setTimeout(acClose, 150); });
+document.addEventListener('focusin', e => { const i = e.target; if (!i.dataset || !i.dataset.place || i.value.trim()) return; const vs = villaSug(i, ''); if (vs) acShow(i, [vs]); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') acClose(); });
 
 // ===== Karte mit allen Orten (Google Maps, gleicher Schlüssel wie die Ortsvorschläge) =====
@@ -1430,20 +1446,33 @@ function renderMap(fit) {
       el.classList.add('sel'); el.style.zIndex = 50;
       gInfo.setContent(`<div class="gin"><button class="ginx" aria-label="Schließen">×</button>${html}</div>`);
       gInfo.setOptions({ position: pos, pixelOffset: new google.maps.Size(0, -54) }); gInfo.open({ map: gmap }); infoOpen = true;
+      // Google schiebt das Fenster nur in den Kartenrand; unsere Knöpfe oben dürfen es auch nicht verdecken
+      google.maps.event.addListenerOnce(gInfo, 'domready', () => setTimeout(() => { const w = document.querySelector('.gm-style-iw-c'); if (!w) return;
+        const r = w.getBoundingClientRect(), bar = $('mapth').getBoundingClientRect(), x = $('mapx').getBoundingClientRect();
+        const lim = r.right > x.left - 4 ? bar.bottom + 10 : document.querySelector('#mapf').getBoundingClientRect().bottom + 10;
+        if (r.top < lim) gmap.panBy(0, r.top - lim); }, 350));
     });
     L.box.appendChild(el); L.items.push({ el, ll: new google.maps.LatLng(pos.lat, pos.lng), z, food, vil: cls === 'vil', mine: cls === 'mine' }); bounds.extend(pos); n++; };
-  const vil = T.vlat != null ? { lat: T.vlat, lng: T.vlng } : null;
-  if (vil) add(vil, 'vil', 'vil', '#fff', T.vname || 'Unsere Villa', `<b>🏡 ${esc(T.vname || 'Unsere Villa')}</b><small>${esc(T.vaddr || '')}</small><div class="gbs"><a class="gbtn" href="${esc(villaUrl(T))}" target="_blank" rel="noopener noreferrer">Google Maps ↗</a></div>`, 1);
+  const vil = T.vlat != null ? { lat: T.vlat, lng: T.vlng } : null, home = [];
+  // Was in unserer Villa stattfindet (Villa als Ort gewählt oder Kochen ohne Ort), bekommt keinen eigenen Pin, sondern steht im Villa-Pin
+  const atVilla = a => vil && ((T.vpid && a.pid === T.vpid) || (a.lat != null && kmTo(vil, { lat: a.lat, lng: a.lng }) < .05) || (a.kind === 'cook' && !a.place));
   mapItems().forEach(a => {
+    if (atVilla(a)) { home.push(a); return; }
     if (a.lat == null) { if (a.place) missing.push(a); return; }
     const food = a.cat === 'food', s = sig.filter(x => x.act === a.id), mine = s.some(x => x.uid === me), pos = { lat: a.lat, lng: a.lng };
-    const who = s.length ? (food ? `👍 ${s.length} · ` : `🙋 ${s.length} · `) + s.map(x => nm(x.uid)).join(', ') : (food ? 'Noch keine Stimmen' : 'Noch niemand dabei');
+    // Aufbau wie eine Mini-Kachel: Titel, Infozeile mit Entfernung, Zahl + Namen der Teilnehmer, dann die Knöpfe
+    const names = [...s].sort((x, y) => (y.uid === me) - (x.uid === me)).map(x => x.uid === me ? '<b>Du</b>' : esc(ppl[x.uid] || 'Jemand')).join(', ');
+    const who = `<div class="gwho"><span class="gwc">${s.length ? (food ? (s.length === 1 ? '1 Stimme' : s.length + ' Stimmen') : s.length + ' dabei') : (food ? 'Noch keine Stimmen' : 'Noch niemand dabei')}</span></div>${s.length ? `<div class="gwn">${names}</div>` : ''}`;
     const km = vil ? kmTo(vil, pos) : null, near = km != null && km < .15;
-    const dist = km == null ? '' : `<small>${near ? 'Bei unserer Villa' : kmTxt(km) + ' Luftlinie von der Villa'}</small>`;
+    const info = [meta(a), km == null ? '' : near ? 'bei unserer Villa' : `<span class="nw">${kmTxt(km)} von der Villa</span>`].filter(Boolean).join(' · ');
     const way = vil && !near ? `<a class="gbtn" href="${esc(routeUrl(T, a))}" target="_blank" rel="noopener noreferrer">Route ab Villa ↗</a>` : `<a class="gbtn" href="${esc(mapUrl(a))}" target="_blank" rel="noopener noreferrer">Google Maps ↗</a>`;
     add(pos, mine ? 'mine' : '', food ? (a.kind === 'cook' ? 'cook' : 'rest') : 'act', food ? '#ea580c' : '#1d7a6b', a.title,
-      `<b>${esc(a.title)}</b>${meta(a) ? `<small>${meta(a)}</small>` : ''}<small>${who}</small>${dist}<div class="gbs"><button class="gbtn pri" data-mgo="${esc(a.id)}">Zum Vorschlag</button>${way}</div>`, mine ? 3 : 2, food);
+      `<b>${esc(a.title)}</b>${info ? `<small>${info}</small>` : ''}${who}<div class="gbs"><button class="gbtn pri" data-mgo="${esc(a.id)}">Zum Vorschlag</button>${way}</div>`, mine ? 3 : 2, food);
   });
+  if (vil) { add(vil, 'vil', 'vil', '#fff', T.vname || 'Unsere Villa', `<b>🏡 ${esc(T.vname || 'Unsere Villa')}</b><small>${esc(T.vaddr || '')}</small>`
+      + (home.length ? `<div class="gvl"><small>Bei uns in der Villa</small>${home.map(a => `<button class="gvi" data-mgo="${esc(a.id)}">${esc(a.title)}<span aria-hidden="true">›</span></button>`).join('')}</div>` : '')
+      + `<div class="gbs"><a class="gbtn" href="${esc(villaUrl(T))}" target="_blank" rel="noopener noreferrer">Google Maps ↗</a></div>`, 1);
+    if (home.length) L.items.at(-1).el.querySelector('.gpb').insertAdjacentHTML('beforeend', `<i class="gpk">${home.length}</i>`); }
   pinZoom(); L.draw(); mapMissing = missing; renderMiss();
   if (fit) { if (n > 1) gmap.fitBounds(bounds, { top: 80, bottom: $('mapmiss').hidden ? 40 : 100, left: 36, right: 36 }); else if (n) { gmap.setCenter(bounds.getCenter()); gmap.setZoom(13); } else { gmap.setCenter({ lat: 35.94, lng: 14.38 }); gmap.setZoom(11); } }
 }
@@ -1471,7 +1500,7 @@ async function openMap() {
         backgroundColor: dark ? '#0b0f10' : '#e8eef0' });
       gInfo = new gLib.InfoWindow({ headerDisabled: true, minWidth: 272, maxWidth: 280 }); gInfo.addListener('closeclick', closeInfo);
       // Tipp auf die Karte schließt das Fenster, aber nicht der Tipp auf einen Punkt selbst
-      gmap.addListener('click', () => { if (Date.now() - pinDown > 600) closeInfo(); });
+      gmap.addListener('click', e => { const t = e && e.domEvent && e.domEvent.target; if (t && t.closest && t.closest('.gm-style-iw-c')) return; if (Date.now() - pinDown > 600) closeInfo(); });
       gmap.addListener('zoom_changed', pinZoom);
     } else gmap.setOptions({ styles });
     renderMap(true); showTip('map');
@@ -1493,9 +1522,13 @@ function closeMap(fromPop) {
 // Von der Karte zum Vorschlag: Karte zu, dann zur Kachel springen und aufleuchten lassen.
 // Erst nach dem Zurück im Verlauf springen, sonst setzt der Browser danach die alte Scroll-Position wieder ein.
 function mapGo(id) {
-  const back = !!(history.state && history.state.map); closeMap();
+  const back = !!(history.state && history.state.map);
+  // Safari stellt beim Zurück sonst die alte Scroll-Position wieder her, nachdem wir schon gesprungen sind
+  if (back) try { history.scrollRestoration = 'manual'; } catch (e) {}
+  closeMap();
   if (!back) { goToCard(id); return; }
   mapGoId = id; setTimeout(() => { if (mapGoId === id) { mapGoId = null; goToCard(id); } }, 400);
+  setTimeout(() => { try { history.scrollRestoration = 'auto'; } catch (e) {} }, 1500);
 }
 $('mapBtn').onclick = openMap; $('mapx').onclick = () => closeMap();
 $('mapf').onclick = e => { const b = e.target.closest('[data-mf]'); if (b) { mapFilter = b.dataset.mf; closeInfo(); renderMap(true); } };
@@ -1504,8 +1537,9 @@ $('mapmiss').onclick = async e => {
   if (!e.target.closest('[data-mmt]')) return; const mm = $('mapmiss'), from = mm.offsetHeight;
   missOpen = !missOpen; chevMark('mm'); renderMiss(); await slideHeight(mm, from, mm.offsetHeight, 320);
 };
-addEventListener('popstate', () => { if (mapOpen) closeMap(true); if (mapGoId) { const id = mapGoId; mapGoId = null; goToCard(id); } });
-document.addEventListener('click', e => { if (e.target.closest('.ginx') && gInfo) closeInfo(); const g = e.target.closest('[data-mgo]'); if (g && mapOpen) mapGo(g.dataset.mgo); });
+addEventListener('popstate', () => { if (mapOpen) closeMap(true); if (mapGoId) { const id = mapGoId; mapGoId = null; setTimeout(() => goToCard(id), 30); } });
+// In der Einfangphase: Google Maps hält Tipps im Fenster sonst teils selbst fest (iPhone), bevor sie unten ankommen
+document.addEventListener('click', e => { if (!e.target.closest) return; if (e.target.closest('.ginx') && gInfo) closeInfo(); const g = e.target.closest('[data-mgo]'); if (g && mapOpen) { e.stopPropagation(); mapGo(g.dataset.mgo); } }, true);
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && mapOpen) closeMap(); });
 
 // Kleines Extra: Tipp auf Flagge/Titel lässt Urlaubs-Emojis über den ganzen Bildschirm aufploppen
