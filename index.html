@@ -239,6 +239,8 @@ html.noscroll,html.noscroll body{overflow:hidden}
 .tip.nomap{bottom:max(22px,calc(env(safe-area-inset-bottom) + 10px))}
 .mapv .tip{position:absolute;top:calc(max(10px,env(safe-area-inset-top)) + 58px);bottom:auto;left:12px;right:62px;translate:none;width:auto;z-index:3;background:var(--lg)}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+/* Größere Tippflächen (mind. 44 px) für kleine Knöpfe, ohne dass sie größer aussehen */.mn,.av,.x[data-sdel],.x[data-cmdel],.x[data-cdel]{position:relative}.mn::after,.av::after,.x[data-sdel]::after,.x[data-cmdel]::after,.x[data-cdel]::after{content:'';position:absolute;inset:-8px;border-radius:50%}.av::after{inset:-4px}button.sc[data-stog]{border:10px solid transparent;margin:-10px;background-clip:padding-box!important;width:44px;height:44px;flex:0 0 44px}
+/* Rückblick nach dem Urlaub: Zahlen in eigener Zeile, gleich breit */.cdt.rb{flex-wrap:wrap}.cd .cdt.rb>.ut{flex:1 0 100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px;margin-top:2px}
 </style></head><body><main>
 <div class="hd"><h1><img class="flag" src="flag.png?v=3" alt=""><span class="ttl"><small>31.10. – 07.11.2026</small><span>Malta</span></span></h1><div class="pf" id="me" hidden></div></div>
 <p class="s" id="sub">Schlag Ideen vor und trag dich bei denen ein, auf die du Lust hast.</p>
@@ -342,7 +344,10 @@ function top() {
   if (needCol) $('colCard').innerHTML = `<h2>🎨 Such dir deine Farbe aus</h2><p>Damit dich alle auf einen Blick erkennen, bekommt jeder seine eigene Farbe. Vergebene Farben sind mit dem Buchstaben der Person markiert.</p><div class="sw big">${swatches()}</div>`;
   if (app) requestAnimationFrame(moveInd);
   countdown(); renderTrip();
-  if (show) {
+  if (show && $('pm') && $('avb')) {   // Menü offen: nur Symbol und Farben auffrischen, nicht neu bauen (sonst schließt es sich)
+    const b = $('avb'), c = colOf(me); b.className = 'av' + inkC(c); b.style.background = c; b.style.setProperty('--pc', c); b.textContent = n.trim()[0].toUpperCase();
+    $('pm').querySelector('.sw').innerHTML = swatches(); bindSw();
+  } else if (show) {
     $('me').innerHTML = '<button class="av' + inkC(colOf(me)) + '" id="avb" aria-label="Profil" style="background:' + colOf(me) + ';--pc:' + colOf(me) + '">' + esc(n.trim()[0].toUpperCase()) + '</button>';
     $('avb').onclick = e => {
       e.stopPropagation();
@@ -350,18 +355,19 @@ function top() {
       $('me').insertAdjacentHTML('beforeend', '<div class="pm" id="pm"><small>Angemeldet als</small><b>' + esc(n) + '</b><small>Deine Farbe</small><div class="sw">' + swatches() + '</div><button class="o" id="ch">Name ändern</button><button class="o" id="tourb" style="margin-top:8px">🧭 Tour ansehen</button>' + (isAdmin() ? '<button class="o" id="stb" style="margin-top:8px">📊 Statistik</button>' : '') + '</div>');
       $('ch').onclick = () => { editing = true; $('n').value = n; top(); };
       $('tourb').onclick = () => { $('pm').remove(); startTour(); };
-      $('pm').querySelectorAll('[data-col]').forEach(b => b.onclick = ev => { ev.stopPropagation(); pickColor(b.dataset.col); });
+      bindSw();
       if ($('stb')) $('stb').onclick = () => { $('pm').remove(); statsOpen = true; renderStats(); $('stats').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
     };
   }
 }
 
+const bindSw = () => $('pm').querySelectorAll('[data-col]').forEach(b => b.onclick = ev => { ev.stopPropagation(); pickColor(b.dataset.col); });
 const swatches = () => PALETTE.map(c => { const o = takenBy(c);
   return `<button class="swc${pcol[me] === c ? ' on' : ''}${o ? ' tk' : ''}${inkC(c)}" data-col="${c}" style="background:${c}" aria-label="${o ? 'Vergeben an ' + esc(ppl[o]) : 'Farbe wählen'}">${o ? esc(ppl[o].trim()[0].toUpperCase()) : ''}</button>`; }).join('');
 async function pickColor(c) {
   const o = takenBy(c); if (o) { toast(`Die Farbe hat schon ${ppl[o]}.`, 1); return; }
   const first = !PALETTE.includes(pcol[me]);
-  try { await setDoc(doc(db, 'people', me), { col: c }, { merge: true }); pcol[me] = c; const pmEl = $('pm'); if (pmEl) pmEl.remove(); top(); render(true); toast(first ? 'Super, los geht\'s! 🎉' : 'Farbe gespeichert ✓'); }
+  try { await setDoc(doc(db, 'people', me), { col: c }, { merge: true }); pcol[me] = c; top(); render(true); toast(first ? 'Super, los geht\'s! 🎉' : 'Farbe gespeichert ✓'); }
   catch (err) { toast(FAIL, 1); }
 }
 $('colCard').addEventListener('click', e => { const b = e.target.closest('[data-col]'); if (b) pickColor(b.dataset.col); });
@@ -568,7 +574,9 @@ const hit = (t, k) => k.length >= 5 ? t.includes(k) : new RegExp('(^|[^a-z])' + 
 function suggestFor(a) {
   if (a.id === GEN) return BASICS;
   const t = norm(a.title || '');
-  const m = RX.filter(r => r.keys.some(k => hit(t, k)));
+  // Treffer, deren Stichwort nur ein Teil eines längeren Treffers ist, fallen weg („kuchen“ in „flammkuchen“, „pfannkuchen“)
+  const ms = RX.map(r => ({ r, ks: r.keys.filter(k => hit(t, k)) })).filter(x => x.ks.length);
+  const m = ms.filter(x => !x.ks.every(k => ms.some(y => y !== x && y.ks.some(k2 => k2.length > k.length && k2.includes(k))))).map(x => x.r);
   const spec = new Set(m.filter(r => !r.gen).map(r => r.fam));
   const out = [];
   m.filter(r => !r.gen || !spec.has(r.fam)).forEach(r => r.items.forEach(i => { if (!out.some(o => norm(o) === norm(i))) out.push(i); }));
@@ -1697,12 +1705,25 @@ $('trip').addEventListener('click', e => { const b = e.target.closest('[data-wxd
 
 // Countdown bis zum Abflug (31.10.2026, 11:00 Uhr deutscher Zeit, Winterzeit = +01:00)
 const DEPART = new Date('2026-10-31T11:00:00+01:00');
-const RETURN = new Date('2026-11-07T07:15:00+01:00');   // Rückflug KM 306
+const RETURN = new Date('2026-11-07T07:15:00+01:00');
+const LAND = new Date('2026-10-31T13:15:00+01:00');   // Landung Hinflug (ca.)   // Rückflug KM 306
 const TRIP_DAY1 = new Date('2026-10-31T00:00:00+01:00'), TRIP_DAYS = 8;   // 31.10. bis 07.11.
 const u = (n, l) => `<div class="u"><b>${n}</b><small>${l}</small></div>`;
 function countdown() {
   const now = Date.now(), ms = DEPART - now;
-  if (now >= RETURN) { $('cdt').innerHTML = `<div><small class="kick">🏠 Wieder zu Hause</small><b>Schön war's auf Malta!</b>${rih()}</div>`; return; }
+  $('cdt').classList.toggle('rb', now >= RETURN);
+  if (now >= RETURN) {   // Rückblick: was wir zusammen geplant und geteilt haben
+    const nA = acts.filter(a => inCat(a, 'act')).length, nF = acts.filter(a => inCat(a, 'food')).length;
+    const ct = acts.filter(a => a.cat === 'cost' && a.kind !== 'pay').reduce((s, a) => s + (a.amt || 0), 0), np = Object.values(ppl).filter(Boolean).length;
+    $('cdt').innerHTML = `<div><small class="kick">🏠 Wieder zu Hause</small><b>Schön war's auf Malta!</b><small>${np ? np + ' Leute · ' : ''}${TRIP_DAYS} Tage</small>${rih()}</div>` +
+      `<div class="ut">${u(nA, 'Aktivitäten')}${u(nF, 'Essen')}${ct ? u(Math.round(ct / 100).toLocaleString('de-DE'), '€ geteilt') : ''}</div>`;
+    return;
+  }
+  if (ms <= 0 && now < LAND) {   // im Flieger: noch nicht „auf Malta“
+    const lm = Math.max(1, Math.ceil((LAND - now) / 60000));
+    $('cdt').innerHTML = `<div><small class="kick">✈️ Wir fliegen</small><b>München → Malta</b><small>Landung ca. 13:15 Uhr</small>${rih()}</div><div class="ut">${u(Math.floor(lm / 60), 'Std.')}${u(lm % 60, 'Min.')}</div>`;
+    return;
+  }
   if (ms <= 0) {
     const day = Math.min(TRIP_DAYS, Math.floor((now - TRIP_DAY1) / 864e5) + 1);
     $('cdt').innerHTML = `<div><small class="kick">🌴 Wir sind auf Malta</small><b>Rückflug Sa, 07.11.</b><small>07:15 Uhr</small>${rih()}</div><div class="ut">${u(day, 'von ' + TRIP_DAYS)}</div>`
