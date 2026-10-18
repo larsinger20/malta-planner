@@ -74,6 +74,8 @@ Drei Sammlungen: `activities`, `people`, `signups`. **Neue Sammlungen funktionie
 - **CSS-Klassennamen vor dem Anlegen suchen** (z. B. `.bar` gehört der Statistik). Breite Selektoren wie `.pdh>div>small` können ungewollt andere Teile treffen.
 - `[hidden]{display:none!important}` steht im CSS, damit `hidden` auch bei Flex-Elementen wirkt.
 
+- **Eigene Einträge mit Fokus im Feld** (Kommentar, Einkauf): Die echte Firestore meldet die lokale Änderung erst kurz nach `setDoc`, und `render()` ist bei Fokus gesperrt. Deshalb nach dem Schreiben `await Promise.race([w, 80 ms])` und dann `render(true)` (+ Sicherheitsnetz). Test-Stub dafür mit asynchronen Snapshots (20 ms) und Server-Antwort (500 ms) bauen, sonst fällt so ein Fehler nicht auf (Bug 18.10.: Kommentar erschien erst nach Neuladen).
+
 ## Testen
 - Node.js ist auf Lars' PC nicht installiert, **Python ist da**. Testkopie: `index.html` in einen Arbeitsordner kopieren und dort die Firebase-Imports durch einen kleinen Stub mit Beispieldaten im Speicher ersetzen (gleiche Funktionsnamen: `collection`, `doc`, `setDoc`, `updateDoc`, `deleteDoc`, `deleteField`, `increment`, `onSnapshot`), dazu Stubs für `google.maps` und Open-Meteo. Nie die echte Datenbank ansprechen.
 - Ausliefern mit einem Python-Server **ohne Cache** (`Cache-Control: no-store`), sonst zeigt der Browser alte Fassungen.

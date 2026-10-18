@@ -747,7 +747,11 @@ async function addComment(id) {
   if (!alive(id)) { toast(GONE, 1); return; }
   i.value = '';   // sofort leeren, damit ein zweites Senden nichts doppelt anlegt
   cmNew = cid; const w = setDoc(doc(db, 'activities', id), { cm: { [cid]: { u: me, t, ts: Date.now() } } }, { merge: true });
+  // erst zeichnen, wenn der neue Kommentar lokal angekommen ist (die Server-Antwort kann später kommen); das Feld behält den Fokus
+  await Promise.race([w.catch(() => {}), new Promise(r => setTimeout(r, 80))]);
   render(true); setTimeout(() => { if (cmNew === cid) cmNew = null; }, 700); const n = $('cmin-' + id); if (n) n.focus();
+  // Sicherheitsnetz: falls der Kommentar beim Zeichnen noch fehlte, nach kurzer Zeit nochmal
+  setTimeout(() => { if (!document.querySelector(`#list [data-cmdel="${CSS.escape(id + '|' + cid)}"]`)) { const f = document.activeElement && document.activeElement.id === 'cmin-' + id; render(true); if (f) { const m = $('cmin-' + id); if (m) m.focus(); } } }, 600);
   try { await w; } catch (err) { toast(FAIL, 1); const n2 = $('cmin-' + id); if (n2 && !n2.value) n2.value = t; }
 }
 
