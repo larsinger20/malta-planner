@@ -56,7 +56,7 @@ textarea{resize:vertical;max-width:100%;min-height:70px}
 .tb{position:relative;z-index:1;flex:1;min-width:0;padding:6px 2px 5px;font-size:12px;font-weight:500;line-height:1.2;white-space:nowrap;background:transparent;color:var(--tx);border-radius:999px;display:flex;flex-direction:column;align-items:center;gap:1px;transition:color .25s}
 .tb:active{transform:none}.tb:active .ti{transform:scale(.88)}
 .tb .ti{display:block;height:23px;transition:transform .2s}.tb .ti svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;transition:fill .25s}.tb{color:var(--mu)}.tb.on{font-weight:600;color:var(--ac)}.tb.on .ti svg{fill:color-mix(in srgb,currentColor 16%,transparent)}
-.tb .n{position:absolute;top:2px;left:calc(50% + 9px);min-width:17px;padding:0 5px;border-radius:999px;background:var(--acb);color:#fff;font-size:10.5px;font-weight:600;line-height:16px;text-align:center;letter-spacing:0}.tb .n:empty{display:none}
+.nb{display:inline-block;vertical-align:3px;margin-right:7px;padding:2px 7px;border-radius:999px;background:var(--acb);color:#fff;font-family:var(--font);font-size:11px;font-weight:700;letter-spacing:.03em;line-height:1.35}.nb.cm{margin:0 0 0 8px;vertical-align:1px}.tb .ti{position:relative}.tb.hasnew .ti::after{content:'';position:absolute;top:-1px;left:-3px;width:9px;height:9px;border-radius:50%;background:var(--negb);box-shadow:0 0 0 2px var(--lg)}.tb .n{position:absolute;top:2px;left:calc(50% + 9px);min-width:17px;padding:0 5px;border-radius:999px;background:var(--acb);color:#fff;font-size:10.5px;font-weight:600;line-height:16px;text-align:center;letter-spacing:0}.tb .n:empty{display:none}
 
 .addb{display:block;width:100%;margin:0 0 14px;padding:13px;font-weight:600;font-size:17px;background:color-mix(in srgb,var(--acb) 11%,transparent);color:var(--ac)}@media(prefers-color-scheme:dark){.addb{background:color-mix(in srgb,var(--acb) 22%,transparent)}}
 .ah{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
@@ -717,7 +717,7 @@ const costChip = a => { const c = COSTS().filter(x => x.act === a.id && x.kind !
 
 // ===== Kommentare an Vorschlägen =====
 // Feld cm im Vorschlag: { commentId: { u, t, ts } }, Einträge einzeln gemerged (wie die Einkaufsliste)
-const cmOpen = new Set(); let cmNew = null;
+const cmOpen = new Set(), cmRead = {}; let cmNew = null;   // cmRead: wann man die Kommentare eines Vorschlags zuletzt aufgeklappt hat (dann sind sie gelesen)
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 // Höhe weich animieren (gemessen, statt max-height zu raten); Abschneiden nur während der Animation
 function slideHeight(el, from, to, ms = 300) {
@@ -729,7 +729,7 @@ function slideHeight(el, from, to, ms = 300) {
 }
 const cmBox = id => { const t = document.querySelector(`#list [data-cmt="${CSS.escape(id)}"]`); return t && t.closest('.cmts'); };
 async function openComments(id, fromH, focus) {
-  cmOpen.add(id); render(true);
+  cmOpen.add(id); cmRead[id] = Date.now(); render(true);
   const box = cmBox(id), i = $('cmin-' + id);
   if (focus && i) i.focus({ preventScroll: true });
   if (box) await slideHeight(box, fromH, box.offsetHeight, 320);
@@ -738,7 +738,8 @@ const cmItems = a => Object.entries(a.cm || {}).filter(([, v]) => v && v.t).map(
 function cmBlock(a) {
   const items = cmItems(a), id = esc(a.id), open = cmOpen.has(a.id);
   if (!items.length && !open) return '';
-  const label = items.length ? `💬 ${items.length} ${items.length === 1 ? 'Kommentar' : 'Kommentare'}` : '💬 Kommentare';
+  const nn = seenPrev ? newCm(a, Math.max(seenPrev[catOf(a)], cmRead[a.id] || 0)) : 0;
+  const label = (items.length ? `💬 ${items.length} ${items.length === 1 ? 'Kommentar' : 'Kommentare'}` : '💬 Kommentare') + (nn ? `<span class="nb cm">${nn} neu</span>` : '');
   // gleicher Rahmen zu und offen → der Abstand nach oben springt nie
   if (!open) return `<div class="cmts"><button class="tx" data-cmt="${id}">${label}${chev('c' + a.id, false)}</button></div>`;
   return `<div class="cmts"><button class="tx op" data-cmt="${id}">${label}${chev('c' + a.id, true)}</button>
@@ -780,6 +781,34 @@ function restoreFields(m) {
     if (e.value !== m[id].v) e.value = m[id].v; if (e.type === 'checkbox') e.checked = m[id].c; Object.assign(e.dataset, m[id].d); }
   const ek = $('ek'); if (ek) $('list').querySelectorAll('[data-ekv]').forEach(x => x.classList.toggle('on', x.dataset.ekv === ek.value));
 }
+// ===== „Neu“-Abzeichen: Vorschläge und Kommentare anderer, die seit dem letzten Besuch des Reiters dazukamen =====
+// people/{uid}.lastAct / lastFood = Zeitpunkt, zu dem man den Reiter zuletzt verlassen bzw. betreten hat.
+// seenPrev hält den Stand vom Betreten fest, damit die Abzeichen während des Besuchs stehen bleiben.
+const SEEN_KEY = { act: 'lastAct', food: 'lastFood' };
+let seenPrev = null;
+function initSeen() {
+  if (seenPrev || !ppl[me] || !pdat[me]) return;
+  const P = pdat[me], now = Date.now(), up = {}; seenPrev = {};
+  for (const c in SEEN_KEY) { const v = P[SEEN_KEY[c]]; seenPrev[c] = v || now; if (!v) up[SEEN_KEY[c]] = now; }   // erster Besuch: nichts ist „neu“
+  if (SEEN_KEY[tab]) up[SEEN_KEY[tab]] = now;
+  Object.assign(P, up); setDoc(doc(db, 'people', me), up, { merge: true }).catch(() => {});
+}
+function markTabSeen(c) {
+  if (!seenPrev || !SEEN_KEY[c] || !pdat[me]) return;
+  const now = Date.now(); pdat[me][SEEN_KEY[c]] = now; setDoc(doc(db, 'people', me), { [SEEN_KEY[c]]: now }, { merge: true }).catch(() => {});
+}
+function enterTab(c) { if (!seenPrev || !SEEN_KEY[c] || !pdat[me]) return; seenPrev[c] = pdat[me][SEEN_KEY[c]] || Date.now(); markTabSeen(c); }
+const catOf = a => a.cat === 'food' ? 'food' : 'act';
+const isNewAct = a => !!seenPrev && a.by !== me && (a.ts || 0) > seenPrev[catOf(a)];
+const newCm = (a, since) => cmItems(a).filter(c => c.u !== me && (c.ts || 0) > since).length;
+// Punkt am Reiter: dort gibt es seit dem letzten Besuch Neues (für den Reiter, in dem man gerade ist, kein Punkt)
+function tabDots() {
+  for (const c in SEEN_KEY) { const b = document.querySelector(`.tb[data-tab="${c}"]`); if (!b) continue;
+    const since = pdat[me] && pdat[me][SEEN_KEY[c]];
+    const has = !!seenPrev && c !== tab && !!since && acts.some(a => a.title && (c === 'food' ? a.cat === 'food' : (a.cat || 'act') === 'act') && ((a.by !== me && (a.ts || 0) > since) || newCm(a, since)));
+    b.classList.toggle('hasnew', has); }
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden) markTabSeen(tab); else { enterTab(tab); render(true); } });
 function render(force) {
   if (!ppl[me]) return;
   const ae = document.activeElement;
@@ -799,7 +828,7 @@ function growNew() {
 function renderList() {
   $('n-act').textContent = acts.filter(a => (a.cat || 'act') === 'act' && a.title).length;
   $('n-food').textContent = acts.filter(a => a.cat === 'food' && a.title).length;
-  $('n-plan').textContent = myActs().length;
+  $('n-plan').textContent = myActs().length; tabDots();
   $('n-shop').textContent = openItems() || '';
   if (tab === 'plan') { renderPlan(); return; }
   if (tab === 'shop') { renderShop(); return; }
@@ -827,7 +856,7 @@ function renderList() {
     const det = [a.kind === 'rest' ? linkChip(a) : '', editPlace === a.id ? placeForm(a) : (placeChip(a) || villaChip(a)),
       a.kind === 'rest' ? (editRes === a.id ? resForm(a) : a.res ? `<span class="day ok">✅ Reserviert · ${esc(a.res.t)} Uhr · ${esc(a.res.p)} Pers.</span>` : '') : '', costChip(a)].join('');
     return `<div class="c card${mine ? ' in' : ''}" data-card="${esc(a.id)}">
-      <div class="hd2"><div class="tt">${fav ? '<span class="fav">🏆 Favorit</span>' : ''}<h2>${esc(a.title)}</h2></div><button class="mn" data-menu="${esc(a.id)}" aria-label="Mehr Optionen">⋯</button>${cardMenu(a)}</div>
+      <div class="hd2"><div class="tt">${fav ? '<span class="fav">🏆 Favorit</span>' : ''}<h2>${isNewAct(a) ? '<span class="nb">Neu</span>' : ''}${esc(a.title)}</h2></div><button class="mn" data-menu="${esc(a.id)}" aria-label="Mehr Optionen">⋯</button>${cardMenu(a)}</div>
       ${m ? `<div class="meta">${m}</div>` : ''}
       ${a.desc ? `<p class="ds">${esc(a.desc)}</p>` : ''}
       ${det ? `<div class="info">${det}</div>` : ''}
@@ -837,7 +866,7 @@ function renderList() {
   }).join('');
 }
 
-onSnapshot(collection(db, 'people'), q => { ppl = {}; pins = {}; seen = {}; pcol = {}; pdat = {}; q.docs.forEach(d => { pdat[d.id] = d.data(); ppl[d.id] = d.data().name; pins[d.id] = d.data().ph || ''; seen[d.id] = d.data().seen || 0; pcol[d.id] = d.data().col || ''; }); top(); render(); countVisit(); markSeen(); renderStats(); maybeTour(); },
+onSnapshot(collection(db, 'people'), q => { ppl = {}; pins = {}; seen = {}; pcol = {}; pdat = {}; q.docs.forEach(d => { pdat[d.id] = d.data(); ppl[d.id] = d.data().name; pins[d.id] = d.data().ph || ''; seen[d.id] = d.data().seen || 0; pcol[d.id] = d.data().col || ''; }); initSeen(); top(); render(); countVisit(); markSeen(); renderStats(); maybeTour(); },
   e => { $('list').hidden = false; $('list').innerHTML = '<div class="m">Verbindung zur Datenbank fehlgeschlagen. Prüfe Config und Regeln.</div>'; console.error(e); });
 onSnapshot(collection(db, 'activities'), q => { acts = q.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.ts || 0) - (b.ts || 0)); render(); renderTrip(); renderStats(); if (mapOpen && !infoOpen) renderMap(false); });
 onSnapshot(collection(db, 'signups'), q => { sig = q.docs.map(d => d.data()); render(); });
@@ -1084,7 +1113,7 @@ addEventListener('resize', moveInd);
 const animList = () => { const l = $('list'); l.classList.remove('anim'); void l.offsetWidth; l.classList.add('anim'); clearTimeout(animList.t); animList.t = setTimeout(() => l.classList.remove('anim'), 800); };
 
 function setTab(t) {
-  if (t !== tab) { closeTrip(); scrollTo(0, 0); }   // neuer Reiter = Anfang der Seite, nie irgendwo mitten in der Liste
+  if (t !== tab) { markTabSeen(tab); enterTab(t); closeTrip(); scrollTo(0, 0); }   // neuer Reiter = Anfang der Seite, nie irgendwo mitten in der Liste
   tab = t;
   document.querySelectorAll('.tb').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
   const food = t === 'food';
