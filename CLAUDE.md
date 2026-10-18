@@ -56,6 +56,18 @@ Drei Sammlungen: `activities`, `people`, `signups`. **Neue Sammlungen funktionie
 - **Einkauf-Animationen**: Vorschlag antippen → Chip schrumpft weg, neuer Eintrag gleitet herein (`justAdded`, `.si.new`, auch bei getippten Einträgen); Löschen → Zeile schrumpft weg, ein zurückkehrender Vorschlags-Chip poppt auf (`justBack`, `.chip.back`). Grundsatz: Animationen nur für das gerade angetippte Element über kurzlebige Merker, nie bei jedem Neuaufbau.
 - **Wetter** (Reise-Info): ruhige, gleich hohe Wisch-Kacheln (Tag, Symbol, max/min, Regen nur ab 20 %), Tag antippbar (`wxSel`, `.wxd.sel`, ohne Neuaufbau), darunter Detailkasten `#wxdet` mit Datum + Sonnenauf-/-untergang (`sunrise`/`sunset` von Open-Meteo) und vier festen Spalten Regen · Wind · Wellen · Wasser („folgt“, solange die Meeresvorhersage nicht reicht). Angetippte Kachel scrollt ganz ins Bild, Wisch-Position bleibt bei Live-Updates erhalten. Lars fand eine Liste pro Tag zu lang.
 
+- **Robustheit (Paket 1, 18.10.2026, nach E2E-Test mit Agenten)**:
+  - Beträge über `parseAmt()`: Tausenderpunkt („2.000“, „1.234,56“) richtig, Unklares abgelehnt statt geraten.
+  - Kein Doppelspeichern bei schlechtem Netz: Formulare schließen/leeren **sofort** (nicht erst nach `await`), feste IDs (`costForm.id`), Sperren (`costBusy`, `goBusy`), Chips/„Alle“ `disabled`. Ausgleich prüft nach der Frage per `settle(balances())`, ob er noch offen ist.
+  - Eingaben überleben Live-Updates: `render()` sichert alle Felder in `#list` (`keepFields`/`restoreFields`, inkl. `dataset` und `#ek`), `freshForm = true` beim Öffnen eines Formulars, damit keine alten Werte übernommen werden. Reise-Info-Bearbeiten wird nur durch eigene Aktionen neu gebaut.
+  - Keine Geister-Vorschläge: vor Schreiben in bestehende Vorschläge `alive(id)` prüfen (sonst Hinweis `GONE`); Dokumente ohne `title` werden nie als Vorschlag gezeigt.
+  - Kosten: Stand-Zeile „Bezahlt: … · Dein Anteil: … · Ausgleich erhalten/Überwiesen: …“ (`eur0` = ganze Euro ohne „,00“), freie Überweisung („Andere Überweisung eintragen“, `costForm.pay`), Empfänger darf Ausgleichsbuchungen löschen.
+  - „Name ändern“ mit Abbrechen und Prüfung des bisherigen PINs; leerer Name gibt Hinweis.
+  - Fußzeile: Knopf rutscht nur bei Platzmangel unter die Namen; ab 5 Leuten 3 Kreise + „+N“ (`.stack i.more`).
+  - Schmale Handys (`@media(max-width:360px)`), `color-scheme`, Rot-Flächen über `--rdb`, `.kseg .on` mit `--segon`.
+  - Einkauf: neue Zeile öffnet sich einmal weich in der Höhe (`growNew()`, Merker `justAdded` wird beim ersten Zeichnen verbraucht), Leuchten klingt aus (`siGlow`). Vorschlagsformular gleitet auf/zu (`closeAdd()`, `addAnim`).
+  - Noch offen (Paket 2/3): Abflug-Text bis zur Landung, Vorschlags-Teilwort-Treffer (Flammkuchen → Backpulver), Tippflächen < 44 px, Kachel-Kontrast, Google-Logo unter „Ohne Kartenpunkt“, Profilmenü schließt bei Snapshots, Tour aus Profilmenü während Farbwahl, VoiceOver-Angaben, CSS-Aufräumen.
+
 ## Fallstricke im Code
 - `render()` wird übersprungen, solange ein Eingabefeld Fokus hat (`pending`), und beim `focusout` nachgeholt. Eigene Aktionen rufen `render(true)`.
 - `$('list').onclick` ist ein großer Verteiler: **neue Knöpfe in der Liste brauchen einen eigenen Fall** (oder früh `return`), sonst landen sie beim Mitmachen-Code (der ist mit `if (!a) return;` abgesichert).
