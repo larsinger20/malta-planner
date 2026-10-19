@@ -59,7 +59,7 @@ Nur drei Sammlungen: `activities`, `people`, `signups` (neue Sammlungen bräucht
 - Schreiben ins Profil (z. B. `readCm`) löst einen People-Snapshot + Neuaufbau aus; laufende Animationen nur dank `slideWait` geschützt. `goToCard` hält `slides` für die Dauer des Aufleuchtens (sonst ersetzt ein Live-Update die Kachel und das Leuchten ist weg, auf dem iPhone passiert).
 - `$('list').onclick` ist ein großer Verteiler: **neue Knöpfe brauchen einen eigenen Fall** bzw. frühes `return` (sonst Mitmachen-Code; abgesichert mit `if (!a) return;`).
 - Ortsvorschlag antippen: Position kommt erst danach von Google (`i._geo`). **Jedes Speichern mit Ortsfeld wartet per `geoWait`** (max. 2,5 s), sonst fehlt der Kartenpunkt (ist passiert). Orte mit `pid`, aber ohne Position heilt die Karte beim Öffnen (`healGeo`, ergänzt nur `lat/lng`).
-- Vor Schreiben in bestehende Vorschläge `alive(id)` prüfen. Formulare sofort schließen/leeren (kein Doppelspeichern bei schlechtem Netz).
+- Vor Schreiben in bestehende Vorschläge `alive(id)` prüfen. Formulare sofort schließen/leeren (kein Doppelspeichern bei schlechtem Netz). Vorschlagsformular wird auch bei × und Reiterwechsel geleert (`resetAdd`), keine Reste beim nächsten Öffnen. Reservierung: Felder mit Überschrift „Uhrzeit“/„Personen“ (`.rvf`, leeres Uhrzeitfeld zeigt auf dem iPhone sonst nichts).
 - **CSS-Klassennamen vor dem Anlegen suchen** (`.bar` = Statistik, Kosten-Balken `.kbar`). Breite Selektoren treffen leicht Fremdes. `background`-Kurzform setzt `background-clip` zurück.
 - `[hidden]{display:none!important}` steht im CSS. Profilmenü `#pm` wird bei Live-Updates nicht neu gebaut (`top()` frischt nur auf).
 
