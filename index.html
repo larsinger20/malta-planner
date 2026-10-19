@@ -107,7 +107,7 @@ button.tx[data-cmt],button.tx[data-sugt],button.tx[data-shop]{display:flex;align
 .si.dn .sc{background:var(--acb);box-shadow:none}.si.dn.tick .sc{animation:tick .3s cubic-bezier(.3,1.6,.5,1)}
 /* Durchstreichen: Linie läuft beim Abhaken von links nach rechts, beim Zurücknehmen zieht sie sich zurück */
 .si .st{background:linear-gradient(currentColor,currentColor) 0 58%/0 1.5px no-repeat;-webkit-box-decoration-break:clone;box-decoration-break:clone}.si.dn .st{background-size:100% 1.5px}.si.dn.tick .st{animation:strike .4s cubic-bezier(.4,0,.2,1) .05s both}.si.tick:not(.dn) .st{animation:unstrike .3s ease-in}@keyframes strike{from{background-size:0 1.5px}}@keyframes unstrike{from{background-size:100% 1.5px}}
-@keyframes tick{from{transform:scale(.6)}}.si.new{animation:siGlow 1.3s ease-out}.chip.back{animation:chipBack .45s cubic-bezier(.3,1.5,.5,1)}@keyframes chipBack{from{opacity:0;transform:scale(.5)}}@keyframes siGlow{0%,25%{background:color-mix(in srgb,var(--acb) 11%,transparent)}100%{background:transparent}}
+@keyframes tick{from{transform:scale(.6)}}.si.new{animation:siGlow 1.3s ease-out}.chip.back,.lk.pnew{animation:chipBack .45s cubic-bezier(.3,1.5,.5,1)}.lk.pnew{display:inline-block}@keyframes chipBack{from{opacity:0;transform:scale(.5)}}@keyframes siGlow{0%,25%{background:color-mix(in srgb,var(--acb) 11%,transparent)}100%{background:transparent}}
 .si .x{background:none;width:30px;height:30px;font-size:20px;color:var(--mu)}
 .sa{display:flex;gap:8px;margin-top:8px}.sa input{margin:0}.sa button{padding:0;width:46px;flex-shrink:0;font-size:22px;font-weight:400}
 /* Neue-Eintrag-Zeile: gestrichelter Kreis + Plus, Text direkt in der Liste, Knopf erst wenn etwas drinsteht */
@@ -137,7 +137,7 @@ button.tx[data-cmt],button.tx[data-sugt],button.tx[data-shop]{display:flex;align
 .cst{font-size:14px;color:var(--mu)}
 .cmts{margin-top:6px}.cmi{display:flex;gap:10px;align-items:flex-start;padding:8px 0;box-shadow:inset 0 .5px 0 var(--bd)}.cmi .stack i{width:26px;height:26px}.cmb{flex:1;min-width:0;font-size:15px;overflow-wrap:anywhere;line-height:1.35}.cmb small{color:var(--mu);font-size:12px}.cmb b{font-weight:600}.cmi .x{background:none;width:26px;height:26px;font-size:18px}
 .plmore{position:relative;display:block;margin:-4px 0 10px 2px;padding:6px 0;background:none;color:var(--ac);font-size:15px;font-weight:500;text-align:left}.plmore::after{content:'';position:absolute;inset:-6px -8px}.plmore:active{transform:none;opacity:.6}
-.plm{position:relative}.plm>input{padding-right:46px}.plmx{position:absolute;right:8px;top:9px;width:30px;height:30px;padding:0;border-radius:50%;background:var(--fill);color:var(--mu);font-size:17px;line-height:1}.plmx::after{content:'';position:absolute;inset:-7px}
+.plm{position:relative;display:flow-root}.plm>input{padding-right:46px}.plmx{position:absolute;right:8px;top:9px;width:30px;height:30px;padding:0;border-radius:50%;background:var(--fill);color:var(--mu);font-size:17px;line-height:1}.plmx::after{content:'';position:absolute;inset:-7px}
 .info .ple{flex-basis:100%;margin-top:2px}.plx{margin:0 0 8px}.plx small{display:block;font-size:13px;font-weight:600;color:var(--tx2);margin:2px 2px 4px}.plr{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:40px;padding:0 2px;box-shadow:inset 0 -.5px 0 var(--bd)}.plr span{color:var(--tx2)}.plr .x{position:relative;width:28px;height:28px;flex-shrink:0;padding:0;border-radius:50%;background:var(--fill);color:var(--mu);font-size:16px;line-height:1}.plr .x::after{content:'';position:absolute;inset:-8px}.ple input{margin-bottom:6px}.ple .acl{margin:-2px 0 8px}
 .plb{display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px}.plb span{flex:1}.plb .dz{color:var(--rd);white-space:nowrap}.plb .tx{white-space:nowrap}.sm2{padding:7px 16px;font-size:15px}
 .mapb{position:fixed;left:50%;bottom:max(22px,calc(env(safe-area-inset-bottom) + 10px));transform:translateX(-50%);z-index:15;background:var(--lg);-webkit-backdrop-filter:blur(22px) saturate(190%);backdrop-filter:blur(22px) saturate(190%);color:var(--tx);padding:11px 20px;font-size:15px;font-weight:500;box-shadow:var(--lgring),var(--lgsh)}.mapb:active{transform:translateX(-50%) scale(.96)}
@@ -423,6 +423,9 @@ document.addEventListener('click', e => {
 
 // Ort öffnet Google Maps (auf dem iPhone die App, falls installiert)
 // Koordinaten aus einem Ort-Feld: neue Auswahl → neue Position; unveränderter Ort → nichts ändern; sonst löschen
+// Nach dem Antippen eines Ortsvorschlags kommt die Position erst kurz danach von Google: Speichern wartet darauf (höchstens 2,5 s),
+// sonst landet der Ort ohne Kartenpunkt in der Datenbank
+const geoWait = (...ins) => Promise.race([Promise.all(ins.filter(i => i && i._geo).map(i => i._geo)), new Promise(r => setTimeout(r, 2500))]);
 function geoFrom(inp, prev = {}, kl = 'lat', kg = 'lng', kp = 'pid') {
   if (!inp || !inp.value.trim()) return { [kl]: null, [kg]: null };
   if (inp.dataset.lat) return { [kl]: +inp.dataset.lat, [kg]: +inp.dataset.lng };
@@ -440,7 +443,8 @@ const placeChip = a => a.place ? `<a class="lk" href="${esc(mapUrl(a))}" target=
 const MAX_PL = 8;
 const morePl = a => Object.entries((a && a.pl2) || {}).filter(([, v]) => v && v.place).map(([k, v]) => ({ k, ...v })).sort((x, y) => (x.ts || 0) - (y.ts || 0));
 const allPl = a => [...(a.place ? [{ k: '', place: a.place, pid: a.pid, lat: a.lat, lng: a.lng }] : []), ...morePl(a)];
-const placeChips = a => allPl(a).map(placeChip).join('');
+let justPl = null;   // gerade hinzugefügter weiterer Ort: sein Ort-Link springt einmal kurz auf
+const placeChips = a => allPl(a).map(q => { if (!q.k || q.k !== justPl) return placeChip(q); justPl = null; return placeChip(q).replace('class="lk"', 'class="lk pnew"'); }).join('');
 const linkChip = a => { try { const u = new URL(a.link || ''); if (/^https?:$/.test(u.protocol)) return `<a class="lk" href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">${IC_LINK}${esc(u.hostname.replace(/^www\./, ''))}</a>`; } catch (e) {} return ''; };
 const KIND = { cook: '👩‍🍳 Kochen', rest: '🍴 Restaurant' };
 const TIME = { 'Ganztags': '🌞 Ganztags', 'Morgens / Vormittags': '🌅 Vormittags', 'Mittags': '☀️ Mittags', 'Nachmittags': '🌇 Nachmittags', 'Abends': '🌙 Abends', 'Nachts': '🌃 Nachts' };
@@ -928,6 +932,17 @@ function render(force) {
   renderList(); restoreFields(kept); growNew(); watchNew();
 }
 const shown = (id, item) => !!$('list').querySelector(`[data-sdel="${CSS.escape(id + '|' + item)}"]`);
+// Einzelne Zeile weich auf-/zugleiten wie in der Einkaufsliste (Ort-Felder im Formular, weitere Orte)
+function rowIn(el) {
+  if (!el || calm() || !el.animate) return; const h = el.offsetHeight; el.style.overflow = 'hidden'; el.dataset.anim = 1;
+  el.animate([{ height: '0px', minHeight: '0px', opacity: 0, transform: 'translateY(-4px)' }, { height: h + 'px', minHeight: '0px', opacity: 1, transform: 'none' }], { duration: 380, easing: 'cubic-bezier(.25,.8,.3,1)' })
+    .finished.then(() => { el.style.overflow = ''; delete el.dataset.anim; }, () => {});
+}
+async function rowOut(el) {
+  if (!el) return; if (calm() || !el.animate) { el.style.display = 'none'; return; }   // ohne Bewegung: sofort weg
+  el.style.overflow = 'hidden';
+  await el.animate([{ height: el.offsetHeight + 'px', minHeight: '0px', opacity: 1, transform: 'translateX(0)' }, { height: '0px', minHeight: '0px', opacity: 0, transform: 'translateX(-14px)' }], { duration: 240, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' }).finished.catch(() => {});
+}
 function growNew() {
   if (calm()) return;
   $('list').querySelectorAll('.si.new').forEach(el => { const h = el.offsetHeight; if (!h || !el.animate) return;
@@ -1099,6 +1114,7 @@ $('list').onclick = async e => {
   if (b.dataset.esave) {
     const a = acts.find(x => x.id === b.dataset.esave); if (!a || !canEdit(a)) return;
     const title = $('et').value.trim(); if (!title) { toast('Bitte gib einen Titel ein.', 1); return; }
+    if (b.disabled) return; b.disabled = true; await geoWait($('epo')); b.disabled = false;
     const data = { title, desc: $('ed').value.trim(), day: $('ew').value, time: $('ez').value, place: $('epo').value.trim(), pid: $('epo').value.trim() ? ($('epo').dataset.pid || '') : '', ...geoFrom($('epo'), a) };
     if ((a.cat || 'act') === 'food') {
       data.kind = $('ek').value; if (!data.kind) { toast('Bitte wähle: Kochen oder Restaurant.', 1); return; }
@@ -1113,11 +1129,13 @@ $('list').onclick = async e => {
   // Weiteren Ort: Formular öffnen bzw. speichern (eigener Eintrag in pl2, nichts anderes wird überschrieben)
   if (b.dataset.pladd && !b.dataset.plsave) { editPlace = b.dataset.pladd + '|+'; editRes = null; freshForm = true; render(true); const i = $('epl'); if (i) i.focus(); return; }
   if (b.dataset.plsave && b.dataset.pladd) {
+    if (b.disabled) return; b.disabled = true; await geoWait($('epl'));
     const id = b.dataset.plsave, i = $('epl'), place = i.value.trim(), a = acts.find(x => x.id === id);
-    if (!place) { i.focus(); return; }
+    if (!place) { b.disabled = false; i.focus(); return; }
     if (!alive(id) || !a) { editPlace = null; render(true); toast(GONE, 1); return; }
     if (allPl(a).some(q => (i.dataset.pid && q.pid === i.dataset.pid) || norm(q.place) === norm(place))) { editPlace = null; render(true); toast('Dieser Ort ist schon eingetragen.'); return; }
     const geo = geoFrom(i), k = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+    justPl = k; setTimeout(() => { if (justPl === k) justPl = null; }, 1200);
     const w = setDoc(doc(db, 'activities', id), { pl2: { [k]: { place, pid: i.dataset.pid || '', lat: geo.lat ?? null, lng: geo.lng ?? null, ts: Date.now() } } }, { merge: true });
     editPlace = null; render(true);
     try { await w; toast('Ort hinzugefügt ✓'); } catch (err) { toast(FAIL, 1); }
@@ -1125,10 +1143,12 @@ $('list').onclick = async e => {
   }
   if (b.dataset.plx) {
     const [id, k] = b.dataset.plx.split('|'); if (!alive(id)) { editPlace = null; render(true); toast(GONE, 1); return; }
-    try { await updateDoc(doc(db, 'activities', id), { ['pl2.' + k]: deleteField() }); render(true); toast('Ort entfernt'); } catch (err) { toast(FAIL, 1); }
+    if (b.disabled) return; b.disabled = true; await rowOut(b.closest('.plr'));
+    try { await updateDoc(doc(db, 'activities', id), { ['pl2.' + k]: deleteField() }); render(true); toast('Ort entfernt'); } catch (err) { render(true); toast(FAIL, 1); }
     return;
   }
   if (b.dataset.pldel || b.dataset.plsave) {
+    if (b.disabled) return; b.disabled = true; if (b.dataset.plsave) await geoWait($('epl'));
     const id = b.dataset.pldel || b.dataset.plsave, place = b.dataset.plsave ? $('epl').value.trim() : '', pid = place ? ($('epl').dataset.pid || '') : '';
     if (!alive(id)) { editPlace = null; render(true); toast(GONE, 1); return; }
     // Ersten Ort entfernen, obwohl es weitere gibt: der nächste rückt nach
@@ -1140,7 +1160,7 @@ $('list').onclick = async e => {
     }
     const geo = place ? geoFrom($('epl'), acts.find(x => x.id === id) || {}) : { lat: null, lng: null };
     try { await setDoc(doc(db, 'activities', id), { place, pid, ...geo }, { merge: true }); editPlace = null; render(true); toast(place ? 'Ort gespeichert ✓' : 'Ort entfernt'); }
-    catch (err) { toast(FAIL, 1); }
+    catch (err) { b.disabled = false; toast(FAIL, 1); }
     return;
   }
   if (b.dataset.res) { editRes = b.dataset.res; editPlace = null; freshForm = true; render(true); return; }
@@ -1282,17 +1302,20 @@ $('addClose').onclick = () => closeAdd();
 
 let goBusy = false;
 // Neuer Vorschlag: weitere Orte, je ein eigenes Feld mit Ortsvorschlägen (erscheint, sobald der erste Ort steht)
-const plmShow = () => { $('plAdd').hidden = !$('pl').value.trim() || $('plm').children.length >= MAX_PL - 1; };
+const plmShow = () => { const b = $('plAdd'), was = b.hidden; b.hidden = !$('pl').value.trim() || $('plm').children.length >= MAX_PL - 1;
+  if (was && !b.hidden && !calm() && b.animate) b.animate([{ opacity: 0, transform: 'translateY(-3px)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'ease-out' }); };
 $('plAdd').onclick = () => {
   $('plm').insertAdjacentHTML('beforeend', `<div class="fic plm">${IC_PIN}<input data-place="1" autocomplete="off" maxlength="80" placeholder="Weiterer Ort"><button type="button" class="plmx" aria-label="Ort entfernen">×</button></div>`);
-  plmShow(); $('plm').lastElementChild.querySelector('input').focus();
+  // erst messen und aufgleiten, dann Fokus (sofort, sonst kommt auf dem iPhone keine Tastatur); Vorschläge erscheinen nach dem Gleiten
+  const row = $('plm').lastElementChild; plmShow(); rowIn(row); row.querySelector('input').focus({ preventScroll: true });
 };
-$('plm').onclick = e => { const x = e.target.closest('.plmx'); if (x) { x.parentElement.remove(); plmShow(); } };
+$('plm').onclick = async e => { const x = e.target.closest('.plmx'); if (!x || x.disabled) return; x.disabled = true; const row = x.parentElement; await rowOut(row); row.remove(); plmShow(); };
 $('pl').addEventListener('input', plmShow);
 $('go').onclick = async () => {
   if (goBusy) return;
   const t = $('t'), d = $('d'), w = $('w'), z = $('z'), k = $('k'); if (!t.value.trim()) { toast('Bitte gib einen Titel ein.', 1); t.focus(); return; }
   if (tab === 'food' && !k.value) { toast('Bitte wähle: Kochen oder Restaurant.', 1); return; }
+  goBusy = true; try { await geoWait($('pl'), ...$('plm').querySelectorAll('input')); } finally { goBusy = false; }
   const data = { title: t.value.trim(), desc: d.value.trim(), day: w.value, time: z.value, cat: tab, kind: tab === 'food' ? k.value : '', ts: Date.now(), by: me };
   if ($('pl').value.trim()) { data.place = $('pl').value.trim(); if ($('pl').dataset.pid) data.pid = $('pl').dataset.pid; if ($('pl').dataset.lat) { data.lat = +$('pl').dataset.lat; data.lng = +$('pl').dataset.lng; } }
   // weitere Orte: doppelte fallen weg; fehlt der erste, rückt der nächste nach
@@ -1375,13 +1398,20 @@ document.addEventListener('pointerdown', async e => {
     if (i.id === 'epl') { const sv = document.querySelector('[data-plsave]'); if (sv) sv.click(); } return; }
   const pp = sg.placePrediction;
   i.value = pp.mainText ? pp.mainText.text : pp.text.text; i.dataset.pid = pp.placeId; i.dataset.lat = ''; i.dataset.lng = ''; acClose(); if (i.id === 'pl') plmShow();
-  // Position für die Karte (Place Details Essentials, 10.000/Monat kostenlos); beendet zugleich die Sitzung
-  try { const pl = pp.toPlace(); await pl.fetchFields({ fields: ['location'] }); if (pl.location) { i.dataset.lat = pl.location.lat(); i.dataset.lng = pl.location.lng(); } } catch (err) {}
+  // Position für die Karte (Place Details Essentials, 10.000/Monat kostenlos); beendet zugleich die Sitzung.
+  // Nur übernehmen, wenn das Feld noch diesen Ort zeigt (inzwischen weitergetippt = anderer Ort)
+  const want = pp.placeId;
+  const g = i._geo = (async () => { try { const pl = pp.toPlace(); await pl.fetchFields({ fields: ['location'] }); if (pl.location && i.dataset.pid === want) { i.dataset.lat = pl.location.lat(); i.dataset.lng = pl.location.lng(); } } catch (err) {} })();
+  await g; if (i._geo === g) i._geo = null;
   if (i.id === 'epl') { const sv = document.querySelector('[data-plsave]'); if (sv) sv.click(); }
   acToken = null;
 });
-document.addEventListener('focusout', e => { if (e.target.dataset && e.target.dataset.place) setTimeout(acClose, 150); });
-document.addEventListener('focusin', e => { const i = e.target; if (!i.dataset || !i.dataset.place || i.value.trim()) return; const vs = villaSug(i, ''); if (vs) acShow(i, [vs]); });
+// Feld verlassen: nur dessen eigene Vorschlagsliste schließen (sonst verschwände die gerade geöffnete eines neuen Felds)
+document.addEventListener('focusout', e => { const i = e.target; if (!i.dataset || !i.dataset.place) return;
+  setTimeout(() => { if (document.activeElement === i) return; const n = i.nextElementSibling; if (n && n.classList.contains('acl')) { n.remove(); if (acInput === i) acList = []; } }, 150); });
+document.addEventListener('focusin', e => { const i = e.target; if (!i.dataset || !i.dataset.place || i.value.trim()) return;
+  const show = () => { if (document.activeElement !== i || i.value.trim()) return; const vs = villaSug(i, ''); if (vs) acShow(i, [vs]); };
+  if (i.closest('[data-anim]')) setTimeout(show, 400); else show(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') acClose(); });
 
 // ===== Karte mit allen Orten (Google Maps, gleicher Schlüssel wie die Ortsvorschläge) =====
@@ -1446,19 +1476,29 @@ function pinCluster() {
     el.setAttribute('role', 'button'); el.setAttribute('aria-label', g.m.length + ' Orte, zum Vergrößern tippen');
     el.innerHTML = `<div class="gpb"><b>${g.m.length}</b></div>`;
     el.addEventListener('pointerdown', () => { pinDown = Date.now(); });
-    el.addEventListener('click', () => { pinDown = Date.now(); closeInfo(); const b = new google.maps.LatLngBounds(); g.m.forEach(it => b.extend(it.ll));
-      flyTo(b.getCenter(), Math.max((gmap.getZoom() || 11) + 1, zoomFor(g.m.map(it => it.ll)))); });
+    el.addEventListener('click', e => pinTap(e, el));
+    el._tap = () => { pinDown = Date.now(); closeInfo(); const b = new google.maps.LatLngBounds(); g.m.forEach(it => b.extend(it.ll));
+      flyTo(b.getCenter(), Math.max((gmap.getZoom() || 11) + 1, zoomFor(g.m.map(it => it.ll)))); };
     L.box.appendChild(el); L.clusters.push({ x: g.x, y: g.y, el, size: Math.max(22, ps + 6) });
   });
   L.items.forEach(it => { it.el.classList.toggle('hid', it.hid); it.ex = it.x; it.ey = it.y; it.el.style.translate = ''; });
+  // Ganz nah (keine Zahlen-Perlen mehr): Pins am selben Ort im kleinen Kreis auffächern, sonst bliebe der untere unerreichbar.
+  // Der angetippte Pin bleibt an seinem Platz (sein Fenster zeigt dorthin), die anderen rücken um ihn herum.
+  if (z >= 16) { const vis = L.items.filter(it => !it.hid && !it.vil), done = new Set();
+    vis.forEach(it => { if (done.has(it)) return; const grp = vis.filter(o => !done.has(o) && Math.hypot(o.x - it.x, o.y - it.y) < ps * .8); if (grp.length < 2) return;
+      const sel = grp.find(o => o.el.classList.contains('sel')), rest = grp.filter(o => o !== sel), r = sel ? ps + 2 : ps * .8;
+      grp.forEach(o => done.add(o));
+      // ohne angetippten Pin: voller Kreis; mit: nur unterer Halbkreis (oben steht die angehobene Stecknadel)
+      rest.forEach((o, n) => { const a = sel ? Math.PI * (rest.length > 1 ? 1 / 6 + n * (2 / 3) / (rest.length - 1) : 1 / 2) : -Math.PI / 2 + n * 2 * Math.PI / rest.length, nx = it.x + r * Math.cos(a), ny = it.y + r * Math.sin(a);
+        o.el.style.translate = `${nx - o.x}px ${ny - o.y}px`; o.ex = nx; o.ey = ny; }); }); }
   // Was die Villa überdecken würde, rückt dicht daneben (die Villa bleibt immer sichtbar)
   const V = L.items.find(it => it.vil); if (!V) return;
   [...L.items.filter(it => !it.vil && !it.hid && !it.el.classList.contains('sel')).map(it => ({ it, size: ps + (it.mine ? 2 : 0) })), ...L.clusters.map(c => ({ c, size: c.size }))].forEach(o => {
-    const x = o.it ? o.it.x : o.c.x, y = o.it ? o.it.y : o.c.y, need = (ps + 4 + o.size) / 2 + 1;
+    const x = o.it ? o.it.ex : o.c.x, y = o.it ? o.it.ey : o.c.y, need = (ps + 4 + o.size) / 2 + 1;
     let dx = x - V.x, dy = y - V.y, d = Math.hypot(dx, dy); if (d >= need) return;
     if (d < 1) { dx = 1; dy = -1; d = Math.SQRT2; }
     const nx = V.x + dx / d * need, ny = V.y + dy / d * need;
-    if (o.it) { o.it.el.style.translate = `${nx - x}px ${ny - y}px`; o.it.ex = nx; o.it.ey = ny; }
+    if (o.it) { o.it.el.style.translate = `${nx - o.it.x}px ${ny - o.it.y}px`; o.it.ex = nx; o.it.ey = ny; }
     else { o.c.el.style.left = nx + 'px'; o.c.el.style.top = ny + 'px'; o.c.x = nx; o.c.y = ny; }
   });
 }
@@ -1500,6 +1540,16 @@ function zoomFor(lls) {
   const dx = (Math.max(...lo) - Math.min(...lo)) / 360, dy = (my(Math.max(...la)) - my(Math.min(...la))) / (2 * Math.PI);
   let z = 17; while (z > 3 && (dx * 256 * 2 ** z > W || dy * 256 * 2 ** z > H)) z--; return z;
 }
+// Tipp auf die Karte: es gewinnt der Pin, dessen Mitte dem Finger am nächsten ist (die vergrößerten Tippflächen
+// dicht liegender Pins überlappen sich, sonst träfe man z. B. neben der Villa die Zahlen-Perle)
+function pinTap(e, el) {
+  pinDown = Date.now(); let best = el;
+  if (e && e.detail && gLayer) {
+    const dist = g => { const r = g.querySelector('.gpb').getBoundingClientRect(); return Math.hypot(r.left + r.width / 2 - e.clientX, r.top + r.height / 2 - e.clientY); };
+    let d0 = dist(el) - .5;   // bei Gleichstand gewinnt der getroffene Pin
+    gLayer.box.querySelectorAll('.gp:not(.hid)').forEach(g => { const d = dist(g); if (d < d0) { d0 = d; best = g; } }); }
+  if (best._tap) best._tap();
+}
 function closeInfo() {
   flyN++; if (gInfo) gInfo.close(); infoOpen = false;
   document.querySelectorAll('.gp.sel').forEach(el => { el.classList.remove('sel'); el.style.zIndex = el.dataset.z; });
@@ -1526,7 +1576,8 @@ function renderMap(fit) {
     el.innerHTML = `<i class="gpt"></i><div class="gpb"><svg viewBox="0 0 24 24" aria-hidden="true">${GP_IC[ic]}</svg></div><span class="gpn">${esc(label)}</span>`;
     el.setAttribute('role', 'button'); el.setAttribute('aria-label', label);
     el.addEventListener('pointerdown', () => { pinDown = Date.now(); });
-    el.addEventListener('click', () => {
+    el.addEventListener('click', e => pinTap(e, el));
+    el._tap = () => {
       pinDown = Date.now(); const was = el.classList.contains('sel'); closeInfo(); if (was) return;   // nochmal tippen = zu
       el.classList.add('sel'); el.style.zIndex = 50; infoOpen = true;
       const show = () => { if (!el.classList.contains('sel')) return;
@@ -1539,7 +1590,7 @@ function renderMap(fit) {
           if (r.top < lim) gmap.panBy(0, r.top - lim); }, 350)); };
       // Von weiter weg: erst weich zum Pin hineinzoomen (Straßenebene), dann das Fenster
       if ((gmap.getZoom() || 11) < PIN_ZOOM) flyTo(new google.maps.LatLng(pos.lat, pos.lng), PIN_ZOOM, show); else show();
-    });
+    };
     L.box.appendChild(el); L.items.push({ el, ll: new google.maps.LatLng(pos.lat, pos.lng), z, food, vil: cls === 'vil', mine: cls === 'mine' }); bounds.extend(pos); n++; };
   const vil = T.vlat != null ? { lat: T.vlat, lng: T.vlng } : null, home = [];
   // Was in unserer Villa stattfindet (Villa als Ort gewählt oder Kochen ohne Ort), bekommt keinen eigenen Pin, sondern steht im Villa-Pin
@@ -1548,7 +1599,9 @@ function renderMap(fit) {
   mapItems().forEach(a => {
     const pl = allPl(a), multi = pl.length > 1;
     if ((a.kind === 'cook' && !a.place && vil) || pl.some(atVilla)) home.push(a);
-    if (pl.some(q => q.lat == null && !atVilla(q))) missing.push(a);
+    // gezählt werden Orte, nicht Vorschläge; Orte aus den Google-Vorschlägen holen ihre Position gleich selbst nach (healGeo)
+    pl.filter(q => q.lat == null && !q.pid && !atVilla(q)).forEach(q => missing.push({ id: a.id, label: multi ? a.title + ' · ' + q.place : a.title }));
+    pl.filter(q => q.lat == null && q.pid && !atVilla(q)).forEach(q => healGeo(a.id, q));
     pl.filter(q => q.lat != null && !atVilla(q)).forEach(q => {
     const food = a.cat === 'food', s = sig.filter(x => x.act === a.id), mine = s.some(x => x.uid === me), pos = { lat: q.lat, lng: q.lng };
     // Aufbau wie eine Mini-Kachel: Titel, Infozeile mit Entfernung, Zahl + Namen der Teilnehmer, dann die Knöpfe
@@ -1570,14 +1623,26 @@ function renderMap(fit) {
   pinZoom(); L.draw(); mapMissing = missing; renderMiss();
   if (fit) { if (n > 1) gmap.fitBounds(bounds, { top: 80, bottom: $('mapmiss').hidden ? 40 : 100, left: 36, right: 36 }); else if (n) { gmap.setCenter(bounds.getCenter()); gmap.setZoom(13); } else { gmap.setCenter({ lat: 35.94, lng: 14.38 }); gmap.setZoom(11); } }
 }
+// Ort aus den Google-Vorschlägen, aber ohne Position gespeichert (früher beim zu schnellen Speichern passiert):
+// Position einmal nachholen und nur für genau diesen Ort ergänzen; der Neuaufbau zeigt dann den Pin
+const healed = new Set();
+async function healGeo(id, q) {
+  const key = id + '|' + q.k + '|' + q.pid; if (healed.has(key)) return; healed.add(key);
+  try {
+    const lib = await loadPlaces(), pl = new lib.Place({ id: q.pid }); await pl.fetchFields({ fields: ['location'] }); if (!pl.location) return;
+    const a = alive(id) && acts.find(x => x.id === id); if (!a || !allPl(a).some(x => x.k === q.k && x.pid === q.pid && x.lat == null)) return;
+    const pos = { lat: pl.location.lat(), lng: pl.location.lng() };
+    await setDoc(doc(db, 'activities', id), q.k ? { pl2: { [q.k]: pos } } : pos, { merge: true });
+  } catch (e) { console.warn(e); }
+}
 // Ohne Kartenpunkt: nur neu bauen, wenn sich etwas geändert hat (sonst bricht das Aufklappen ab)
 let mapMissing = [];
 function renderMiss() {
-  const missing = mapMissing, mm = $('mapmiss'), key = missOpen + '|' + missing.map(a => a.id + a.title).join('|');
+  const missing = mapMissing, mm = $('mapmiss'), key = missOpen + '|' + missing.map(m => m.id + m.label).join('|');
   if (mm.dataset.k !== key) { mm.dataset.k = key;
     mm.classList.toggle('op', missOpen);
-    mm.innerHTML = missing.length ? `<button class="mmh" data-mmt="1" aria-expanded="${missOpen}">📍 ${missing.length === 1 ? '1 Vorschlag' : missing.length + ' Vorschläge'} ohne Kartenpunkt${chev('mm', missOpen)}</button>`
-      + (missOpen ? `<div class="mml">${missing.map(a => `<button class="mmi" data-mgo="${esc(a.id)}">${esc(a.title)}</button>`).join('')}<small>Tippe auf einen Vorschlag und wähle dort über ⋯ → „Ort ändern“ einen Ort aus den Vorschlägen.</small></div>` : '') : ''; }
+    mm.innerHTML = missing.length ? `<button class="mmh" data-mmt="1" aria-expanded="${missOpen}">📍 ${missing.length === 1 ? '1 Ort' : missing.length + ' Orte'} ohne Kartenpunkt${chev('mm', missOpen)}</button>`
+      + (missOpen ? `<div class="mml">${missing.map(m => `<button class="mmi" data-mgo="${esc(m.id)}">${esc(m.label)}</button>`).join('')}<small>Diese Orte wurden ohne Auswahl aus den Vorschlägen eingetragen. Tippe darauf und trag den Ort über das ⋯-Menü neu ein, diesmal mit einem Tipp auf einen der Vorschläge.</small></div>` : '') : ''; }
   mm.hidden = !missing.length;
 }
 // Öffnen/Schließen wie eine App auf dem iPhone: die Karte wächst aus dem Karte-Knopf, die Seite dahinter weicht zurück und dunkelt ab.
@@ -1968,6 +2033,7 @@ $('trip').addEventListener('click', async e => {
   if (b.dataset.tedit) { tripEdit = true; renderTrip(true); const i = $('tf-vname'); if (i) i.focus(); return; }
   if (b.dataset.tcancel) { tripEdit = false; renderTrip(true); return; }
   if (b.dataset.tsave && isAdmin()) {
+    await geoWait($('tf-vaddr'));
     const data = { cat: 'info', title: 'Reise-Info', ts: 0 };
     TF.forEach(([k]) => { data[k] = $('tf-' + k).value.trim(); });
     if (data.vlink) { const u = /\s/.test(data.vlink) ? false : normLink(data.vlink); if (!u || !new URL(u).hostname.includes('.')) { toast('Der Airbnb-Link sieht nicht richtig aus.', 1); return; }
