@@ -136,7 +136,9 @@ button.tx[data-cmt],button.tx[data-sugt],button.tx[data-shop]{display:flex;align
 .trf .stack i{margin-left:0}.trf .stack{align-items:center}.trf .arr{color:var(--mu);font-size:15px;margin:0 5px}.trf .sname b{font-size:15px}.trf .sname .amt{display:block;font-size:17px;color:var(--tx)}.trf.oth{opacity:.72}.srow .x{background:none;width:28px;height:28px;font-size:18px}
 .cst{font-size:14px;color:var(--mu)}
 .cmts{margin-top:6px}.cmi{display:flex;gap:10px;align-items:flex-start;padding:8px 0;box-shadow:inset 0 .5px 0 var(--bd)}.cmi .stack i{width:26px;height:26px}.cmb{flex:1;min-width:0;font-size:15px;overflow-wrap:anywhere;line-height:1.35}.cmb small{color:var(--mu);font-size:12px}.cmb b{font-weight:600}.cmi .x{background:none;width:26px;height:26px;font-size:18px}
-.info .ple{flex-basis:100%;margin-top:2px}.ple input{margin-bottom:6px}.ple .acl{margin:-2px 0 8px}
+.plmore{position:relative;display:block;margin:-4px 0 10px 2px;padding:6px 0;background:none;color:var(--ac);font-size:15px;font-weight:500;text-align:left}.plmore::after{content:'';position:absolute;inset:-6px -8px}.plmore:active{transform:none;opacity:.6}
+.plm{position:relative}.plm>input{padding-right:46px}.plmx{position:absolute;right:8px;top:9px;width:30px;height:30px;padding:0;border-radius:50%;background:var(--fill);color:var(--mu);font-size:17px;line-height:1}.plmx::after{content:'';position:absolute;inset:-7px}
+.info .ple{flex-basis:100%;margin-top:2px}.plx{margin:0 0 8px}.plx small{display:block;font-size:13px;font-weight:600;color:var(--tx2);margin:2px 2px 4px}.plr{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:40px;padding:0 2px;box-shadow:inset 0 -.5px 0 var(--bd)}.plr span{color:var(--tx2)}.plr .x{position:relative;width:28px;height:28px;flex-shrink:0;padding:0;border-radius:50%;background:var(--fill);color:var(--mu);font-size:16px;line-height:1}.plr .x::after{content:'';position:absolute;inset:-8px}.ple input{margin-bottom:6px}.ple .acl{margin:-2px 0 8px}
 .plb{display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px}.plb span{flex:1}.plb .dz{color:var(--rd);white-space:nowrap}.plb .tx{white-space:nowrap}.sm2{padding:7px 16px;font-size:15px}
 .mapb{position:fixed;left:50%;bottom:max(22px,calc(env(safe-area-inset-bottom) + 10px));transform:translateX(-50%);z-index:15;background:var(--lg);-webkit-backdrop-filter:blur(22px) saturate(190%);backdrop-filter:blur(22px) saturate(190%);color:var(--tx);padding:11px 20px;font-size:15px;font-weight:500;box-shadow:var(--lgring),var(--lgsh)}.mapb:active{transform:translateX(-50%) scale(.96)}
 
@@ -164,7 +166,7 @@ html.mzoom .mapv{border-radius:34px;overflow:hidden;will-change:transform,opacit
 .gin{font:14px/1.35 var(--font);color:var(--tx);padding:12px 14px 14px;position:relative}.gin b{display:block;font-size:15px;font-weight:600;padding-right:22px;margin-bottom:2px}.gin small{display:block;color:var(--mu);font-size:13px}
 .gin .gbtn{display:inline-block;margin-top:8px;padding:5px 12px;border-radius:999px;background:var(--fill);color:var(--ac);font-weight:600;font-size:13px;text-decoration:none}
 .gin .gbs{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;padding-top:12px;box-shadow:inset 0 .5px 0 var(--bd)}
-.gin .gwho{margin-top:10px}.gin .gwc{font-size:14px;font-weight:600;color:var(--tx)}.gin .gwn{margin-top:2px;font-size:13px;line-height:1.4;color:var(--mu)}.gin .gwn b{display:inline;margin:0;padding:0;font-size:inherit;font-weight:600;color:var(--tx2,var(--tx))}.gin .gwho .stack i{width:24px;height:24px;margin-left:-7px;font-size:11px}.gin .gwho .stack i:first-child{margin-left:0}.gin .gbs .gbtn{position:relative;margin:0;padding:6px 12px;font:600 13px/1.3 var(--font);border:0;cursor:pointer}.gin .gbs .gbtn::after{content:'';position:absolute;inset:-7px -3px}.gin .gbtn.pri{background:var(--acb);color:#fff}
+.gin .gwho{margin-top:10px}.gin small.gpl{color:var(--ac);font-weight:500;margin:1px 0 2px}.gin small.gpl span{color:var(--mu);font-weight:400}.gin small.gpl .ic{width:13px;height:13px}.gin .gwc{font-size:14px;font-weight:600;color:var(--tx)}.gin .gwn{margin-top:2px;font-size:13px;line-height:1.4;color:var(--mu)}.gin .gwn b{display:inline;margin:0;padding:0;font-size:inherit;font-weight:600;color:var(--tx2,var(--tx))}.gin .gwho .stack i{width:24px;height:24px;margin-left:-7px;font-size:11px}.gin .gwho .stack i:first-child{margin-left:0}.gin .gbs .gbtn{position:relative;margin:0;padding:6px 12px;font:600 13px/1.3 var(--font);border:0;cursor:pointer}.gin .gbs .gbtn::after{content:'';position:absolute;inset:-7px -3px}.gin .gbtn.pri{background:var(--acb);color:#fff}
 /* Kartenpunkte im iOS-Stil: farbige Perle mit weißem Symbol und weißem Rand. Größe folgt dem Zoom (--ps),
    weit weg nur kleine Punkte, nah mit Namen darunter. Angetippt hebt sich die Perle als Stecknadel an. */
 .gpl0{position:absolute;left:0;top:0;--ps:22px}
@@ -300,6 +302,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
 <select id="k" hidden><option value="">Kochen oder Restaurant?</option><option value="cook">👩‍🍳 Kochen</option><option value="rest">🍴 Restaurant</option></select>
 <textarea id="d" rows="2" placeholder="Kurze Beschreibung (optional)" maxlength="200"></textarea>
 <div class="fic"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0-6 0"/><path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0z"/></svg><input id="pl" data-place="1" autocomplete="off" placeholder="Ort (optional)" maxlength="80"></div>
+<div id="plm"></div><button type="button" class="plmore" id="plAdd" hidden>+ Weiterer Ort</button>
 <div class="two"><div><label class="flb">Tag <span>optional</span></label><select id="w"><option value="">Noch offen</option><option>Samstag</option><option>Sonntag</option><option>Montag</option><option>Dienstag</option><option>Mittwoch</option><option>Donnerstag</option><option>Freitag</option></select></div>
 <div><label class="flb">Tageszeit <span>optional</span></label><select id="z"><option value="">Noch offen</option><option>Ganztags</option><option value="Morgens / Vormittags">Vormittags</option><option>Mittags</option><option>Nachmittags</option><option>Abends</option><option>Nachts</option></select></div></div>
 <label class="chk" id="rvl" hidden><input type="checkbox" id="rv"> Schon reserviert</label>
@@ -433,6 +436,11 @@ const mapUrl = a => 'https://www.google.com/maps/search/?api=1&query=' + encodeU
 const IC_PIN = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0-6 0"/><path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0z"/></svg>';
 const IC_LINK = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 15l6-6"/><path d="M11 6l.463-.536a5 5 0 0 1 7.071 7.072l-.534.464"/><path d="M13 18l-.397.534a5.068 5.068 0 0 1-7.127 0a4.972 4.972 0 0 1 0-7.071l.524-.463"/></svg>';
 const placeChip = a => a.place ? `<a class="lk" href="${esc(mapUrl(a))}" target="_blank" rel="noopener noreferrer">${IC_PIN}${esc(a.place)}</a>` : '';
+// Weitere Orte (pl2, jeder einzeln gespeichert); der erste Ort bleibt wie bisher in place/pid/lat/lng
+const MAX_PL = 8;
+const morePl = a => Object.entries((a && a.pl2) || {}).filter(([, v]) => v && v.place).map(([k, v]) => ({ k, ...v })).sort((x, y) => (x.ts || 0) - (y.ts || 0));
+const allPl = a => [...(a.place ? [{ k: '', place: a.place, pid: a.pid, lat: a.lat, lng: a.lng }] : []), ...morePl(a)];
+const placeChips = a => allPl(a).map(placeChip).join('');
 const linkChip = a => { try { const u = new URL(a.link || ''); if (/^https?:$/.test(u.protocol)) return `<a class="lk" href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">${IC_LINK}${esc(u.hostname.replace(/^www\./, ''))}</a>`; } catch (e) {} return ''; };
 const KIND = { cook: '👩‍🍳 Kochen', rest: '🍴 Restaurant' };
 const TIME = { 'Ganztags': '🌞 Ganztags', 'Morgens / Vormittags': '🌅 Vormittags', 'Mittags': '☀️ Mittags', 'Nachmittags': '🌇 Nachmittags', 'Abends': '🌙 Abends', 'Nachts': '🌃 Nachts' };
@@ -452,8 +460,11 @@ const avatar = uid => { const nm = ppl[uid] || 'Jemand'; return `<i class="${uid
 
 // Inline-Formulare für Ort und Reservierung (geöffnet über das ⋯-Menü)
 // Ort ändern: volle Breite, Google-Vorschlag antippen speichert sofort, Enter speichert eigenen Text
-const placeForm = a => `<div class="ple"><input id="epl" data-place="1" data-pid="${esc(a.pid || '')}" data-plid="${esc(a.id)}" autocomplete="off" enterkeyhint="done" placeholder="📍 Ort suchen, z. B. Blue Grotto" maxlength="80" value="${esc(a.place || '')}">
-  <div class="plb">${a.place ? `<button class="tx dz" data-pldel="${esc(a.id)}">Ort entfernen</button>` : ''}<span></span><button class="tx mu" data-plcancel="1">Abbrechen</button><button class="sm2" data-plsave="${esc(a.id)}">Speichern</button></div></div>`;
+// add = weiteren Ort hinzufügen (leeres Feld); beim Ändern stehen die weiteren Orte darunter, einzeln entfernbar
+const placeForm = (a, add) => { const more = add ? [] : morePl(a);
+  return `<div class="ple"><input id="epl" data-place="1" data-pid="${add ? '' : esc(a.pid || '')}" data-plid="${esc(a.id)}" autocomplete="off" enterkeyhint="done" placeholder="📍 ${add ? 'Weiteren Ort suchen' : 'Ort suchen'}, z. B. Blue Grotto" maxlength="80" value="${add ? '' : esc(a.place || '')}">
+  ${more.length ? `<div class="plx"><small>Weitere Orte</small>${more.map(q => `<div class="plr"><span>${IC_PIN}${esc(q.place)}</span><button class="x" data-plx="${esc(a.id)}|${esc(q.k)}" aria-label="${esc(q.place)} entfernen">×</button></div>`).join('')}</div>` : ''}
+  <div class="plb">${!add && a.place ? `<button class="tx dz" data-pldel="${esc(a.id)}">${more.length ? 'Diesen Ort entfernen' : 'Ort entfernen'}</button>` : ''}<span></span><button class="tx mu" data-plcancel="1">Abbrechen</button><button class="sm2" data-plsave="${esc(a.id)}"${add ? ' data-pladd="1"' : ''}>${add ? 'Hinzufügen' : 'Speichern'}</button></div></div>`; };
 const resForm = a => { const r = a.res || {}; return `<div class="resf"><input type="time" id="ert" value="${esc(r.t || '')}"><input type="number" id="erp" min="1" max="99" placeholder="Personen" value="${esc(r.p || '')}"><button data-ressave="${esc(a.id)}">Speichern</button>${a.res ? `<button class="o" data-resdel="${esc(a.id)}">Entfernen</button>` : ''}<button class="o" data-rescancel="1">Abbrechen</button></div>`; };
 
 // ⋯-Menü pro Karte: seltene Aktionen gebündelt
@@ -461,7 +472,8 @@ function cardMenu(a) {
   if (menuOpen !== a.id) return '';
   const id = esc(a.id), it = [];
   if (canEdit(a)) it.push(`<button data-edit="${id}">✏️ Bearbeiten</button>`);
-  it.push(`<button data-pl="${id}">📍 ${a.place ? 'Ort ändern' : 'Ort eintragen'}</button>`);
+  it.push(`<button data-pl="${id}">📍 ${!a.place ? 'Ort eintragen' : morePl(a).length ? 'Orte ändern' : 'Ort ändern'}</button>`);
+  if (a.place && allPl(a).length < MAX_PL) it.push(`<button data-pladd="${id}">➕ Weiteren Ort hinzufügen</button>`);
   if (a.kind === 'rest') it.push(`<button data-res="${id}">📞 ${a.res ? 'Reservierung ändern' : 'Reservierung eintragen'}</button>`);
   it.push(`<button data-cm="${id}">💬 Kommentar schreiben</button>`);
   it.push(`<button data-cost="${id}">💶 Ausgabe eintragen</button>`);
@@ -495,7 +507,7 @@ function renderPlan() {
     return `<div class="c pd">${head}<div class="tln">${g.items.map(a => {
       const n = sig.filter(x => x.act === a.id).length, meal = a.cat === 'food';
       const sub = [KIND[a.kind], meal ? (n === 1 ? '1 Stimme' : `${n} Stimmen`) : `${n} dabei`, a.res && `Reserviert für ${esc(a.res.p)}`].filter(Boolean).map(x => `<span class="nw">${x}</span>`).join(' · ');
-      const links = (villaChip(a) || placeChip(a)) + (a.kind === 'rest' ? linkChip(a) : '');
+      const links = (villaChip(a) || placeChips(a)) + (a.kind === 'rest' ? linkChip(a) : '');
       return `<div class="tli${a.time === 'Ganztags' ? ' all' : ''}${meal ? ' meal' : ''}" data-goto="${esc(a.id)}" role="button" tabindex="0" aria-label="${esc(a.title)} öffnen"><div class="pt">${esc(a.res && a.res.t ? a.res.t + ' Uhr' : a.time ? TIME_TXT(a.time) : 'Offen')}</div><div class="tlc"><span class="tl">${esc(a.title)}</span><div class="meta">${sub}</div>${links ? `<div class="info">${links}</div>` : ''}</div></div>`;
     }).join('')}</div></div>`; }).join('');
 }
@@ -951,7 +963,7 @@ function renderList() {
     const who = s.length ? `<div class="stack">${s.slice(0, shown).map(x => avatar(x.uid)).join('')}${more > 0 ? `<i class="more" aria-label="und ${more} weitere">+${more}</i>` : ''}</div><div class="wt"><span class="wc">${count}</span><span class="wn">${names}</span></div>`
       : `<div class="wt"><span class="wn">${food ? 'Noch keine Stimmen' : 'Noch niemand dabei'}</span></div>`;
     // Details nur, wenn es etwas zu zeigen gibt
-    const det = [a.kind === 'rest' ? linkChip(a) : '', editPlace === a.id ? placeForm(a) : (placeChip(a) || villaChip(a)),
+    const det = [a.kind === 'rest' ? linkChip(a) : '', editPlace === a.id ? placeForm(a) : editPlace === a.id + '|+' ? placeChips(a) + placeForm(a, true) : (placeChips(a) || villaChip(a)),
       a.kind === 'rest' ? (editRes === a.id ? resForm(a) : a.res ? `<span class="day ok">✅ Reserviert · ${esc(a.res.t)} Uhr · ${esc(a.res.p)} Pers.</span>` : '') : '', costChip(a)].join('');
     return `<div class="c card${mine ? ' in' : ''}" data-card="${esc(a.id)}">
       <div class="hd2"><div class="tt">${fav ? '<span class="fav">🏆 Favorit</span>' : ''}<h2>${isNewAct(a) ? '<span class="nb">Neu</span>' : ''}${esc(a.title)}</h2></div><button class="mn" data-menu="${esc(a.id)}" aria-label="Mehr Optionen">⋯</button>${cardMenu(a)}</div>
@@ -1098,9 +1110,34 @@ $('list').onclick = async e => {
   }
   if (b.dataset.pl) { editPlace = b.dataset.pl; editRes = null; freshForm = true; render(true); const i = $('epl'); if (i) { i.focus(); i.select(); } return; }
   if (b.dataset.plcancel) { editPlace = null; render(true); return; }
+  // Weiteren Ort: Formular öffnen bzw. speichern (eigener Eintrag in pl2, nichts anderes wird überschrieben)
+  if (b.dataset.pladd && !b.dataset.plsave) { editPlace = b.dataset.pladd + '|+'; editRes = null; freshForm = true; render(true); const i = $('epl'); if (i) i.focus(); return; }
+  if (b.dataset.plsave && b.dataset.pladd) {
+    const id = b.dataset.plsave, i = $('epl'), place = i.value.trim(), a = acts.find(x => x.id === id);
+    if (!place) { i.focus(); return; }
+    if (!alive(id) || !a) { editPlace = null; render(true); toast(GONE, 1); return; }
+    if (allPl(a).some(q => (i.dataset.pid && q.pid === i.dataset.pid) || norm(q.place) === norm(place))) { editPlace = null; render(true); toast('Dieser Ort ist schon eingetragen.'); return; }
+    const geo = geoFrom(i), k = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+    const w = setDoc(doc(db, 'activities', id), { pl2: { [k]: { place, pid: i.dataset.pid || '', lat: geo.lat ?? null, lng: geo.lng ?? null, ts: Date.now() } } }, { merge: true });
+    editPlace = null; render(true);
+    try { await w; toast('Ort hinzugefügt ✓'); } catch (err) { toast(FAIL, 1); }
+    return;
+  }
+  if (b.dataset.plx) {
+    const [id, k] = b.dataset.plx.split('|'); if (!alive(id)) { editPlace = null; render(true); toast(GONE, 1); return; }
+    try { await updateDoc(doc(db, 'activities', id), { ['pl2.' + k]: deleteField() }); render(true); toast('Ort entfernt'); } catch (err) { toast(FAIL, 1); }
+    return;
+  }
   if (b.dataset.pldel || b.dataset.plsave) {
     const id = b.dataset.pldel || b.dataset.plsave, place = b.dataset.plsave ? $('epl').value.trim() : '', pid = place ? ($('epl').dataset.pid || '') : '';
     if (!alive(id)) { editPlace = null; render(true); toast(GONE, 1); return; }
+    // Ersten Ort entfernen, obwohl es weitere gibt: der nächste rückt nach
+    const nx = !place && morePl(acts.find(x => x.id === id))[0];
+    if (nx) {
+      try { await updateDoc(doc(db, 'activities', id), { place: nx.place, pid: nx.pid || '', lat: nx.lat ?? null, lng: nx.lng ?? null, ['pl2.' + nx.k]: deleteField() }); editPlace = null; render(true); toast('Ort entfernt'); }
+      catch (err) { toast(FAIL, 1); }
+      return;
+    }
     const geo = place ? geoFrom($('epl'), acts.find(x => x.id === id) || {}) : { lat: null, lng: null };
     try { await setDoc(doc(db, 'activities', id), { place, pid, ...geo }, { merge: true }); editPlace = null; render(true); toast(place ? 'Ort gespeichert ✓' : 'Ort entfernt'); }
     catch (err) { toast(FAIL, 1); }
@@ -1244,12 +1281,27 @@ async function closeAdd() {
 $('addClose').onclick = () => closeAdd();
 
 let goBusy = false;
+// Neuer Vorschlag: weitere Orte, je ein eigenes Feld mit Ortsvorschlägen (erscheint, sobald der erste Ort steht)
+const plmShow = () => { $('plAdd').hidden = !$('pl').value.trim() || $('plm').children.length >= MAX_PL - 1; };
+$('plAdd').onclick = () => {
+  $('plm').insertAdjacentHTML('beforeend', `<div class="fic plm">${IC_PIN}<input data-place="1" autocomplete="off" maxlength="80" placeholder="Weiterer Ort"><button type="button" class="plmx" aria-label="Ort entfernen">×</button></div>`);
+  plmShow(); $('plm').lastElementChild.querySelector('input').focus();
+};
+$('plm').onclick = e => { const x = e.target.closest('.plmx'); if (x) { x.parentElement.remove(); plmShow(); } };
+$('pl').addEventListener('input', plmShow);
 $('go').onclick = async () => {
   if (goBusy) return;
   const t = $('t'), d = $('d'), w = $('w'), z = $('z'), k = $('k'); if (!t.value.trim()) { toast('Bitte gib einen Titel ein.', 1); t.focus(); return; }
   if (tab === 'food' && !k.value) { toast('Bitte wähle: Kochen oder Restaurant.', 1); return; }
   const data = { title: t.value.trim(), desc: d.value.trim(), day: w.value, time: z.value, cat: tab, kind: tab === 'food' ? k.value : '', ts: Date.now(), by: me };
   if ($('pl').value.trim()) { data.place = $('pl').value.trim(); if ($('pl').dataset.pid) data.pid = $('pl').dataset.pid; if ($('pl').dataset.lat) { data.lat = +$('pl').dataset.lat; data.lng = +$('pl').dataset.lng; } }
+  // weitere Orte: doppelte fallen weg; fehlt der erste, rückt der nächste nach
+  const seen = new Set(data.place ? [norm(data.place), data.pid].filter(Boolean) : []), pl2 = {};
+  [...$('plm').querySelectorAll('input')].forEach((i, n) => { const place = i.value.trim(), pid = i.dataset.pid || ''; if (!place || seen.has(norm(place)) || (pid && seen.has(pid))) return;
+    seen.add(norm(place)); if (pid) seen.add(pid); const q = { place, pid, lat: i.dataset.lat ? +i.dataset.lat : null, lng: i.dataset.lng ? +i.dataset.lng : null };
+    if (!data.place) { data.place = place; if (pid) data.pid = pid; if (q.lat != null) { data.lat = q.lat; data.lng = q.lng; } }
+    else pl2['p' + Date.now().toString(36) + n + Math.random().toString(36).slice(2, 4)] = { ...q, ts: Date.now() + n }; });
+  if (Object.keys(pl2).length) data.pl2 = pl2;
   if (tab === 'food' && k.value === 'rest') {
     if ($('rv').checked) {
       const rt = $('rt').value, rp = parseInt($('rp').value, 10);
@@ -1260,7 +1312,7 @@ $('go').onclick = async () => {
   // Formular sofort leeren und schließen (nicht erst nach der Server-Antwort), damit nichts doppelt entsteht
   const nid = 'a' + Date.now() + Math.random().toString(36).slice(2, 5);
   goBusy = true;
-  t.value = ''; d.value = ''; w.value = ''; z.value = ''; k.value = ''; $('pl').value = ''; $('pl').dataset.pid = ''; $('pl').dataset.lat = ''; $('pl').dataset.lng = ''; $('rv').checked = false; $('rt').value = ''; $('rp').value = ''; formFields();
+  t.value = ''; d.value = ''; w.value = ''; z.value = ''; k.value = ''; $('pl').value = ''; $('pl').dataset.pid = ''; $('pl').dataset.lat = ''; $('pl').dataset.lng = ''; $('plm').innerHTML = ''; plmShow(); $('rv').checked = false; $('rt').value = ''; $('rp').value = ''; formFields();
   closeAdd(); toast('Vorschlag gespeichert ✓');
   try {
     await setDoc(doc(db, 'activities', nid), data);
@@ -1319,10 +1371,10 @@ document.addEventListener('pointerdown', async e => {
   const b = e.target.closest('.aci'); if (!b || !acInput) return;
   e.preventDefault();
   const sg = acList[+b.dataset.i], i = acInput;
-  if (sg.villa) { const T = sg.villa; i.value = T.vname || 'Unsere Villa'; i.dataset.pid = T.vpid || ''; i.dataset.lat = T.vlat; i.dataset.lng = T.vlng; acClose();
+  if (sg.villa) { const T = sg.villa; i.value = T.vname || 'Unsere Villa'; i.dataset.pid = T.vpid || ''; i.dataset.lat = T.vlat; i.dataset.lng = T.vlng; acClose(); if (i.id === 'pl') plmShow();
     if (i.id === 'epl') { const sv = document.querySelector('[data-plsave]'); if (sv) sv.click(); } return; }
   const pp = sg.placePrediction;
-  i.value = pp.mainText ? pp.mainText.text : pp.text.text; i.dataset.pid = pp.placeId; i.dataset.lat = ''; i.dataset.lng = ''; acClose();
+  i.value = pp.mainText ? pp.mainText.text : pp.text.text; i.dataset.pid = pp.placeId; i.dataset.lat = ''; i.dataset.lng = ''; acClose(); if (i.id === 'pl') plmShow();
   // Position für die Karte (Place Details Essentials, 10.000/Monat kostenlos); beendet zugleich die Sitzung
   try { const pl = pp.toPlace(); await pl.fetchFields({ fields: ['location'] }); if (pl.location) { i.dataset.lat = pl.location.lat(); i.dataset.lng = pl.location.lng(); } } catch (err) {}
   if (i.id === 'epl') { const sv = document.querySelector('[data-plsave]'); if (sv) sv.click(); }
@@ -1491,19 +1543,25 @@ function renderMap(fit) {
     L.box.appendChild(el); L.items.push({ el, ll: new google.maps.LatLng(pos.lat, pos.lng), z, food, vil: cls === 'vil', mine: cls === 'mine' }); bounds.extend(pos); n++; };
   const vil = T.vlat != null ? { lat: T.vlat, lng: T.vlng } : null, home = [];
   // Was in unserer Villa stattfindet (Villa als Ort gewählt oder Kochen ohne Ort), bekommt keinen eigenen Pin, sondern steht im Villa-Pin
-  const atVilla = a => vil && ((T.vpid && a.pid === T.vpid) || (a.lat != null && kmTo(vil, { lat: a.lat, lng: a.lng }) < .05) || (a.kind === 'cook' && !a.place));
+  // Bei mehreren Orten zählt das je Ort: Villa-Orte landen in der Villa-Liste, die übrigen bekommen je einen eigenen Pin
+  const atVilla = q => vil && ((T.vpid && q.pid === T.vpid) || (q.lat != null && kmTo(vil, { lat: q.lat, lng: q.lng }) < .05));
   mapItems().forEach(a => {
-    if (atVilla(a)) { home.push(a); return; }
-    if (a.lat == null) { if (a.place) missing.push(a); return; }
-    const food = a.cat === 'food', s = sig.filter(x => x.act === a.id), mine = s.some(x => x.uid === me), pos = { lat: a.lat, lng: a.lng };
+    const pl = allPl(a), multi = pl.length > 1;
+    if ((a.kind === 'cook' && !a.place && vil) || pl.some(atVilla)) home.push(a);
+    if (pl.some(q => q.lat == null && !atVilla(q))) missing.push(a);
+    pl.filter(q => q.lat != null && !atVilla(q)).forEach(q => {
+    const food = a.cat === 'food', s = sig.filter(x => x.act === a.id), mine = s.some(x => x.uid === me), pos = { lat: q.lat, lng: q.lng };
     // Aufbau wie eine Mini-Kachel: Titel, Infozeile mit Entfernung, Zahl + Namen der Teilnehmer, dann die Knöpfe
     const names = [...s].sort((x, y) => (y.uid === me) - (x.uid === me)).map(x => x.uid === me ? '<b>Du</b>' : esc(ppl[x.uid] || 'Jemand')).join(', ');
     const who = `<div class="gwho"><span class="gwc">${s.length ? (food ? (s.length === 1 ? '1 Stimme' : s.length + ' Stimmen') : s.length + ' dabei') : (food ? 'Noch keine Stimmen' : 'Noch niemand dabei')}</span></div>${s.length ? `<div class="gwn">${names}</div>` : ''}`;
     const km = vil ? kmTo(vil, pos) : null, near = km != null && km < .15;
     const info = [meta(a), km == null ? '' : near ? 'bei unserer Villa' : `<span class="nw">${kmTxt(km)} von der Villa</span>`].filter(Boolean).join(' · ');
-    const way = vil && !near ? `<a class="gbtn" href="${esc(routeUrl(T, a))}" target="_blank" rel="noopener noreferrer">Route ab Villa ↗</a>` : `<a class="gbtn" href="${esc(mapUrl(a))}" target="_blank" rel="noopener noreferrer">Google Maps ↗</a>`;
-    add(pos, mine ? 'mine' : '', food ? (a.kind === 'cook' ? 'cook' : 'rest') : 'act', food ? '#ea580c' : '#1d7a6b', a.title,
-      `<b>${esc(a.title)}</b>${info ? `<small>${info}</small>` : ''}${who}<div class="gbs"><button class="gbtn pri" data-mgo="${esc(a.id)}">Zum Vorschlag</button>${way}</div>`, mine ? 3 : 2, food);
+    const way = vil && !near ? `<a class="gbtn" href="${esc(routeUrl(T, q))}" target="_blank" rel="noopener noreferrer">Route ab Villa ↗</a>` : `<a class="gbtn" href="${esc(mapUrl(q))}" target="_blank" rel="noopener noreferrer">Google Maps ↗</a>`;
+    // mehrere Orte: welcher Ort dieser Pin ist (und wie viele es gibt)
+    const where = multi ? `<small class="gpl">${IC_PIN}${esc(q.place)} <span>· Ort ${pl.indexOf(q) + 1} von ${pl.length}</span></small>` : '';
+    add(pos, mine ? 'mine' : '', food ? (a.kind === 'cook' ? 'cook' : 'rest') : 'act', food ? '#ea580c' : '#1d7a6b', multi ? a.title + ' · ' + q.place : a.title,
+      `<b>${esc(a.title)}</b>${where}${info ? `<small>${info}</small>` : ''}${who}<div class="gbs"><button class="gbtn pri" data-mgo="${esc(a.id)}">Zum Vorschlag</button>${way}</div>`, mine ? 3 : 2, food);
+    });
   });
   if (vil) { add(vil, 'vil', 'vil', '#fff', T.vname || 'Unsere Villa', `<b>🏡 ${esc(T.vname || 'Unsere Villa')}</b><small>${esc(T.vaddr || '')}</small>`
       + (home.length ? `<div class="gvl"><small>Bei uns in der Villa</small>${home.map(a => `<button class="gvi" data-mgo="${esc(a.id)}">${esc(a.title)}<span aria-hidden="true">›</span></button>`).join('')}</div>` : '')
