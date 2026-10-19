@@ -242,7 +242,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
 #list.anim>.c{animation:rise .45s cubic-bezier(.2,.8,.3,1) both}
 #list.anim>.c:nth-child(2){animation-delay:.05s}#list.anim>.c:nth-child(3){animation-delay:.1s}#list.anim>.c:nth-child(4){animation-delay:.15s}#list.anim>.c:nth-child(n+5){animation-delay:.2s}
 @keyframes rise{from{opacity:0;transform:translateY(12px)}}
-.c h2,.tli .tl,.sname b,a.lk,.ds{overflow-wrap:anywhere}.sw.big .swc{width:100%;max-width:36px;height:auto;aspect-ratio:1;justify-self:center}
+.c h2,.tli .tl,.sname b,a.lk,.ds{overflow-wrap:anywhere}.txl{font-weight:500}.sw.big .swc{width:100%;max-width:36px;height:auto;aspect-ratio:1;justify-self:center}
 /* schmale Handys (altes iPhone SE, Display-Zoom, viele Androids): alles etwas kompakter */
 @media(max-width:360px){
   .cdt{gap:8px;padding:14px}.cdt>div:first-child{min-width:0}.cd .ut{gap:4px}.cd .u{min-width:42px;padding:5px 3px 4px}.cd .u b{font-size:20px}
@@ -330,6 +330,15 @@ const firebaseConfig = {
 const db = getFirestore(initializeApp(firebaseConfig));
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// Text mit antippbaren Links (Beschreibungen, Kommentare): Adressen mit http(s):// oder www. werden zu Links,
+// angezeigt kurz ohne https:// und Schrägstrich am Ende; Satzzeichen direkt dahinter gehören nicht dazu
+const linkify = t => String(t).split(/((?:https?:\/\/|www\.)[^\s<>"]+)/i).map((part, i) => {
+  if (i % 2 === 0) return esc(part);
+  const m = part.match(/^(.*?)([.,;:!?)\]'»“”]*)$/), url = m[1], tail = m[2], href = normLink(url);
+  if (!href) return esc(part);
+  const show = url.replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/$/, '');
+  return `<a class="lk txl" href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(show.length > 42 ? show.slice(0, 40) + '…' : show)}</a>${esc(tail)}`;
+}).join('');
 
 const hash = async (name, pin) => { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(name.trim().toLowerCase() + '|' + pin + '|malta')); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); };
 const PIN_OK = p => /^\d{4,8}$/.test(p);
@@ -814,7 +823,7 @@ function cmBlock(a) {
   // gleicher Rahmen zu und offen → der Abstand nach oben springt nie
   if (!open) return `<div class="cmts"><button class="tx" data-cmt="${id}">${label}${chev('c' + a.id, false)}</button></div>`;
   return `<div class="cmts"><button class="tx op" data-cmt="${id}">${label}${chev('c' + a.id, true)}</button>
-    ${items.map(c => `<div class="cmi${c.id === cmNew ? ' new' : ''}"><span class="stack">${avatar(c.u)}</span><div class="cmb"><b>${nm(c.u)}</b> <small>${ago(c.ts)}</small><div>${esc(c.t)}</div></div>${c.u === me || isAdmin() ? `<button class="x" data-cmdel="${id}|${esc(c.id)}" aria-label="Löschen">×</button>` : ''}</div>`).join('')}
+    ${items.map(c => `<div class="cmi${c.id === cmNew ? ' new' : ''}"><span class="stack">${avatar(c.u)}</span><div class="cmb"><b>${nm(c.u)}</b> <small>${ago(c.ts)}</small><div>${linkify(c.t)}</div></div>${c.u === me || isAdmin() ? `<button class="x" data-cmdel="${id}|${esc(c.id)}" aria-label="Löschen">×</button>` : ''}</div>`).join('')}
     <div class="sa"><input id="cmin-${id}" data-cminp="${id}" placeholder="Kommentar schreiben…" maxlength="300"><button data-cmadd="${id}" aria-label="Senden">➤</button></div></div>`;
 }
 async function addComment(id) {
@@ -947,7 +956,7 @@ function renderList() {
     return `<div class="c card${mine ? ' in' : ''}" data-card="${esc(a.id)}">
       <div class="hd2"><div class="tt">${fav ? '<span class="fav">🏆 Favorit</span>' : ''}<h2>${isNewAct(a) ? '<span class="nb">Neu</span>' : ''}${esc(a.title)}</h2></div><button class="mn" data-menu="${esc(a.id)}" aria-label="Mehr Optionen">⋯</button>${cardMenu(a)}</div>
       ${m ? `<div class="meta">${m}</div>` : ''}
-      ${a.desc ? `<p class="ds">${esc(a.desc)}</p>` : ''}
+      ${a.desc ? `<p class="ds">${linkify(a.desc)}</p>` : ''}
       ${det ? `<div class="info">${det}</div>` : ''}
       ${a.kind === 'cook' ? shopList(a) : ''}
       ${cmBlock(a)}
@@ -1947,13 +1956,13 @@ function wxHtml() {
   const days = tripDays.length >= 2 ? tripDays : wx.days.filter(x => ok(x) && x.d >= today).slice(0, 7);
   if (!days.length) return '';
   const isTrip = days === tripDays, missing = isTrip && tripDays.length && tripDays[tripDays.length - 1].d < t2;
-  // ruhige Kacheln (Tag, Symbol, max/min, Regen nur wenn relevant) + eine Detailzeile für den angetippten Tag
+  // ruhige Kacheln (Tag, Symbol, max/min, Regenwahrscheinlichkeit) + eine Detailzeile für den angetippten Tag
   if (!days.some(x => x.d === wxSel)) wxSel = (days.find(x => x.d === today) || days[0]).d;
   wxDays = days;
   return `<div class="wx"><div class="wxh"><b>${isTrip ? '🌤️ Wetter im Urlaub' : '🌤️ Wetter auf Malta'}</b><small>Mellieħa</small></div>
     <div class="wxs">${days.map(x => { const dt = new Date(x.d + 'T12:00:00');
       return `<button class="wxd${x.d === wxSel ? ' sel' : ''}${x.d >= t1 && x.d <= t2 ? ' trip' : ''}" data-wxd="${x.d}" aria-pressed="${x.d === wxSel}"><small>${x.d === today ? 'Heute' : WD[dt.getDay()] + ' ' + dt.getDate() + '.'}</small><span class="wxi">${wxIcon(x.code)}</span>
-        <b>${Math.round(x.max)}°</b><small>${Math.round(x.min)}°</small><small class="wxr">${x.rain >= 20 ? x.rain + ' %' : ''}</small></button>`; }).join('')}</div>
+        <b>${Math.round(x.max)}°</b><small>${Math.round(x.min)}°</small><small class="wxr">${x.rain != null ? x.rain + ' %' : ''}</small></button>`; }).join('')}</div>
     <div class="wxdet" id="wxdet">${wxDet()}</div>${missing ? '<small class="wxn">Weitere Urlaubstage folgen, sobald die Vorhersage reicht.</small>' : ''}</div>`;
 }
 let wxSel = null, wxDays = [];
