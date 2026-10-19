@@ -1218,7 +1218,8 @@ function setTab(t) {
   render(true);
   moveInd(); animList(); showTip(t === 'shop' ? (shopView === 'cost' ? 'cost' : 'shop') : t === 'plan' ? 'plan2' : t);   // plan2: neuer Text, alle sehen ihn einmal
 }
-$('tabs').onclick = e => { const b = e.target.closest('.tb'); if (b) setTab(b.dataset.tab); };
+// Tipp auf den schon aktiven Reiter: wie beim Wechsel zurück an den Anfang (und Reise-Info zu), hier weich gleitend
+$('tabs').onclick = e => { const b = e.target.closest('.tb'); if (!b) return; if (b.dataset.tab === tab) { closeTrip(); scrollTo({ top: 0, behavior: calm() ? 'auto' : 'smooth' }); } else setTab(b.dataset.tab); };
 // Vorschlagsformular gleitet aus dem Knopf auf und wieder in ihn zurück (statt hart auf- und zuzuspringen)
 let addAnim = false;
 $('addOpen').onclick = async () => {
@@ -1543,8 +1544,8 @@ function mapAnim(open) {
 async function openMap() {
   if (!MAPS_KEY) { toast('Die Karte ist noch nicht eingerichtet.', 1); return; }
   mapOpen = true; $('mapv').classList.remove('moff'); document.documentElement.classList.add('noscroll'); mapAnim(true);
-  // Filter passt zum Reiter, aus dem die Karte geöffnet wird
-  mapFilter = tab === 'food' ? 'food' : tab === 'plan' ? 'mine' : 'act'; mfPrev = null; missOpen = false;
+  // Filter passt zum Reiter, aus dem die Karte geöffnet wird (aus Aktivitäten: Alle, sonst käme man nie dorthin)
+  mapFilter = tab === 'food' ? 'food' : tab === 'plan' ? 'mine' : 'all'; mfPrev = null; missOpen = false;
   try { history.pushState({ map: 1 }, ''); } catch (e) {}
   try {
     if (!gLib) { loadPlaces(); gLib = await google.maps.importLibrary('maps'); }
