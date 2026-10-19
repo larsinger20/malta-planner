@@ -91,7 +91,10 @@ button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-heigh
 button.tx[data-cmt],button.tx[data-sugt],button.tx[data-shop]{display:flex;align-items:center;width:100%;min-height:44px;text-align:left;justify-content:flex-start}.chev{display:inline-flex;margin-left:5px;transition:rotate .24s ease}.chev svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}.op .chev{rotate:180deg}.op .chev.an{animation:chevO .32s cubic-bezier(.3,1.35,.5,1)}.op.cl .chev{rotate:0deg}@keyframes chevO{from{rotate:0deg}}.cd .rih{display:inline-flex;align-items:center}.rih .chev{margin-left:4px;translate:0 1.5px}.rih .chev svg{width:12px;height:12px;stroke-width:2.6}.chev.anc{animation:chevC .26s ease}@keyframes chevC{from{rotate:180deg}}.sgl{display:block;font-size:13px;color:var(--mu);margin:-6px 0 6px}.sug>button.tx.sgt{margin:0 -12px;padding:0 12px;width:calc(100% + 24px)}
 .resf{display:flex;flex-wrap:wrap;gap:8px}.resf .rvf{flex-basis:100%;width:100%}.rvf{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.rvf>div{min-width:0}.two.rvf input{width:100%;min-width:0;max-width:100%;flex:none;margin:0 0 4px}.two.rvf input[type=time]{padding-left:12px;padding-right:10px;overflow:hidden}
 /* iPhone/Safari: leeres Uhrzeitfeld hat keinen Inhalt und schrumpft in der Höhe; Uhrzeit sonst mittig statt links */
-input[type=time]{min-height:49px;text-align:left}.two.rvf input{height:49px;box-sizing:border-box}input[type=time]::-webkit-date-and-time-value{min-height:1.47em;text-align:left}.rvf .flb{margin-top:0}#rvf{margin-bottom:8px}.info .resf{width:100%;margin-top:4px}.resf input{width:auto;flex:1;min-width:110px;margin:0}
+input[type=time]{min-height:49px;text-align:left}
+/* Safari zeigt in leeren Uhrzeitfeldern keinen Hinweis: eigener grauer Hinweis wie „z. B. 4“; Chromes „--:--“ dafür ausgeblendet */
+.tfield{position:relative}.tph{position:absolute;left:12px;top:50%;translate:0 -50%;margin-top:-2px;color:var(--mu);font-size:17px;pointer-events:none;white-space:nowrap}
+.tfield.has .tph,.tfield:focus-within .tph{display:none}.tfield:not(.has):not(:focus-within) input::-webkit-datetime-edit{color:transparent}.tfield:not(.has):not(:focus-within) input::-webkit-calendar-picker-indicator{opacity:0}.two.rvf input{height:49px;box-sizing:border-box}input[type=time]::-webkit-date-and-time-value{min-height:1.47em;text-align:left}.rvf .flb{margin-top:0}#rvf{margin-bottom:8px}.info .resf{width:100%;margin-top:4px}.resf input{width:auto;flex:1;min-width:110px;margin:0}
 .chk{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:17px}.chk input{width:20px;height:20px;margin:0}
 
 /* Fußzeile mit Teilnehmern */
@@ -312,7 +315,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
 <div class="two"><div><label class="flb">Tag <span>optional</span></label><select id="w"><option value="">Noch offen</option><option>Samstag</option><option>Sonntag</option><option>Montag</option><option>Dienstag</option><option>Mittwoch</option><option>Donnerstag</option><option>Freitag</option></select></div>
 <div><label class="flb">Tageszeit <span>optional</span></label><select id="z"><option value="">Noch offen</option><option>Ganztags</option><option value="Morgens / Vormittags">Vormittags</option><option>Mittags</option><option>Nachmittags</option><option>Abends</option><option>Nachts</option></select></div></div>
 <label class="chk" id="rvl" hidden><input type="checkbox" id="rv"> Schon reserviert</label>
-<div class="two rvf" id="rvf" hidden><div><label class="flb" for="rt">Uhrzeit</label><input type="time" id="rt"></div><div><label class="flb" for="rp">Personen</label><input type="number" id="rp" min="1" max="99" inputmode="numeric" placeholder="z. B. 4"></div></div>
+<div class="two rvf" id="rvf" hidden><div><label class="flb" for="rt">Uhrzeit</label><div class="tfield"><input type="time" id="rt"><span class="tph" aria-hidden="true">z. B. 19:30</span></div></div><div><label class="flb" for="rp">Personen</label><input type="number" id="rp" min="1" max="99" inputmode="numeric" placeholder="z. B. 4"></div></div>
 <div class="efb"><button id="go">Vorschlagen</button></div></div>
 
 <div id="list" hidden><div class="m">Lädt…</div></div>
@@ -475,7 +478,7 @@ const placeForm = (a, add) => { const more = add ? [] : morePl(a);
   return `<div class="ple"><input id="epl" data-place="1" data-pid="${add ? '' : esc(a.pid || '')}" data-plid="${esc(a.id)}" autocomplete="off" enterkeyhint="done" placeholder="📍 ${add ? 'Weiteren Ort suchen' : 'Ort suchen'}, z. B. Blue Grotto" maxlength="80" value="${add ? '' : esc(a.place || '')}">
   ${more.length ? `<div class="plx"><small>Weitere Orte</small>${more.map(q => `<div class="plr"><span>${IC_PIN}${esc(q.place)}</span><button class="x" data-plx="${esc(a.id)}|${esc(q.k)}" aria-label="${esc(q.place)} entfernen">×</button></div>`).join('')}</div>` : ''}
   <div class="plb">${!add && a.place ? `<button class="tx dz" data-pldel="${esc(a.id)}">${more.length ? 'Diesen Ort entfernen' : 'Ort entfernen'}</button>` : ''}<span></span><button class="tx mu" data-plcancel="1">Abbrechen</button><button class="sm2" data-plsave="${esc(a.id)}"${add ? ' data-pladd="1"' : ''}>${add ? 'Hinzufügen' : 'Speichern'}</button></div></div>`; };
-const resForm = a => { const r = a.res || {}; return `<div class="resf"><div class="two rvf"><div><label class="flb" for="ert">Uhrzeit</label><input type="time" id="ert" value="${esc(r.t || '')}"></div><div><label class="flb" for="erp">Personen</label><input type="number" id="erp" min="1" max="99" inputmode="numeric" placeholder="z. B. 4" value="${esc(r.p || '')}"></div></div><button data-ressave="${esc(a.id)}">Speichern</button>${a.res ? `<button class="o" data-resdel="${esc(a.id)}">Entfernen</button>` : ''}<button class="o" data-rescancel="1">Abbrechen</button></div>`; };
+const resForm = a => { const r = a.res || {}; return `<div class="resf"><div class="two rvf"><div><label class="flb" for="ert">Uhrzeit</label><div class="tfield${r.t ? ' has' : ''}"><input type="time" id="ert" value="${esc(r.t || '')}"><span class="tph" aria-hidden="true">z. B. 19:30</span></div></div><div><label class="flb" for="erp">Personen</label><input type="number" id="erp" min="1" max="99" inputmode="numeric" placeholder="z. B. 4" value="${esc(r.p || '')}"></div></div><button data-ressave="${esc(a.id)}">Speichern</button>${a.res ? `<button class="o" data-resdel="${esc(a.id)}">Entfernen</button>` : ''}<button class="o" data-rescancel="1">Abbrechen</button></div>`; };
 
 // ⋯-Menü pro Karte: seltene Aktionen gebündelt
 function cardMenu(a) {
@@ -935,7 +938,7 @@ function render(force) {
   if (!force && ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && $('list').contains(ae)) { pending = true; return; }
   pending = false;
   keepForm(); const kept = freshForm ? {} : keepFields(); freshForm = false;
-  renderList(); restoreFields(kept); growNew(); watchNew();
+  renderList(); restoreFields(kept); document.querySelectorAll('#list input[type=time]').forEach(tfMark); growNew(); watchNew();
 }
 const shown = (id, item) => !!$('list').querySelector(`[data-sdel="${CSS.escape(id + '|' + item)}"]`);
 // Einzelne Zeile weich auf-/zugleiten wie in der Einkaufsliste (Ort-Felder im Formular, weitere Orte)
@@ -1300,9 +1303,12 @@ $('addOpen').onclick = async () => {
   addAnim = true; const f = $('add'); await slideHeight(f, from, f.offsetHeight, 340); addAnim = false;
 };
 // Formular leeren (nach dem Vorschlagen, beim Schließen mit × und beim Reiterwechsel: nichts bleibt für das nächste Mal stehen)
+// Uhrzeitfelder: grauen Hinweis ausblenden, sobald eine Uhrzeit gewählt ist
+const tfMark = i => { const f = i && i.closest && i.closest('.tfield'); if (f) f.classList.toggle('has', !!i.value); };
+['input', 'change'].forEach(ev => document.addEventListener(ev, e => { if (e.target.type === 'time') tfMark(e.target); }));
 function resetAdd() {
   ['t', 'd', 'w', 'z', 'k', 'pl', 'rt', 'rp'].forEach(i => { $(i).value = ''; }); ['pid', 'lat', 'lng'].forEach(k => { $('pl').dataset[k] = ''; }); $('pl')._geo = null;
-  document.querySelectorAll('#add .acl').forEach(x => x.remove()); $('plm').innerHTML = ''; plmShow(); $('rv').checked = false; formFields();
+  document.querySelectorAll('#add .acl').forEach(x => x.remove()); $('plm').innerHTML = ''; plmShow(); $('rv').checked = false; tfMark($('rt')); formFields();
 }
 async function closeAdd(keep) {
   const f = $('add'), btn = $('addOpen');
