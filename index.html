@@ -204,7 +204,11 @@ html.noscroll,html.noscroll body{overflow:hidden}
 .cd .trow{box-shadow:inset 0 .5px 0 rgba(255,255,255,.2)}.cd .trow:first-child{box-shadow:none}.cd .trow small{color:rgba(255,255,255,.75);opacity:1}
 .cd .tv{color:#fff}.cd .lk{color:#fff;text-decoration:underline;text-decoration-color:rgba(255,255,255,.45);text-underline-offset:3px}
 .cd .rihs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.cd .rihs .rih,.cd .wxc{margin-top:0}.cd .wxc{display:inline-block;padding:2px 10px;border-radius:999px;background:rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 0 0 .5px rgba(255,255,255,.16);font-size:12px;font-weight:600;opacity:1;white-space:nowrap}
-.wx{padding:10px 0 6px}.wxh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}.wxh b{font-size:15px}.wxh small{opacity:.75}
+.wx{padding:10px 0 6px}
+/* Wetter lädt: schimmernde Platzhalter in Kachelgröße; danach weiches Einblenden (nur beim ersten Eintreffen) */
+.wxd.sk,.wxdet.sk,.wxc.sk{position:relative;overflow:hidden;color:transparent}.wxd.sk::after,.wxdet.sk::after,.wxc.sk::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.16) 50%,transparent 70%);background-size:220% 100%;animation:wxsk 1.4s ease-in-out infinite}
+@keyframes wxsk{from{background-position:120% 0}to{background-position:-100% 0}}.wx.in .wxs,.wx.in .wxdet{animation:wxin .45s ease-out}@keyframes wxin{from{opacity:0}}
+.wxerr{margin:2px 0 0;font-size:14px;opacity:.85}.cd .wxre{color:#fff;text-decoration:underline;text-decoration-color:rgba(255,255,255,.45);text-underline-offset:3px;padding:6px 0}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.wxh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}.wxh b{font-size:15px}.wxh small{opacity:.75}
 .wxs{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:18px;margin:0 -18px;padding:0 0 4px 18px;scrollbar-width:none}.wxs::after{content:'';flex:0 0 12px}.wxs::-webkit-scrollbar{display:none}
 .wxd{flex:0 0 66px;scroll-snap-align:start;text-align:center;background:rgba(255,255,255,.11);box-shadow:inset 0 1px 0 rgba(255,255,255,.26),inset 0 0 0 .5px rgba(255,255,255,.12);border-radius:15px;padding:7px 4px;display:flex;flex-direction:column;gap:1px}.wxd.trip{background:rgba(255,255,255,.2)}button.wxd{font:inherit;color:#fff;cursor:pointer;-webkit-tap-highlight-color:transparent}button.wxd:active{transform:scale(.95)}.wxd.sel{background:rgba(255,255,255,.24);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 0 0 1.5px rgba(255,255,255,.75)}.cd .wxd small.wxr{min-height:15px;color:#a8e4ff;font-weight:600;opacity:1}.wxdet{margin-top:8px;padding:9px 12px;border-radius:13px;background:rgba(255,255,255,.1);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.14);font-size:14px;line-height:1.4}.wxdh{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:600;margin-bottom:6px}.wxdh>span:first-child{opacity:.85}.wxsun{font-weight:500;opacity:.8;white-space:nowrap}.wxst{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;text-align:center}.cd .wxst b{display:block;font-family:var(--font);font-size:15px;font-weight:600;letter-spacing:0;white-space:nowrap}.cd .wxst small{display:block;margin:1px 0 0;font-size:11px;opacity:.7}.cd .wxst .fo b{font-weight:500;opacity:.55}
 .cd .wxd small{display:block;margin:0;font-size:11px;opacity:.85;white-space:nowrap}.cd .wxd b{font-size:17px}.wxi{font-size:22px;line-height:1.3}
@@ -2061,27 +2065,44 @@ const villaChip = a => { const T = trip(); return a.kind === 'cook' && !a.place 
 const WX_LAT = 35.9606, WX_LON = 14.368;
 let wx = null;
 const wxIcon = c => c === 0 ? '☀️' : c <= 1 ? '🌤️' : c === 2 ? '⛅' : c === 3 ? '☁️' : c <= 48 ? '🌫️' : c <= 57 ? '🌦️' : c <= 67 ? '🌧️' : c <= 77 ? '🌨️' : c <= 82 ? '🌦️' : '⛈️';
-async function loadWeather() {
-  try { const c = JSON.parse(localStorage.getItem('wx') || 'null'); if (c && Date.now() - c.t < 30 * 60000) { wx = c.d; countdown(); renderTrip(!tripEdit); return; } } catch (e) {}
+// Wetter: Gemerktes sofort zeigen (auch älter), im Hintergrund auffrischen; Vorhersage zuerst, Meer-Daten danach;
+// beim allerersten Laden Platzhalter, nach 10 s ohne Antwort „nicht erreichbar“ mit Nochmal-Knopf
+let wxBusy = false, wxErr = false, wxSea = false, wxFresh = false;
+async function loadWeather(force) {
+  let c = null; try { c = JSON.parse(localStorage.getItem('wx') || 'null'); } catch (e) {}
+  if (c && c.d && !wx && Date.now() - c.t < 24 * 3600000) { wx = c.d; countdown(); renderTrip(!tripEdit); }
+  if (!force && c && Date.now() - c.t < 30 * 60000) return;
+  if (wxBusy) return; wxBusy = true; wxErr = false; if (!wx) renderTrip(!tripEdit);
+  const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 10000);
   try {
     const q = `latitude=${WX_LAT}&longitude=${WX_LON}&timezone=Europe%2FMalta&forecast_days=16`;
-    const [f, m] = await Promise.all([
-      fetch(`https://api.open-meteo.com/v1/forecast?${q}&current=temperature_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,sunrise,sunset`).then(r => r.json()),
-      fetch(`https://marine-api.open-meteo.com/v1/marine?${q}&hourly=sea_surface_temperature&daily=wave_height_max`).then(r => r.json()).catch(() => null)]);
-    if (!f || !f.daily) return;
-    const sea = {};   // Tagesmittel der Wassertemperatur
-    if (m && m.hourly) m.hourly.time.forEach((t, i) => { const v = m.hourly.sea_surface_temperature[i]; if (v != null) { const d = t.slice(0, 10); (sea[d] = sea[d] || []).push(v); } });
-    const D = f.daily;
+    const mP = fetch(`https://marine-api.open-meteo.com/v1/marine?${q}&hourly=sea_surface_temperature&daily=wave_height_max`, { signal: ctl.signal }).then(r => r.json()).catch(() => null);
+    const f = await fetch(`https://api.open-meteo.com/v1/forecast?${q}&current=temperature_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,sunrise,sunset`, { signal: ctl.signal }).then(r => r.json());
+    if (!f || !f.daily) throw new Error('kein Wetter');
+    const D = f.daily, old = {}; (wx && wx.days || []).forEach(x => { old[x.d] = x; });
+    const first = !wx; wxSea = true;
+    // Meer-Werte vom letzten Mal behalten, bis die neuen da sind
     wx = { now: f.current, days: D.time.map((d, i) => ({ d, code: D.weather_code[i], max: D.temperature_2m_max[i], min: D.temperature_2m_min[i], rain: D.precipitation_probability_max[i], wind: D.wind_speed_10m_max[i], rise: D.sunrise ? D.sunrise[i] : null, set: D.sunset ? D.sunset[i] : null,
-      wave: m && m.daily ? m.daily.wave_height_max[i] : null, sea: sea[d] ? sea[d].reduce((a, b) => a + b, 0) / sea[d].length : null })) };
+      wave: old[d] ? old[d].wave : null, sea: old[d] ? old[d].sea : null })) };
+    wxFresh = first; countdown(); renderTrip(!tripEdit); wxFresh = false;
+    const m = await mP; wxSea = false;
+    if (m) { const sea = {};   // Tagesmittel der Wassertemperatur
+      if (m.hourly) m.hourly.time.forEach((t, i) => { const v = m.hourly.sea_surface_temperature[i]; if (v != null) { const dd = t.slice(0, 10); (sea[dd] = sea[dd] || []).push(v); } });
+      wx.days.forEach((x, i) => { if (m.daily && m.daily.time[i] === x.d) x.wave = m.daily.wave_height_max[i]; if (sea[x.d]) x.sea = sea[x.d].reduce((a, b) => a + b, 0) / sea[x.d].length; }); }
+    const det = $('wxdet'); if (det) det.innerHTML = wxDet();   // nur die Detailzeile auffrischen, ohne Neuaufbau
     try { localStorage.setItem('wx', JSON.stringify({ t: Date.now(), d: wx })); } catch (e) {}
-    countdown(); renderTrip(!tripEdit);
-  } catch (e) { /* ohne Netz einfach kein Wetter */ }
+  } catch (e) { wxSea = false; if (!wx) { wxErr = true; renderTrip(!tripEdit); } }   // ohne Netz: Gemerktes bleiben, sonst Hinweis
+  finally { clearTimeout(tm); wxBusy = false; }
 }
-const wxChip = () => wx && wx.now && Date.now() < RETURN ? `<small class="rih wxc">${wxIcon(wx.now.weather_code)} ${Math.round(wx.now.temperature_2m)}° Malta</small>` : '';
+const wxChip = () => Date.now() >= RETURN ? '' : wx && wx.now ? `<small class="rih wxc">${wxIcon(wx.now.weather_code)} ${Math.round(wx.now.temperature_2m)}° Malta</small>`
+  : !wxErr ? '<small class="rih wxc sk" aria-hidden="true"><i style="display:inline-block;width:1.25em"></i> 24° Malta</small>' : '';   // Platzhalter gleicher Größe, damit beim Eintreffen nichts verrutscht
 const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 function wxHtml() {
-  if (!wx || Date.now() >= RETURN) return '';
+  if (Date.now() >= RETURN) return '';
+  if (!wx) { const head = '<div class="wxh"><b>🌤️ Wetter im Urlaub</b><small>Mellieħa</small></div>';
+    if (wxErr) return `<div class="wx">${head}<p class="wxerr">Das Wetter ist gerade nicht erreichbar.</p><button class="tx wxre" data-wxretry="1">Nochmal versuchen</button></div>`;
+    const tile = '<div class="wxd sk" aria-hidden="true"><small>&nbsp;</small><span class="wxi">&nbsp;</span><b>&nbsp;</b><small>&nbsp;</small><small class="wxr">&nbsp;</small></div>';
+    return `<div class="wx" aria-busy="true">${head}<div class="wxs">${tile.repeat(4)}</div><div class="wxdet sk" aria-hidden="true"><div class="wxdh"><span>&nbsp;</span></div><div class="wxst"><div><b>&nbsp;</b><small>&nbsp;</small></div></div></div><span class="sr">Wetter lädt …</span></div>`; }
   const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Malta' }), t1 = '2026-10-31', t2 = '2026-11-07';
   const ok = x => x.max != null && x.min != null;   // unvollständige Tage am Ende der Vorhersage nicht als 0° zeigen
   const tripDays = wx.days.filter(x => ok(x) && x.d >= t1 && x.d <= t2 && x.d >= today);
@@ -2091,7 +2112,7 @@ function wxHtml() {
   // ruhige Kacheln (Tag, Symbol, max/min, Regenwahrscheinlichkeit) + eine Detailzeile für den angetippten Tag
   if (!days.some(x => x.d === wxSel)) wxSel = (days.find(x => x.d === today) || days[0]).d;
   wxDays = days;
-  return `<div class="wx"><div class="wxh"><b>${isTrip ? '🌤️ Wetter im Urlaub' : '🌤️ Wetter auf Malta'}</b><small>Mellieħa</small></div>
+  return `<div class="wx${wxFresh && !calm() ? ' in' : ''}"><div class="wxh"><b>${isTrip ? '🌤️ Wetter im Urlaub' : '🌤️ Wetter auf Malta'}</b><small>Mellieħa</small></div>
     <div class="wxs">${days.map(x => { const dt = new Date(x.d + 'T12:00:00');
       return `<button class="wxd${x.d === wxSel ? ' sel' : ''}${x.d >= t1 && x.d <= t2 ? ' trip' : ''}" data-wxd="${x.d}" aria-pressed="${x.d === wxSel}"><small>${x.d === today ? 'Heute' : WD[dt.getDay()] + ' ' + dt.getDate() + '.'}</small><span class="wxi">${wxIcon(x.code)}</span>
         <b>${Math.round(x.max)}°</b><small>${Math.round(x.min)}°</small><small class="wxr">${x.rain != null ? x.rain + ' %' : ''}</small></button>`; }).join('')}</div>
@@ -2104,9 +2125,10 @@ function wxDet() {
   const st = [['Regen', x.rain != null ? x.rain + ' %' : null], ['Wind', x.wind != null ? Math.round(x.wind) + ' km/h' : null], ['Wellen', x.wave != null ? n1(x.wave) + ' m' : null], ['Wasser', x.sea != null ? Math.round(x.sea) + '°' : null]];
   const hm = v => v ? v.slice(11, 16) : null;   // "2026-10-31T07:02" -> "07:02" (Ortszeit Malta)
   const sun = x.rise && x.set ? `<span class="wxsun">🌅 ${hm(x.rise)} · 🌇 ${hm(x.set)}</span>` : '';
-  return `<div class="wxdh"><span>${dt.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })}</span>${sun}</div><div class="wxst">${st.map(([l, v]) => `<div${v == null ? ' class="fo" title="Gibt es etwa eine Woche vorher"' : ''}><b>${v == null ? 'folgt' : v}</b><small>${l}</small></div>`).join('')}</div>`;
+  return `<div class="wxdh"><span>${dt.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })}</span>${sun}</div><div class="wxst">${st.map(([l, v]) => `<div${v == null ? ' class="fo" title="Gibt es etwa eine Woche vorher"' : ''}><b>${v == null ? (wxSea && (l === 'Wellen' || l === 'Wasser') ? '…' : 'folgt') : v}</b><small>${l}</small></div>`).join('')}</div>`;
 }
 // Tag antippen: nur Auswahl und Detailzeile tauschen (ohne Neuaufbau, damit der Wischstreifen nicht zurückspringt)
+$('trip').addEventListener('click', e => { if (e.target.closest('[data-wxretry]')) { loadWeather(true); return; } });
 $('trip').addEventListener('click', e => { const b = e.target.closest('[data-wxd]'); if (!b) return;
   wxSel = b.dataset.wxd; document.querySelectorAll('#trip [data-wxd]').forEach(x => { x.classList.toggle('sel', x === b); x.setAttribute('aria-pressed', x === b); });
   const sc = b.parentElement, br = b.getBoundingClientRect(), sr = sc.getBoundingClientRect(), l = sc.scrollLeft + br.left - sr.left - 18, r = sc.scrollLeft + br.right - sr.right + 18;
