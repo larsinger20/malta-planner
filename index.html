@@ -1428,8 +1428,8 @@ function flyTo(ll, z, done) {
   const after = (ms, fn) => { let go = false; const f = () => { if (!go) { go = true; fn(); } }; google.maps.event.addListenerOnce(gmap, 'idle', f); setTimeout(f, ms); };
   const step = () => { if (id !== flyN) return; const cur = gmap.getZoom() || 11;
     if (cur >= z) { after(400, fin); return; }
-    gmap.setZoom(cur + 1); setTimeout(step, 50); };
-  gmap.panTo(ll); after(120, step);
+    gmap.setZoom(cur + 1); setTimeout(step, 60); };
+  gmap.panTo(ll); after(140, step);
 }
 // größter Zoom (höchstens 17), bei dem alle Punkte mit Rand ins Bild passen
 function zoomFor(lls) {
