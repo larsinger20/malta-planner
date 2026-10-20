@@ -48,7 +48,7 @@ Nur drei Sammlungen: `activities`, `people`, `signups` (neue Sammlungen bräucht
 - **Einheitlichkeit**: alle Kacheln `.c` Padding 18/18/16, Titel 20 px/600, Infotext 15 px `--mu`. Neues an Bestehendes angleichen.
 - **Liquid Glass nur für schwebende Bedienelemente** (Reiter, Umschalter, Karte-Knopf, Menüs, Dialog, Hinweise), nie für Inhalte. Umschalter = gleitende Perle mit dezentem Wobbeln, Position per CSS `translate` (nicht `transform`).
 - Linien-Symbole (SVG) in der Bedienung, Emojis nur in Inhalten. Kein 🇲🇹-Emoji (Windows zeigt „MT“) → `flag.png`.
-- Knöpfe = Pillen, seltene Aktionen ins ⋯-Menü. Rückmeldung per `toast()`, Sicherheitsfragen per `await ask({t,m,ok,danger})`, **nie `alert`/`confirm`**.
+- Knöpfe = Pillen, seltene Aktionen ins ⋯-Menü (klappt beim untersten Vorschlag nach oben auf, `fitMenu`). Rückmeldung per `toast()`, Sicherheitsfragen per `await ask({t,m,ok,danger})`, **nie `alert`/`confirm`**.
 - Tippflächen mind. 44 px (kleine Knöpfe über unsichtbares `::after` bzw. transparenten Rand vergrößern, Optik gleich).
 - **Animationen**: dezent, `prefers-reduced-motion` beachten, nur für das auslösende Element (kurzlebige Merker wie `justAdded`, `justTicked`, `cmNew`), nie bei jedem Neuaufbau. Einheitliche Dauern: großes Aufklappen 0,34/0,26 s, kleines (`slideHeight`) ab 0,32/0,24 s, wächst mit der Länge bis 0,56 s; alle Umschalter 0,42 s. Kurven: auf `cubic-bezier(.45,0,.15,1)`, zu `cubic-bezier(.4,0,.2,1)`.
 - **Aufklapp-Zeilen** (Kommentare, Vorschläge, Einkaufsliste, Reise-Info): ganze Zeile antippbar, Text bleibt gleich, nur der Pfeil dreht sich (`chev`/`chevMark`); auch zugeklappt in ihrer Hülle (`.cmts`/`.sug`/`.shop`), sonst springt der Abstand. Kopfzeile bleibt beim Gleiten ruhig, Inhalt blendet gestaffelt ein; lange Kommentarlisten: Seite gleitet im selben Takt mit (`glideScroll`).
@@ -64,7 +64,7 @@ Nur drei Sammlungen: `activities`, `people`, `signups` (neue Sammlungen bräucht
 - `[hidden]{display:none!important}` steht im CSS. Profilmenü `#pm` wird bei Live-Updates nicht neu gebaut (`top()` frischt nur auf).
 
 ## Testen (gründlich, nie daran sparen)
-- Node fehlt, **Python ist da**. Testkopie im Scratchpad: Firebase-Imports durch Stub mit Beispieldaten ersetzen (`collection`, `doc`, `setDoc`, `updateDoc`, `deleteDoc`, `deleteField`, `increment`, `onSnapshot`), Stubs für `google.maps` und Open-Meteo. **Stub realistisch asynchron** (Snapshot nach ~20 ms, Antwort nach ~500 ms), sonst fallen Timing-Fehler nicht auf. Zeit testen über `localStorage.fakeNow`.
+- Node fehlt, **Python ist da**. Testkopie im Scratchpad: Firebase-Imports durch Stub mit Beispieldaten ersetzen (`collection`, `doc`, `setDoc`, `updateDoc`, `deleteDoc`, `deleteField`, `increment`, `onSnapshot`), Stubs für `google.maps` und Open-Meteo. **Stub realistisch asynchron** (Snapshot nach ~20 ms, Antwort nach ~500 ms), sonst fallen Timing-Fehler nicht auf. Zeit testen, indem das Test-Skript vor dem Laden `Date` durch eine verschobene Uhr ersetzt (die Seite selbst hat keinen Test-Schalter).
 - Server ohne Cache (`Cache-Control: no-store`). Prüfen bei 375 und 320 px, hell **und** dunkel, ohne seitliches Scrollen, ohne Konsolenfehler.
 - Abläufe per JavaScript nachmessen (Höhen pro Bild, Zustände, gespeicherte Daten), Screenshots fürs Aussehen. Das Test-Fenster zeichnet ohne GPU: große Bewegungen ruckeln dort, Klick-Rechenzeit separat messen.
 - Cloud-Sitzung (iPhone): kein Browser-Fenster für Lars → nur kleine Änderungen, per Skript testen, kurz beschreiben, erst nach OK pushen.
