@@ -545,7 +545,9 @@ function editCard(a) {
 // Die allgemeine Einkaufsliste (unabhängig von Mahlzeiten) liegt als Sonder-Dokument activities/shoplist mit cat 'list'
 const GEN = 'shoplist';
 let chevJust = null;
-const chev = (k, open) => `<span class="chev${k === chevJust ? (open ? ' an' : ' anc') : ''}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6l6-6"/></svg></span>`;
+// Drehung nur beim Aufbau direkt nach dem Tipp; spätere Neuaufbauten (z. B. „gelesen“ gespeichert) drehen nicht nochmal
+const chev = (k, open) => { const an = k === chevJust; if (an) queueMicrotask(() => { if (chevJust === k) chevJust = null; });
+  return `<span class="chev${an ? (open ? ' an' : ' anc') : ''}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6l6-6"/></svg></span>`; };
 const chevMark = k => { chevJust = k; setTimeout(() => { if (chevJust === k) chevJust = null; }, 500); };
 let justTicked = null, justAdded = new Set(), justBack = null;   // frisch hinzugefügte Einträge gleiten einmal herein   // nur der gerade abgehakte Eintrag hüpft, nicht alle bei jedem Neuaufbau
 const shopItems = a => Object.entries((a && a.shop) || {}).filter(([, v]) => v && v.t).map(([id, v]) => ({ id, ...v })).sort((x, y) => (x.ts || 0) - (y.ts || 0));
