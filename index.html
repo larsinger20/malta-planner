@@ -706,8 +706,8 @@ const payText = t => t.from === me ? `Du zahlst ${nm(t.to)}` : t.to === me ? `${
 // Schreiben in einen Vorschlag nur, wenn es ihn noch gibt (sonst legt merge ein kaputtes Dokument an)
 const GONE = 'Dieser Vorschlag wurde gerade gelöscht.';
 const alive = id => id === GEN || acts.some(x => x.id === id && x.title);
-// Ausgaben (nicht Ausgleichszahlungen) bearbeiten: wer sie eingetragen hat, und der Admin alle
-const canEditCost = c => c.kind !== 'pay' && (c.cby === me || isAdmin());
+// Ausgaben (nicht Ausgleichszahlungen) bearbeiten: wer sie eingetragen oder bezahlt hat, und der Admin alle
+const canEditCost = c => c.kind !== 'pay' && (c.cby === me || c.by === me || isAdmin());
 const canDelCost = c => c.cby === me || c.by === me || isAdmin() || (c.kind === 'pay' && (c.for || []).includes(me));
 function costView() {
   const list = COSTS(), b = balances(), tr = settle(b), everyone = Object.keys(ppl);
@@ -763,10 +763,12 @@ function costView() {
   const forAll = f => everyone.every(u => f.includes(u));
   if (list.length) h += `<div class="c shc"><div class="shh"><h2>🧾 Alle Ausgaben</h2></div>${list.map(c => {
     const del = canDelCost(c) ? `<button class="x" data-cdel="${esc(c.id)}" aria-label="Löschen">×</button>` : '';
-    if (c.kind === 'pay') return `<div class="srow"><span class="tic">💸</span><div class="sname"><b>${nm(c.by)} → ${nm((c.for || [])[0])}</b><small>Ausgleich · ${ddmm(c.ts)}</small></div><span class="amt">${eur(c.amt)}</span>${del}</div>`;
+    const nl = isNewCost(c), nb = nl ? `<span class="nb">${nl}</span>` : '';
+    if (c.kind === 'pay') return `<div class="srow" data-cseen="${esc(c.id)}"><span class="tic">💸</span><div class="sname"><b>${nb}${nm(c.by)} → ${nm((c.for || [])[0])}</b><small>Ausgleich · ${ddmm(c.ts)}</small></div><span class="amt">${eur(c.amt)}</span>${del}</div>`;
     const f = c.for || [], forTxt = forAll(f) ? 'alle' : f.map(nmAkk).join(', ');
-    const inner = `<b>${esc(c.title)}${canEditCost(c) ? IC_EDIT : ''}</b><small>${nm(c.by)} · für ${forTxt} · ${ddmm(c.ts)}</small>`;
-    return `<div class="srow"><span class="stack">${avatar(c.by)}</span>${canEditCost(c) ? `<button class="sname cedit" data-cedit="${esc(c.id)}" aria-label="${esc(c.title)} bearbeiten">${inner}</button>` : `<div class="sname">${inner}</div>`}<span class="amt">${eur(c.amt)}</span>${del}</div>`;
+    const t = esc(c.title), sp = t.lastIndexOf(' ');   // Stift klebt am letzten Wort, rutscht nie allein in die nächste Zeile
+    const inner = `<b>${nb}${!canEditCost(c) ? t : t.length - sp > 18 ? t + IC_EDIT : `${t.slice(0, sp + 1)}<span class="nw">${t.slice(sp + 1)}${IC_EDIT}</span>`}</b><small>${nm(c.by)} · für ${forTxt} · ${ddmm(c.ts)}</small>`;
+    return `<div class="srow" data-cseen="${esc(c.id)}"><span class="stack">${avatar(c.by)}</span>${canEditCost(c) ? `<button class="sname cedit" data-cedit="${esc(c.id)}" aria-label="${esc(c.title)} bearbeiten">${inner}</button>` : `<div class="sname">${inner}</div>`}<span class="amt">${eur(c.amt)}</span>${del}</div>`;
   }).join('')}</div>`;
   return h;
 }
@@ -792,7 +794,7 @@ async function saveCost() {
     if (F.act) data.act = F.act;
     if (F.edit) { const c = acts.find(x => x.id === F.id);
       if (!c) { costForm = null; render(true); toast('Diese Ausgabe wurde gerade gelöscht.', 1); return; }
-      if (!canEditCost(c)) return; }
+      if (!canEditCost(c)) return; data.ets = Date.now(); data.eby = me; }
   }
   // feste ID je Formular + Formular sofort schließen: doppeltes Tippen (schlechtes Netz) bucht nie doppelt
   const id = F.id || (F.id = 'x' + Date.now() + Math.random().toString(36).slice(2, 5));
@@ -909,18 +911,27 @@ const nbBase = () => Math.max(NB0, (pdat[me] && pdat[me].nbase) || 0);
 const inCat = (a, c) => !!a.title && (c === 'food' ? a.cat === 'food' : (a.cat || 'act') === 'act');
 const unseen = a => !!pdat[me] && a.by !== me && (a.ts || 0) > nbBase() && !(pdat[me].sn || {})[a.id];
 const shownNew = new Set();
+// Kosten: neue Ausgabe anderer (Ausgleich nur, wenn ich beteiligt bin) bzw. von anderen geänderte Ausgabe, die mich betrifft (ets/eby)
+const meIn = c => c.by === me || (c.for || []).includes(me);
+const costNew = c => { const P = pdat[me]; if (!P || c.cat !== 'cost') return ''; const seen = (P.sn || {})[c.id] || 0;
+  if (!seen && (c.cby || c.by) !== me && c.eby !== me && (c.ts || 0) > nbBase() && (c.kind !== 'pay' || meIn(c))) return 'Neu';
+  return c.ets && c.eby !== me && c.ets > nbBase() && c.ets > seen && meIn(c) ? 'Geändert' : ''; };
+const newLbl = {};   // Pille bleibt (mit ihrem Text) bis zum Reiterwechsel, wie bei den Vorschlägen
+const isNewCost = c => { const k = costNew(c); if (k) { shownNew.add(c.id); newLbl[c.id] = k; } return shownNew.has(c.id) ? newLbl[c.id] : ''; };
 const isNewAct = a => { if (unseen(a)) shownNew.add(a.id); return shownNew.has(a.id); };
 function seeCard(id) {
-  if (!ppl[me] || !pdat[me] || (pdat[me].sn || {})[id]) return;
-  const now = Date.now(); (pdat[me].sn = pdat[me].sn || {})[id] = now;
+  const c = acts.find(x => x.id === id);   // geänderte Ausgaben dürfen erneut als gesehen gelten
+  if (!ppl[me] || !pdat[me] || ((pdat[me].sn || {})[id] && !(c && costNew(c)))) return;
+  const now = Math.max(Date.now(), ((c && c.ets) || 0) + 1);   // geht die Uhr des Ändernden vor, trotzdem als gesehen merken
+  (pdat[me].sn = pdat[me].sn || {})[id] = now;
   setDoc(doc(db, 'people', me), { sn: { [id]: now } }, { merge: true }).catch(() => {});
   tabDots();
 }
 const nbTimers = {};
 const nbObs = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => {
-  const id = e.target.dataset.card; if (!id) return;
+  const id = e.target.dataset.card || e.target.dataset.cseen; if (!id) return;
   const vis = e.isIntersecting && (e.intersectionRatio >= .5 || e.intersectionRect.height >= innerHeight * .4);
-  if (vis && !nbTimers[id]) nbTimers[id] = setTimeout(() => { delete nbTimers[id]; if (!document.hidden && document.querySelector(`#list [data-card="${CSS.escape(id)}"]`)) seeCard(id); }, 800);
+  if (vis && !nbTimers[id]) nbTimers[id] = setTimeout(() => { delete nbTimers[id]; if (!document.hidden && document.querySelector(`#list [data-card="${CSS.escape(id)}"], #list [data-cseen="${CSS.escape(id)}"]`)) seeCard(id); }, 800);
   if (!vis && nbTimers[id]) { clearTimeout(nbTimers[id]); delete nbTimers[id]; }
 }), { threshold: [0, .25, .5, .75, 1] }) : null;
 // nach jedem Neuaufbau die noch ungesehenen Kacheln beobachten
@@ -928,6 +939,7 @@ function watchNew() {
   if (!nbObs) return; nbObs.disconnect();
   const ids = new Set();
   $('list').querySelectorAll('.card[data-card]').forEach(el => { const a = acts.find(x => x.id === el.dataset.card); if (a && unseen(a)) { ids.add(a.id); nbObs.observe(el); } });
+  $('list').querySelectorAll('[data-cseen]').forEach(el => { const c = acts.find(x => x.id === el.dataset.cseen); if (c && costNew(c)) { ids.add(c.id); nbObs.observe(el); } });
   for (const id in nbTimers) if (!ids.has(id)) { clearTimeout(nbTimers[id]); delete nbTimers[id]; }
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) watchNew(); });
@@ -943,6 +955,7 @@ function readCm(id) {
 function tabDots() {
   for (const c of ['act', 'food']) { const b = document.querySelector(`.tb[data-tab="${c}"]`); if (!b) continue;
     b.classList.toggle('hasnew', !!pdat[me] && acts.some(a => inCat(a, c) && (unseen(a) || unreadCm(a)))); }
+  const k = document.querySelector('.tb[data-tab="cost"]'); if (k) k.classList.toggle('hasnew', acts.some(costNew));
 }
 function render(force) {
   if (!ppl[me]) return;
