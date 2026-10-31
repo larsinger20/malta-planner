@@ -91,7 +91,7 @@ textarea{resize:vertical;max-width:100%;min-height:70px}
 .ok{color:var(--tx)}
 button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-height:36px;border-radius:0}button.tx:active{transform:none;opacity:.5}button.tx.mu{color:var(--mu)}
 /* Aufklapp-Zeilen (Kommentare, Vorschläge, Einkaufsliste): ganze Zeile antippbar, nicht nur der Text */
-button.tx[data-cmt],button.tx[data-sugt],button.tx[data-shop],button.tx[data-kfold],button.tx[data-dfold]{display:flex;align-items:center;width:100%;min-height:44px;text-align:left;justify-content:flex-start}.chev{display:inline-flex;margin-left:5px;transition:rotate .24s ease}.chev svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}.op .chev{rotate:180deg}.op .chev.an{animation:chevO .32s cubic-bezier(.3,1.35,.5,1)}.op.cl .chev{rotate:0deg}@keyframes chevO{from{rotate:0deg}}.cd .rih{display:inline-flex;align-items:center}.rih .chev{margin-left:4px;translate:0 1.5px}.rih .chev svg{width:12px;height:12px;stroke-width:2.6}.chev.anc{animation:chevC .26s ease}@keyframes chevC{from{rotate:180deg}}.sgl{display:block;font-size:13px;color:var(--mu);margin:-6px 0 6px}.sug>button.tx.sgt{margin:0 -12px;padding:0 12px;width:calc(100% + 24px)}
+button.tx[data-cmt],button.tx[data-sugt],button.tx[data-shop],button.tx[data-kfold],button.tx[data-dfold],button.tx[data-archt]{display:flex;align-items:center;width:100%;min-height:44px;text-align:left;justify-content:flex-start}.chev{display:inline-flex;margin-left:5px;transition:rotate .24s ease}.chev svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}.op .chev{rotate:180deg}.op .chev.an{animation:chevO .32s cubic-bezier(.3,1.35,.5,1)}.op.cl .chev{rotate:0deg}@keyframes chevO{from{rotate:0deg}}.cd .rih{display:inline-flex;align-items:center}.rih .chev{margin-left:4px;translate:0 1.5px}.rih .chev svg{width:12px;height:12px;stroke-width:2.6}.chev.anc{animation:chevC .26s ease}@keyframes chevC{from{rotate:180deg}}.sgl{display:block;font-size:13px;color:var(--mu);margin:-6px 0 6px}.sug>button.tx.sgt{margin:0 -12px;padding:0 12px;width:calc(100% + 24px)}
 .resf{display:flex;flex-wrap:wrap;gap:8px}.resf .rvf{flex-basis:100%;width:100%}.rvf{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.rvf>div{min-width:0}.two.rvf input{width:100%;min-width:0;max-width:100%;flex:none;margin:0 0 4px}.two.rvf input[type=time]{padding-left:12px;padding-right:10px;overflow:hidden}
 /* iPhone/Safari: leeres Uhrzeitfeld hat keinen Inhalt und schrumpft in der Höhe; Uhrzeit sonst mittig statt links */
 input[type=time]{min-height:49px;text-align:left}
@@ -109,7 +109,7 @@ input[type=time]{min-height:49px;text-align:left}
 
 /* Einkaufslisten wie die Erinnerungen-App */
 .shop{margin-top:8px;padding:2px 0 0}
-.si{display:flex;align-items:center;gap:12px;min-height:46px;position:relative}.si+.si::before{content:"";position:absolute;left:36px;right:0;top:0;height:.5px;background:var(--bd)}
+.si{display:flex;align-items:center;gap:12px;min-height:46px;position:relative}.sarc{display:block;width:100%;text-align:left;min-height:44px}.arch{box-shadow:inset 0 .5px 0 var(--bd)}.si.ar{justify-content:space-between}.si.ar .st{flex:1;min-width:0;overflow-wrap:anywhere;color:var(--mu)}.si.ar .tx{flex-shrink:0;font-size:14px}.arch .si.ar::before{left:0}.si+.si::before{content:"";position:absolute;left:36px;right:0;top:0;height:.5px;background:var(--bd)}
 .si span{flex:1;min-width:0;overflow-wrap:anywhere;font-size:17px;transition:color .2s}.si.dn span{color:var(--mu)}
 .sc{width:24px;height:24px;padding:0;flex-shrink:0;border-radius:50%;background:transparent;box-shadow:inset 0 0 0 1.5px var(--chk);color:#fff;font-size:13px;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center}
 .si.dn .sc{background:var(--acb);box-shadow:none}.si.dn.tick .sc{animation:tick .3s cubic-bezier(.3,1.6,.5,1)}
@@ -381,7 +381,7 @@ try { me = localStorage.getItem('uid'); if (!me) { me = 'u' + Math.random().toSt
 catch (e) { me = 'u' + Math.random().toString(36).slice(2, 10); }
 
 let acts = [], sig = [], ppl = {}, pins = {}, pcol = {}, pdat = {}, editing = false, tab = 'act', editRes = null, editPlace = null, editAct = null, addOpen = false, pending = false, menuOpen = null;
-const shopOpen = new Set(), kOpen = new Set(), dOpen = new Set();   // dOpen: „✓ Erledigt“ aufgeklappt (je Reiter)   // kOpen: aufgeklappte Teile der Kosten-Ansicht
+const shopOpen = new Set(), kOpen = new Set(), dOpen = new Set(), archOpen = new Set();   // dOpen: „✓ Erledigt“ aufgeklappt (je Reiter)   // kOpen: aufgeklappte Teile der Kosten-Ansicht
 const ADMIN = 'lars';
 const isAdmin = () => (ppl[me] || '').trim().toLowerCase() === ADMIN;
 const canEdit = a => a.by === me || isAdmin();
@@ -556,10 +556,15 @@ const chev = (k, open) => { const an = k === chevJust; if (an) queueMicrotask(()
   return `<span class="chev${an ? (open ? ' an' : ' anc') : ''}" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 9l6 6l6-6"/></svg></span>`; };
 const chevMark = k => { chevJust = k; setTimeout(() => { if (chevJust === k) chevJust = null; }, 500); };
 let justTicked = null, justAdded = new Set(), justBack = null;   // frisch hinzugefügte Einträge gleiten einmal herein   // nur der gerade abgehakte Eintrag hüpft, nicht alle bei jedem Neuaufbau
-const shopItems = a => Object.entries((a && a.shop) || {}).filter(([, v]) => v && v.t).map(([id, v]) => ({ id, ...v })).sort((x, y) => (x.ts || 0) - (y.ts || 0));
+const shopItems = a => Object.entries((a && a.shop) || {}).filter(([, v]) => v && v.t && !v.arch).map(([id, v]) => ({ id, ...v })).sort((x, y) => (x.ts || 0) - (y.ts || 0));
+// Archiv: abgehakte Einträge, die per „ins Archiv“ von der Liste genommen wurden (Feld arch = Zeitpunkt, einzeln je Eintrag)
+const archItems = a => Object.entries((a && a.shop) || {}).filter(([, v]) => v && v.t && v.arch).map(([id, v]) => ({ id, ...v })).sort((x, y) => (y.arch || 0) - (x.arch || 0));
+const archBox = a => { const id = esc(a.id), dn = shopItems(a).filter(i => i.done).length, ar = archItems(a), o = archOpen.has(a.id);
+  return (dn ? `<button class="tx sarc" data-sarc="${id}">${dn === 1 ? 'Abgehakten Eintrag' : `${dn} abgehakte Einträge`} ins Archiv</button>` : '')
+    + (ar.length ? `<div class="arch"><button class="tx${o ? ' op' : ''}" data-archt="${id}">Archiv · ${ar.length}${chev('a' + a.id, o)}</button>${o ? ar.map(i => `<div class="si ar"><span class="st">${esc(i.t)}</span><button class="tx" data-sback="${id}|${esc(i.id)}">Zurück auf die Liste</button></div>`).join('') : ''}</div>` : ''); };
 const shopRows = (a, ph) => { const items = shopItems(a), id = esc(a.id);
   return `${items.map(i => `<div class="si${i.done ? ' dn' : ''}${i.id === justTicked ? ' tick' : ''}${justAdded.delete(i.id) ? ' new' : ''}"><button class="sc" data-stog="${id}|${esc(i.id)}" aria-label="Abhaken">${i.done ? '✓' : ''}</button><span><span class="st">${esc(i.t)}</span></span><button class="x" data-sdel="${id}|${esc(i.id)}" aria-label="Entfernen">×</button></div>`).join('')}
-    <div class="si sadd"><span class="sc" aria-hidden="true"></span><input id="sin-${id}" data-sinp="${id}" placeholder="${ph}" aria-label="Neuen Eintrag hinzufügen" maxlength="60" enterkeyhint="done" autocomplete="off"><button data-sadd="${id}" aria-label="Hinzufügen">Hinzufügen</button></div>${sugBox(a)}`; };
+    <div class="si sadd"><span class="sc" aria-hidden="true"></span><input id="sin-${id}" data-sinp="${id}" placeholder="${ph}" aria-label="Neuen Eintrag hinzufügen" maxlength="60" enterkeyhint="done" autocomplete="off"><button data-sadd="${id}" aria-label="Hinzufügen">Hinzufügen</button></div>${sugBox(a)}${archBox(a)}`; };
 function shopList(a) {
   const items = shopItems(a), done = items.filter(i => i.done).length;
   const label = `🛒 Einkaufsliste${items.length ? ` (${done}/${items.length})` : ''}`;
@@ -1150,6 +1155,28 @@ $('list').onclick = async e => {
   if (b.dataset.cmdel) { const [aid, cid] = b.dataset.cmdel.split('|'), ct = ((acts.find(x => x.id === aid) || {}).cm || {})[cid];
     if (!ct || !(await ask({ t: 'Kommentar löschen?', m: `„${esc(ct.t.length > 80 ? ct.t.slice(0, 78) + '…' : ct.t)}“`, ok: 'Löschen', danger: true }))) return;
     try { await updateDoc(doc(db, 'activities', aid), { ['cm.' + cid]: deleteField() }); render(true); } catch (err) { toast(FAIL, 1); } return; }
+  if (b.dataset.sarc) { const id = b.dataset.sarc, a = acts.find(x => x.id === id); if (!a || !alive(id)) { render(true); return; }
+    const n = shopItems(a).filter(i => i.done).length; if (!n) return;
+    if (!(await ask({ t: 'Abgehakte ins Archiv?', m: `${n === 1 ? 'Der abgehakte Eintrag verschwindet' : `${n} abgehakte Einträge verschwinden`} für alle von der Liste und ${n === 1 ? 'landet' : 'landen'} im Archiv darunter. Von dort kannst du ${n === 1 ? 'ihn' : 'sie'} jederzeit zurückholen.`, ok: 'Ins Archiv' }))) return;
+    const a2 = acts.find(x => x.id === id); if (!a2 || !alive(id)) { render(true); toast(GONE, 1); return; }
+    const ids = shopItems(a2).filter(i => i.done).map(i => i.id); if (!ids.length) { render(true); return; }
+    await Promise.all(ids.map(i => { const r = document.querySelector(`#list [data-stog="${CSS.escape(id + '|' + i)}"]`); return r ? rowOut(r.closest('.si')) : null; }));
+    // jedes Ding höchstens einmal im Archiv: ältere gleiche Archiv-Einträge und Doppelte untereinander werden ersetzt
+    const now = Date.now(), seen = new Set(), upd = {};
+    ids.forEach(i => { const k = norm(a2.shop[i].t); if (seen.has(k)) upd[i] = deleteField(); else { seen.add(k); upd[i] = { arch: now }; } });
+    archItems(a2).forEach(o => { if (seen.has(norm(o.t))) upd[o.id] = deleteField(); });
+    const w = setDoc(doc(db, 'activities', id), { shop: upd }, { merge: true });
+    await Promise.race([w.catch(() => {}), new Promise(r => setTimeout(r, 80))]); render(true); toast(ids.length === 1 ? 'Ins Archiv verschoben' : `${ids.length} Einträge ins Archiv verschoben`);
+    try { await w; } catch (err) { render(true); toast(FAIL, 1); } return; }
+  if (b.dataset.archt) { const id = b.dataset.archt, sel = `#list [data-archt="${CSS.escape(id)}"]`;
+    if (archOpen.has(id)) { b.classList.add('cl'); const box = b.closest('.arch'); if (box) await slideHeight(box, box.offsetHeight, b.offsetHeight, 240); archOpen.delete(id); render(true); }
+    else { const from = b.offsetHeight; chevMark('a' + id); archOpen.add(id); render(true); const t = document.querySelector(sel), nb = t && t.closest('.arch'); if (nb) await slideHeight(nb, from, nb.offsetHeight, 320); }
+    return; }
+  if (b.dataset.sback) { const [id, item] = b.dataset.sback.split('|'), a = acts.find(x => x.id === id); if (!a || !alive(id) || !(a.shop && a.shop[item])) { render(true); return; }
+    const r = b.closest('.si'); if (r) await rowOut(r); markAdded([item]);
+    const w = setDoc(doc(db, 'activities', id), { shop: { [item]: { arch: deleteField(), done: false } }, ...(id === GEN ? {} : back(id)) }, { merge: true });
+    await Promise.race([w.catch(() => {}), new Promise(r2 => setTimeout(r2, 80))]); render(true); toast(`${a.shop[item].t} wieder auf der Liste ✓`);
+    try { await w; } catch (err) { render(true); toast(FAIL, 1); } return; }
   if (b.dataset.shop) { const id = b.dataset.shop, sel = `#list [data-shop="${CSS.escape(id)}"]`;
     if (shopOpen.has(id)) { b.classList.add('cl'); const box = b.closest('.shop'); if (box) await slideHeight(box, box.offsetHeight, b.offsetHeight, 240); shopOpen.delete(id); render(true); }
     else { const from = b.offsetHeight; chevMark('s' + id); shopOpen.add(id); render(true); const t = document.querySelector(sel), nb = t && t.closest('.shop'); if (nb) await slideHeight(nb, from, nb.offsetHeight, 320); }
@@ -1273,11 +1300,15 @@ $('list').onclick = async e => {
 
 const markAdded = ids => { ids.forEach(x => justAdded.add(x)); setTimeout(() => ids.forEach(x => justAdded.delete(x)), 700); };
 const back = id => { const a = acts.find(x => x.id === id); return a && a.noshop ? { noshop: deleteField() } : {}; };   // aus der Einkaufsliste entfernt? neue Zutat holt es zurück
+// Liegt der Text schon im Archiv, kommt genau dieser Eintrag zurück auf die Liste (statt eines Doppelten im Archiv)
+const fromArch = (id, t) => { const a = acts.find(x => x.id === id); return archItems(a).find(x => norm(x.t) === norm(t)); };
+const shopEntry = (id, t, ts, used) => { const o = fromArch(id, t); if (o && !used.has(o.id)) { used.add(o.id); return [o.id, { t, done: false, ts, arch: deleteField() }]; }
+  return ['i' + ts.toString(36) + Math.random().toString(36).slice(2, 6), { t, done: false, ts }]; };
 async function addShopItems(id, texts) {
   if (!texts.length) return;
   if (!alive(id)) { toast(GONE, 1); return; }
-  const shop = {}, now = Date.now();
-  texts.forEach((t, n) => { shop['i' + now.toString(36) + n + Math.random().toString(36).slice(2, 5)] = { t, done: false, ts: now + n }; });
+  const shop = {}, now = Date.now(), used = new Set();
+  texts.forEach((t, n) => { const [k, v] = shopEntry(id, t, now + n, used); shop[k] = v; });
   markAdded(Object.keys(shop));
   const extra = id === GEN ? { cat: 'list', title: 'Einkaufsliste', ts: 0 } : back(id);
   const w = setDoc(doc(db, 'activities', id), { shop, ...extra }, { merge: true });
@@ -1290,10 +1321,10 @@ async function addShop(id) {
   const t = i.value.trim(); if (!t) { i.focus(); return; }
   if (!alive(id)) { toast(GONE, 1); return; }
   i.value = '';   // sofort leeren: zweites Enter bei langsamem Netz legt nichts doppelt an
-  const item = 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); markAdded([item]);
+  const [item, entry] = shopEntry(id, t, Date.now(), new Set()); markAdded([item]);
   // cat 'list' sorgt dafür, dass die allgemeine Liste nie als Aktivität auftaucht
   const extra = id === GEN ? { cat: 'list', title: 'Einkaufsliste', ts: 0 } : back(id);
-  const w = setDoc(doc(db, 'activities', id), { shop: { [item]: { t, done: false, ts: Date.now() } }, ...extra }, { merge: true });
+  const w = setDoc(doc(db, 'activities', id), { shop: { [item]: entry }, ...extra }, { merge: true });
   await Promise.race([w.catch(() => {}), new Promise(r => setTimeout(r, 80))]);   // lokale Änderung kommt sofort, die Server-Antwort evtl. erst später
   if (!shown(id, item)) render(true);   // nur neu zeichnen, wenn die Zeile noch fehlt (sonst bricht die Animation ab)
   const n = $('sin-' + id); if (n) n.focus();
