@@ -139,7 +139,7 @@ input[type=time]{min-height:49px;text-align:left}
 .kbar{flex:1;position:relative;height:14px;min-width:40px}.kbar::before{content:'';position:absolute;left:50%;top:-3px;bottom:-3px;border-left:1.5px solid var(--bd)}.kbar i{position:absolute;top:2px;height:10px;border-radius:5px}
 .bval{flex:0 0 auto;min-width:64px;text-align:right;font-weight:600;font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .trf .stack i{margin-left:0}.trf .stack{align-items:center}.trf .arr{color:var(--mu);font-size:15px;margin:0 5px}.trf .sname b{font-size:15px}.trf .sname .amt{display:block;font-size:17px;color:var(--tx)}.trf.oth{opacity:.72}.srow .x{background:none;width:28px;height:28px;font-size:18px}
-.cst{font-size:14px;color:var(--mu)}
+.cst{font-size:14px;color:var(--mu)}button.cedit{display:block;flex:1;min-width:0;min-height:44px;padding:0;background:none;color:inherit;text-align:left;border-radius:0}button.cedit:active{transform:none;opacity:.5}.ced{width:14px;height:14px;margin-left:6px;color:var(--mu);vertical-align:-.1em}
 .cmts{margin-top:6px}.cmi{display:flex;gap:10px;align-items:flex-start;padding:8px 0;box-shadow:inset 0 .5px 0 var(--bd)}.cmi .stack i{width:26px;height:26px}.cmb{flex:1;min-width:0;font-size:15px;overflow-wrap:anywhere;line-height:1.35}.cmb small{color:var(--mu);font-size:12px}.cmb b{font-weight:600}.cmi .x{background:none;width:26px;height:26px;font-size:18px}
 .plmore{position:relative;display:block;margin:-4px 0 10px 2px;padding:6px 0;background:none;color:var(--ac);font-size:15px;font-weight:500;text-align:left}.plmore::after{content:'';position:absolute;inset:-6px -8px}.plmore:active{transform:none;opacity:.6}
 .plm{position:relative;display:flow-root}.plm>input{padding-right:46px}.plmx{position:absolute;right:8px;top:9px;width:30px;height:30px;padding:0;border-radius:50%;background:var(--fill);color:var(--mu);font-size:17px;line-height:1}.plmx::after{content:'';position:absolute;inset:-7px}
@@ -446,6 +446,7 @@ function geoFrom(inp, prev = {}, kl = 'lat', kg = 'lng', kp = 'pid') {
 const mapQ = a => a.pid ? a.place : /malta|gozo|comino/i.test(a.place) ? a.place : a.place + ', Malta';
 const mapUrl = a => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(mapQ(a)) + (a.pid ? '&query_place_id=' + encodeURIComponent(a.pid) : '');
 // schlichte Linien-Symbole statt Emojis in der Bedienung
+const IC_EDIT = '<svg class="ic ced" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10.5-10.5a2.828 2.828 0 1 0-4-4L4 16v4"/><path d="M13.5 6.5l4 4"/></svg>';
 const IC_PIN = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0-6 0"/><path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0z"/></svg>';
 const IC_LINK = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 15l6-6"/><path d="M11 6l.463-.536a5 5 0 0 1 7.071 7.072l-.534.464"/><path d="M13 18l-.397.534a5.068 5.068 0 0 1-7.127 0a4.972 4.972 0 0 1 0-7.071l.524-.463"/></svg>';
 const placeChip = a => a.place ? `<a class="lk" href="${esc(mapUrl(a))}" target="_blank" rel="noopener noreferrer">${IC_PIN}${esc(a.place)}</a>` : '';
@@ -705,6 +706,8 @@ const payText = t => t.from === me ? `Du zahlst ${nm(t.to)}` : t.to === me ? `${
 // Schreiben in einen Vorschlag nur, wenn es ihn noch gibt (sonst legt merge ein kaputtes Dokument an)
 const GONE = 'Dieser Vorschlag wurde gerade gelöscht.';
 const alive = id => id === GEN || acts.some(x => x.id === id && x.title);
+// Ausgaben (nicht Ausgleichszahlungen) bearbeiten: wer sie eingetragen hat, und der Admin alle
+const canEditCost = c => c.kind !== 'pay' && (c.cby === me || isAdmin());
 const canDelCost = c => c.cby === me || c.by === me || isAdmin() || (c.kind === 'pay' && (c.for || []).includes(me));
 function costView() {
   const list = COSTS(), b = balances(), tr = settle(b), everyone = Object.keys(ppl);
@@ -749,7 +752,7 @@ function costView() {
       <div class="efb"><button data-cfsave="1">Speichern</button></div></div>`;
   } else if (costForm) {
     const F = costForm, opt = everyone.map(u => `<option value="${esc(u)}"${u === F.by ? ' selected' : ''}>${u === me ? 'Ich' : esc(ppl[u])}</option>`).join('');
-    h += `<div class="c shc"><div class="ah"><h2>💶 Neue Ausgabe</h2><button class="x" data-cfx="1" aria-label="Schließen">×</button></div>
+    h += `<div class="c shc"><div class="ah"><h2>💶 ${F.edit ? 'Ausgabe bearbeiten' : 'Neue Ausgabe'}</h2><button class="x" data-cfx="1" aria-label="Schließen">×</button></div>
       <input id="cf-t" maxlength="60" placeholder="Wofür? z. B. Einkauf Supermarkt" value="${esc(F.t || '')}">
       <div class="two"><div><label class="tlb">Betrag</label><input id="cf-amt" inputmode="decimal" placeholder="0,00 €" value="${esc(F.amt || '')}"></div>
       <div><label class="tlb">Bezahlt von</label><select id="cf-by">${opt}</select></div></div>
@@ -762,7 +765,8 @@ function costView() {
     const del = canDelCost(c) ? `<button class="x" data-cdel="${esc(c.id)}" aria-label="Löschen">×</button>` : '';
     if (c.kind === 'pay') return `<div class="srow"><span class="tic">💸</span><div class="sname"><b>${nm(c.by)} → ${nm((c.for || [])[0])}</b><small>Ausgleich · ${ddmm(c.ts)}</small></div><span class="amt">${eur(c.amt)}</span>${del}</div>`;
     const f = c.for || [], forTxt = forAll(f) ? 'alle' : f.map(nmAkk).join(', ');
-    return `<div class="srow"><span class="stack">${avatar(c.by)}</span><div class="sname"><b>${esc(c.title)}</b><small>${nm(c.by)} · für ${forTxt} · ${ddmm(c.ts)}</small></div><span class="amt">${eur(c.amt)}</span>${del}</div>`;
+    const inner = `<b>${esc(c.title)}${canEditCost(c) ? IC_EDIT : ''}</b><small>${nm(c.by)} · für ${forTxt} · ${ddmm(c.ts)}</small>`;
+    return `<div class="srow"><span class="stack">${avatar(c.by)}</span>${canEditCost(c) ? `<button class="sname cedit" data-cedit="${esc(c.id)}" aria-label="${esc(c.title)} bearbeiten">${inner}</button>` : `<div class="sname">${inner}</div>`}<span class="amt">${eur(c.amt)}</span>${del}</div>`;
   }).join('')}</div>`;
   return h;
 }
@@ -784,12 +788,15 @@ async function saveCost() {
     data = { cat: 'cost', kind: 'pay', title: 'Ausgleich', amt, by: F.by || me, for: [F.to], ts: Date.now(), cby: me };
   } else {
     if (!F.for.size) { toast('Bitte mindestens eine Person bei „Für wen?“ auswählen.', 1); return; }
-    data = { cat: 'cost', title: (F.t || '').trim() || 'Ausgabe', amt, by: F.by || me, for: [...F.for], ts: Date.now(), cby: me };
+    data = { cat: 'cost', title: (F.t || '').trim() || 'Ausgabe', amt, by: F.by || me, for: [...F.for], ts: F.ts || Date.now(), cby: F.cby || me };
     if (F.act) data.act = F.act;
+    if (F.edit) { const c = acts.find(x => x.id === F.id);
+      if (!c) { costForm = null; render(true); toast('Diese Ausgabe wurde gerade gelöscht.', 1); return; }
+      if (!canEditCost(c)) return; }
   }
   // feste ID je Formular + Formular sofort schließen: doppeltes Tippen (schlechtes Netz) bucht nie doppelt
   const id = F.id || (F.id = 'x' + Date.now() + Math.random().toString(36).slice(2, 5));
-  costBusy = true; costForm = null; render(true); toast(`${eur(amt)} eingetragen ✓`);
+  costBusy = true; costForm = null; render(true); toast(F.edit ? 'Änderung gespeichert ✓' : `${eur(amt)} eingetragen ✓`);
   try { await setDoc(doc(db, 'activities', id), data); }
   catch (err) { costForm = F; render(true); toast(FAIL, 1); }
   finally { costBusy = false; }
@@ -1067,6 +1074,9 @@ $('list').onclick = async e => {
   }
   if (b.dataset.cfopen) { costForm = { t: '', amt: '', by: me, for: new Set(Object.keys(ppl).filter(u => ppl[u])) }; freshForm = true; render(true); const i = $('cf-t'); if (i) i.focus(); return; }
   if (b.dataset.cfx) { costForm = null; render(true); return; }
+  if (b.dataset.cedit) { const c = acts.find(x => x.id === b.dataset.cedit); if (!c || !canEditCost(c)) return;
+    costForm = { edit: true, id: c.id, t: c.title || '', amt: ((c.amt || 0) / 100).toFixed(2).replace('.', ','), by: c.by, for: new Set(c.for || []), act: c.act, ts: c.ts, cby: c.cby };
+    freshForm = true; render(true); const f = $('cf-t'); if (f) f.closest('.c').scrollIntoView({ behavior: calm() ? 'auto' : 'smooth', block: 'center' }); return; }
   if (b.dataset.cfpay) { const t = settle(balances()).find(x => x.from === me || x.to === me);
     costForm = { pay: true, amt: '', by: me, to: t ? (t.from === me ? t.to : t.from) : '' }; freshForm = true; render(true); const i = $('cf-amt'); if (i) i.focus(); return; }
   if (b.dataset.cff) { keepForm(); const u = b.dataset.cff; costForm.for.has(u) ? costForm.for.delete(u) : costForm.for.add(u); render(true); return; }
