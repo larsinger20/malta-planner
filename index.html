@@ -121,7 +121,7 @@ input[type=time]{min-height:49px;text-align:left}
 /* Neue-Eintrag-Zeile: gestrichelter Kreis + Plus, Text direkt in der Liste, Knopf erst wenn etwas drinsteht */
 .si.sadd{margin-top:8px;min-height:0;gap:10px;padding:0 6px 0 12px;border-radius:13px;background:var(--fill)}.si.sadd::before{display:none}
 .sadd .sc{flex:0 0 22px;width:22px;height:22px;box-shadow:none;background:var(--acb);position:relative}.sadd .sc::before,.sadd .sc::after{content:'';position:absolute;left:50%;top:50%;width:10px;height:2px;background:#fff;translate:-50% -50%;border-radius:1px}.sadd .sc::after{rotate:90deg}
-.sadd input{flex:1;min-width:0;margin:0;padding:12px 0;background:none;border-radius:0;font-size:17px}.sadd input::placeholder{color:var(--mu)}
+.sadd input{flex:1;min-width:0;margin:0;padding:12px 0;background:none;border-radius:0;font-size:17px}.sadd input:focus-visible{box-shadow:none}.sadd:focus-within{box-shadow:0 0 0 3px color-mix(in srgb,var(--acb) 45%,transparent)}.sadd input::placeholder{color:var(--mu)}
 .sadd button{padding:6px 14px;font-size:14px;font-weight:600;flex-shrink:0}.sadd input:placeholder-shown+button{display:none}
 .sug{margin-top:12px;padding:2px 12px;border-radius:14px;background:color-mix(in srgb,var(--acb) 8%,transparent);box-shadow:inset 0 0 0 .5px color-mix(in srgb,var(--acb) 22%,transparent)}.sgt{display:block}.sug .chips{margin:0 0 2px}.sug .chip{background:var(--card);color:var(--ac);font-weight:500;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--acb) 30%,transparent)}.sug>.tx:last-child:not(.sgt){padding-top:4px}.chips{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 4px}
 .chip{background:var(--fill);color:var(--tx);padding:7px 12px;font-size:14px;border-radius:999px}.chip:active{background:color-mix(in srgb,var(--ac) 20%,var(--fill))}
@@ -199,7 +199,7 @@ html.mzoom .mapv{border-radius:34px;overflow:hidden;will-change:transform,opacit
 html.noscroll,html.noscroll body{overflow:hidden}
 .cmts{margin:8px -6px 0;padding:0 6px}   /* Luft am Rand, damit der Ring ums Profilbild beim Animieren nie angeschnitten wird */
 .cmi.new{animation:cmNew .38s cubic-bezier(.3,1,.4,1)}@keyframes cmNew{from{opacity:0;transform:translateY(-8px)}}
-.shc{padding:18px 18px 16px}.shh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px}.shh h2{font-size:20px}.shh .meta{margin:0;font-size:15px;white-space:nowrap}
+.shc{padding:18px 18px 16px}.shh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px}.shh h2{font-size:20px}.shh .meta{margin:0;font-size:15px;white-space:nowrap}.shr{display:flex;align-items:center;gap:6px;flex-shrink:0;align-self:flex-start}.shr .x{background:none;width:28px;height:28px;padding:0;font-size:18px;color:var(--mu);margin-right:-4px}
 
 /* Countdown: Türkis-Kachel, Text links, Zahlen-Kästchen rechts */
 .cd{background:radial-gradient(120% 90% at 0% 0%,rgba(255,255,255,.16),transparent 55%),linear-gradient(135deg,#1f8c7a 0%,#16656f 58%,#174a6b 100%);color:#fff;border-radius:22px;margin:0 0 18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 10px 28px rgba(22,90,105,.28);overflow:hidden}.cd .kick{display:block;margin:0 0 2px;font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.8}
@@ -284,7 +284,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
 .tip.nomap{bottom:max(22px,calc(env(safe-area-inset-bottom) + 10px))}
 .mapv .tip{position:absolute;top:calc(max(10px,env(safe-area-inset-top)) + 58px);bottom:auto;left:12px;right:62px;translate:none;width:auto;z-index:3;background:var(--lg)}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
-/* Größere Tippflächen (mind. 44 px) für kleine Knöpfe, ohne dass sie größer aussehen */.mn,.av,.x[data-sdel],.x[data-cmdel],.x[data-cdel]{position:relative}.mn::after,.av::after,.x[data-sdel]::after,.x[data-cmdel]::after,.x[data-cdel]::after{content:'';position:absolute;inset:-8px;border-radius:50%}.av::after{inset:-4px}button.sc[data-stog]{border:10px solid transparent;margin:-10px;background-clip:padding-box!important;width:44px;height:44px;flex:0 0 44px}
+/* Größere Tippflächen (mind. 44 px) für kleine Knöpfe, ohne dass sie größer aussehen */.mn,.av,.x[data-sdel],.x[data-cmdel],.x[data-cdel],.x[data-shide]{position:relative}.mn::after,.av::after,.x[data-sdel]::after,.x[data-cmdel]::after,.x[data-cdel]::after,.x[data-shide]::after{content:'';position:absolute;inset:-8px;border-radius:50%}.av::after{inset:-4px}button.sc[data-stog]{border:10px solid transparent;margin:-10px;background-clip:padding-box!important;width:44px;height:44px;flex:0 0 44px}
 /* Rückblick nach dem Urlaub: Zahlen in eigener Zeile, gleich breit */.cdt.rb{flex-wrap:wrap}.cd .cdt.rb>.ut{flex:1 0 100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px;margin-top:2px}
 </style></head><body><main>
 <div class="hd"><h1><img class="flag" src="flag.png?v=3" alt=""><span class="ttl"><small>31.10. – 07.11.2026</small><span>Malta</span></span></h1><div class="pf" id="me" hidden></div></div>
@@ -838,10 +838,11 @@ function slideHeight(el, from, to, ms = 300) {
   // gleiche weiche Kurven wie die Reise-Info: sanfter Anlauf, weiches Auslaufen
   const an = el.animate([{ height: from + 'px' }, { height: to + 'px' }], { duration: ms, easing: `cubic-bezier(${open ? EASE_OPEN : EASE_CLOSE})` });
   // Kopfzeile (erstes Kind) bleibt ruhig; der Rest blendet beim Öffnen nacheinander leicht ein, beim Schließen schnell aus
-  const kids = [...el.children].slice(1).map((c, i) => c.animate(open
-    ? [{ opacity: 0, transform: 'translateY(-4px)' }, { opacity: 1, transform: 'none' }]
-    : [{ opacity: 1 }, { opacity: 0 }],
-    open ? { duration: 260, delay: 40 + Math.min(i, 8) * 24, easing: 'ease-out', fill: 'backwards' } : { duration: Math.round(ms * .6), easing: 'ease-in', fill: 'forwards' }));
+  // bis zur eigenen Deckkraft (z. B. blassere Überweisungen anderer), sonst springt sie am Ende zurück = Flackern
+  const kids = [...el.children].slice(1).map((c, i) => { const op = getComputedStyle(c).opacity; return c.animate(open
+    ? [{ opacity: 0, transform: 'translateY(-4px)' }, { opacity: op, transform: 'none' }]
+    : [{ opacity: op }, { opacity: 0 }],
+    open ? { duration: 260, delay: 40 + Math.min(i, 8) * 24, easing: 'ease-out', fill: 'backwards' } : { duration: Math.round(ms * .6), easing: 'ease-in', fill: 'forwards' }); });
   // Sicherheitsnetz: spätestens nach der Dauer weitermachen, falls der Browser das Ende nicht meldet
   return Promise.race([an.finished.catch(() => {}), new Promise(r => setTimeout(r, ms + 60))]).then(() => { an.cancel(); kids.forEach(k => k.cancel()); el.style.overflow = '';
     if (--slides <= 0) { slides = 0; if (slideWait) { slideWait = false; setTimeout(() => render(), 0); } } });
@@ -887,13 +888,15 @@ async function addComment(id) {
 
 // Umschalter oben im Reiter Essen: Vorschläge | Einkaufsliste
 const fsegHtml = () => `<div class="seg2${foodView === 'shop' ? ' r' : ''}"><span class="ind2"></span><button class="${foodView === 'sug' ? 'on' : ''}" data-fv="sug">🍽 Vorschläge</button><button class="${foodView === 'shop' ? 'on' : ''}" data-fv="shop">🛒 Einkaufsliste</button></div>`;
+// In der Einkaufsliste nur Gerichte, die nicht erledigt und nicht per × entfernt sind (noshop; eine neue Zutat holt sie zurück)
+const shopMeals = () => cookActs().filter(a => !a.done && !a.noshop);
 function renderShop() {
   const gen = acts.find(a => a.id === GEN) || { id: GEN, shop: {} };
-  const all = [gen, ...cookActs()].flatMap(shopItems), done = all.filter(i => i.done).length;
-  const meals = cookActs().map(a => `<div class="c shc"><div class="shh"><h2>👩‍🍳 ${esc(a.title)}</h2>${a.day ? `<span class="meta">${esc(a.day)}</span>` : ''}</div>${shopRows(a, 'Zutat hinzufügen')}</div>`).join('');
+  const all = [gen, ...shopMeals()].flatMap(shopItems), done = all.filter(i => i.done).length;
+  const meals = shopMeals().map(a => `<div class="c shc" data-shc="${esc(a.id)}"><div class="shh"><h2>👩‍🍳 ${esc(a.title)}</h2><span class="shr">${a.day ? `<span class="meta">${esc(a.day)}</span>` : ''}<button class="x" data-shide="${esc(a.id)}" aria-label="${esc(a.title)} aus der Einkaufsliste entfernen">×</button></span></div>${shopRows(a, 'Zutat hinzufügen')}</div>`).join('');
   $('list').innerHTML = `<p class="s" style="margin:-4px 0 12px">${all.length ? `${done} von ${all.length} erledigt.` : 'Hier landet alles, was wir einkaufen müssen.'}</p>
     <div class="c shc"><div class="shh"><h2>🛒 Allgemein</h2><span class="meta">für alle</span></div>${shopRows(gen, 'z. B. Sonnencreme, Wasser')}</div>
-    ${meals || '<div class="m">Zutaten für ein Gericht kommen automatisch hierher, sobald es unter 🍽 Vorschläge einen Kochvorschlag gibt.</div>'}`;
+    ${meals || `<div class="m">${cookActs().some(a => !a.done) ? 'Gerade steht kein Gericht in der Einkaufsliste. Sobald jemand bei einem Kochvorschlag eine Zutat einträgt, steht es wieder hier.' : 'Zutaten für ein Gericht kommen automatisch hierher, sobald es unter 🍽 Vorschläge einen Kochvorschlag gibt.'}</div>`}`;
 }
 
 // Beim Neuaufbau die Eingaben offener Formulare (Bearbeiten, Ort, Reservierung, Ausgabe, Kommentar, Einkauf) mitnehmen,
@@ -1163,12 +1166,24 @@ $('list').onclick = async e => {
     addShopItems(b.dataset.sug, [b.dataset.t]); return; }
   if (b.dataset.sugall) { b.disabled = true; const a = acts.find(x => x.id === b.dataset.sugall) || (b.dataset.sugall === GEN ? { id: GEN, shop: {} } : null); if (!a) { toast(GONE, 1); return; } const have = new Set(shopItems(a).map(i => norm(i.t)));
     addShopItems(a.id, suggestFor(a).filter(i => !have.has(norm(i))).slice(0, 14)); return; }
+  if (b.dataset.shide) { const id = b.dataset.shide, a = acts.find(x => x.id === id); if (!a || !alive(id)) { render(true); return; }
+    const n = shopItems(a).length;
+    if (!(await ask({ t: 'Aus der Einkaufsliste entfernen?', m: `„${esc(a.title)}“${n ? ` mit ${n} ${n === 1 ? 'Eintrag' : 'Einträgen'}` : ''} verschwindet aus der Einkaufsliste. Der Essensvorschlag bleibt, und eine neue Zutat dort holt es zurück.`, ok: 'Entfernen', danger: true }))) return;
+    if (!alive(id)) { render(true); toast(GONE, 1); return; }
+    const c = document.querySelector(`#list [data-shc="${CSS.escape(id)}"]`); if (c) await rowOut(c);
+    const w = setDoc(doc(db, 'activities', id), { noshop: Date.now() }, { merge: true });
+    await Promise.race([w.catch(() => {}), new Promise(r => setTimeout(r, 80))]); render(true); toast('Aus der Einkaufsliste entfernt');
+    try { await w; } catch (err) { render(true); toast(FAIL, 1); } return; }
   if (b.dataset.stog || b.dataset.sdel) {
     const [id, item] = (b.dataset.stog || b.dataset.sdel).split('|'), a = acts.find(x => x.id === id);
     if (!alive(id)) { toast(GONE, 1); render(true); return; }
+    if (b.dataset.sdel) {   // nie aus Versehen löschen: erst fragen, dann nachsehen, ob es den Eintrag noch gibt
+      const it = a && a.shop && a.shop[item]; if (!it) { render(true); return; }
+      if (!(await ask({ t: 'Eintrag löschen?', m: `„${esc(it.t)}“ wird für alle von der Liste gelöscht.`, ok: 'Löschen', danger: true }))) return;
+      const a2 = acts.find(x => x.id === id); if (!alive(id) || !(a2 && a2.shop && a2.shop[item])) { render(true); return; } }
     try {
       if (b.dataset.sdel) {
-        const row = b.closest('.si'), t = a && a.shop && a.shop[item] && a.shop[item].t;
+        const row = (document.querySelector(`#list [data-sdel="${CSS.escape(id + '|' + item)}"]`) || b).closest('.si'), t = a && a.shop && a.shop[item] && a.shop[item].t;   // nach der Frage evtl. neu aufgebaut
         if (t) { justBack = norm(t); setTimeout(() => { if (justBack === norm(t)) justBack = null; }, 900); }
         if (row && row.animate && !calm()) { row.style.overflow = 'hidden';
           await row.animate([{ height: row.offsetHeight + 'px', minHeight: 0, opacity: 1, transform: 'translateX(0)' }, { height: '0px', minHeight: 0, opacity: 0, transform: 'translateX(-14px)' }], { duration: 240, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' }).finished.catch(() => {}); }
@@ -1257,13 +1272,14 @@ $('list').onclick = async e => {
 
 
 const markAdded = ids => { ids.forEach(x => justAdded.add(x)); setTimeout(() => ids.forEach(x => justAdded.delete(x)), 700); };
+const back = id => { const a = acts.find(x => x.id === id); return a && a.noshop ? { noshop: deleteField() } : {}; };   // aus der Einkaufsliste entfernt? neue Zutat holt es zurück
 async function addShopItems(id, texts) {
   if (!texts.length) return;
   if (!alive(id)) { toast(GONE, 1); return; }
   const shop = {}, now = Date.now();
   texts.forEach((t, n) => { shop['i' + now.toString(36) + n + Math.random().toString(36).slice(2, 5)] = { t, done: false, ts: now + n }; });
   markAdded(Object.keys(shop));
-  const extra = id === GEN ? { cat: 'list', title: 'Einkaufsliste', ts: 0 } : {};
+  const extra = id === GEN ? { cat: 'list', title: 'Einkaufsliste', ts: 0 } : back(id);
   const w = setDoc(doc(db, 'activities', id), { shop, ...extra }, { merge: true });
   await Promise.race([w.catch(() => {}), new Promise(r => setTimeout(r, 80))]);
   if (!shown(id, Object.keys(shop)[0])) render(true); toast(texts.length === 1 ? `${texts[0]} hinzugefügt ✓` : `${texts.length} Sachen hinzugefügt ✓`);
@@ -1276,7 +1292,7 @@ async function addShop(id) {
   i.value = '';   // sofort leeren: zweites Enter bei langsamem Netz legt nichts doppelt an
   const item = 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); markAdded([item]);
   // cat 'list' sorgt dafür, dass die allgemeine Liste nie als Aktivität auftaucht
-  const extra = id === GEN ? { cat: 'list', title: 'Einkaufsliste', ts: 0 } : {};
+  const extra = id === GEN ? { cat: 'list', title: 'Einkaufsliste', ts: 0 } : back(id);
   const w = setDoc(doc(db, 'activities', id), { shop: { [item]: { t, done: false, ts: Date.now() } }, ...extra }, { merge: true });
   await Promise.race([w.catch(() => {}), new Promise(r => setTimeout(r, 80))]);   // lokale Änderung kommt sofort, die Server-Antwort evtl. erst später
   if (!shown(id, item)) render(true);   // nur neu zeichnen, wenn die Zeile noch fehlt (sonst bricht die Animation ab)
