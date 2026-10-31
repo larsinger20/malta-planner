@@ -88,7 +88,7 @@ textarea{resize:vertical;max-width:100%;min-height:70px}
 .ok{color:var(--tx)}
 button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-height:36px;border-radius:0}button.tx:active{transform:none;opacity:.5}button.tx.mu{color:var(--mu)}
 /* Aufklapp-Zeilen (Kommentare, Vorschläge, Einkaufsliste): ganze Zeile antippbar, nicht nur der Text */
-button.tx[data-cmt],button.tx[data-sugt],button.tx[data-shop]{display:flex;align-items:center;width:100%;min-height:44px;text-align:left;justify-content:flex-start}.chev{display:inline-flex;margin-left:5px;transition:rotate .24s ease}.chev svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}.op .chev{rotate:180deg}.op .chev.an{animation:chevO .32s cubic-bezier(.3,1.35,.5,1)}.op.cl .chev{rotate:0deg}@keyframes chevO{from{rotate:0deg}}.cd .rih{display:inline-flex;align-items:center}.rih .chev{margin-left:4px;translate:0 1.5px}.rih .chev svg{width:12px;height:12px;stroke-width:2.6}.chev.anc{animation:chevC .26s ease}@keyframes chevC{from{rotate:180deg}}.sgl{display:block;font-size:13px;color:var(--mu);margin:-6px 0 6px}.sug>button.tx.sgt{margin:0 -12px;padding:0 12px;width:calc(100% + 24px)}
+button.tx[data-cmt],button.tx[data-sugt],button.tx[data-shop],button.tx[data-kfold]{display:flex;align-items:center;width:100%;min-height:44px;text-align:left;justify-content:flex-start}.chev{display:inline-flex;margin-left:5px;transition:rotate .24s ease}.chev svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}.op .chev{rotate:180deg}.op .chev.an{animation:chevO .32s cubic-bezier(.3,1.35,.5,1)}.op.cl .chev{rotate:0deg}@keyframes chevO{from{rotate:0deg}}.cd .rih{display:inline-flex;align-items:center}.rih .chev{margin-left:4px;translate:0 1.5px}.rih .chev svg{width:12px;height:12px;stroke-width:2.6}.chev.anc{animation:chevC .26s ease}@keyframes chevC{from{rotate:180deg}}.sgl{display:block;font-size:13px;color:var(--mu);margin:-6px 0 6px}.sug>button.tx.sgt{margin:0 -12px;padding:0 12px;width:calc(100% + 24px)}
 .resf{display:flex;flex-wrap:wrap;gap:8px}.resf .rvf{flex-basis:100%;width:100%}.rvf{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.rvf>div{min-width:0}.two.rvf input{width:100%;min-width:0;max-width:100%;flex:none;margin:0 0 4px}.two.rvf input[type=time]{padding-left:12px;padding-right:10px;overflow:hidden}
 /* iPhone/Safari: leeres Uhrzeitfeld hat keinen Inhalt und schrumpft in der Höhe; Uhrzeit sonst mittig statt links */
 input[type=time]{min-height:49px;text-align:left}
@@ -134,7 +134,7 @@ input[type=time]{min-height:49px;text-align:left}
 .chip.on{background:var(--acb);color:#fff}.amt{font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}.srow.mine b{color:var(--ac)}
 .kst{margin:4px 0 14px;padding:12px 14px;border-radius:16px;background:var(--fill)}.kst small{display:block;font-size:13px;color:var(--mu)}.kst .kdt{margin-top:2px}.kst b{display:block;font-size:28px;font-weight:700;font-family:var(--disp);font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1.2}
 .pos{color:var(--ac)}.neg{color:var(--neg)}
-.klb{font-size:13px;color:var(--mu);margin:14px 0 2px;display:flex;justify-content:space-between;gap:8px}.klb span{white-space:nowrap}
+.kfold{margin-top:6px;box-shadow:inset 0 .5px 0 var(--bd)}.kfold+.kfold{margin-top:0}.kfold>.klb{margin-top:2px}.kleg{justify-content:flex-end}.klb{font-size:13px;color:var(--mu);margin:14px 0 2px;display:flex;justify-content:space-between;gap:8px}.klb span{white-space:nowrap}
 .brow{display:flex;align-items:center;gap:10px;padding:7px 0}.brow .sname{flex:0 0 92px}.brow .sname b{font-size:15px}.brow .sname small{font-size:12px}
 .kbar{flex:1;position:relative;height:14px;min-width:40px}.kbar::before{content:'';position:absolute;left:50%;top:-3px;bottom:-3px;border-left:1.5px solid var(--bd)}.kbar i{position:absolute;top:2px;height:10px;border-radius:5px}
 .bval{flex:0 0 auto;min-width:64px;text-align:right;font-weight:600;font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -377,7 +377,7 @@ try { me = localStorage.getItem('uid'); if (!me) { me = 'u' + Math.random().toSt
 catch (e) { me = 'u' + Math.random().toString(36).slice(2, 10); }
 
 let acts = [], sig = [], ppl = {}, pins = {}, pcol = {}, pdat = {}, editing = false, tab = 'act', editRes = null, editPlace = null, editAct = null, addOpen = false, pending = false, menuOpen = null;
-const shopOpen = new Set();
+const shopOpen = new Set(), kOpen = new Set();   // kOpen: aufgeklappte Teile der Kosten-Ansicht
 const ADMIN = 'lars';
 const isAdmin = () => (ppl[me] || '').trim().toLowerCase() === ADMIN;
 const canEdit = a => a.by === me || isAdmin();
@@ -693,10 +693,9 @@ function shares() {
     [...f].sort().forEach(u => { share[u] = (share[u] || 0) + base + (rest > 0 ? 1 : 0); if (rest > 0) rest--; }); });
   return { paid, share };
 }
-function settle(b) {   // möglichst wenige Überweisungen
+function settle(b) {   // wenige Überweisungen; feste Reihenfolge (Geräte-ID), damit Abhaken die übrigen Anweisungen nicht umwirft
   const deb = [], cre = [];
-  Object.entries(b).forEach(([u, v]) => { if (v < 0) deb.push([u, -v]); else if (v > 0) cre.push([u, v]); });
-  deb.sort((x, y) => y[1] - x[1]); cre.sort((x, y) => y[1] - x[1]);
+  Object.keys(b).sort().forEach(u => { const v = b[u]; if (v < 0) deb.push([u, -v]); else if (v > 0) cre.push([u, v]); });
   const out = []; let i = 0, j = 0;
   while (i < deb.length && j < cre.length) { const x = Math.min(deb[i][1], cre[j][1]); if (x > 0) out.push({ from: deb[i][0], to: cre[j][0], amt: x });
     deb[i][1] -= x; cre[j][1] -= x; if (!deb[i][1]) i++; if (!cre[j][1]) j++; }
@@ -719,19 +718,24 @@ function costView() {
     if (who.includes(me)) h += `<div class="kst"><small>Dein Stand</small><b class="${mine > 0 ? 'pos' : mine < 0 ? 'neg' : ''}">${mine > 0 ? '+' : mine < 0 ? '−' : ''}${eur(Math.abs(mine))}</b>
       <small>${mine > 0 ? 'Du bekommst Geld zurück' : mine < 0 ? 'Du zahlst noch' : 'Du bist ausgeglichen ✓'}</small>
       <small class="kdt">Bezahlt: ${eur0(S.paid[me] || 0)} · Dein Anteil: ${eur0(S.share[me] || 0)}${payIn ? ` · Ausgleich erhalten: ${eur0(payIn)}` : ''}${payOut ? ` · Überwiesen: ${eur0(payOut)}` : ''}</small></div>`;
-    // 2) Wer steht wo? Balken von der Mitte aus
+    // Bei 10 Leuten wird es lang: eigene Überweisungen sichtbar, der Rest aufklappbar
+    const fold = (k, label, body) => { const o = kOpen.has(k); return `<div class="kfold"><button class="tx${o ? ' op' : ''}" data-kfold="${k}">${label}${chev('k' + k, o)}</button>${o ? body : ''}</div>`; };   // Zeilen direkt in der Hülle: blenden gestaffelt ein
+    const isMine = t => t.from === me || t.to === me, trRow = t => `<div class="srow trf${isMine(t) ? ' mine' : ' oth'}"><span class="stack">${avatar(t.from)}<span class="arr">→</span>${avatar(t.to)}</span>
+          <div class="sname"><b>${nm(t.from)} → ${nmAkk(t.to)}</b><span class="amt">${eur(t.amt)}</span></div><button class="tx nw" data-settle="${esc(t.from)}|${esc(t.to)}|${t.amt}">✓ Erledigt</button></div>`;
+    // 2) Überweisungen: eigene direkt, die der anderen aufklappbar
+    const myTr = tr.filter(isMine), othTr = tr.filter(t => !isMine(t));
+    if (!tr.length) h += '<div class="klb">So gleichen wir aus</div><div class="none">Alles ausgeglichen 🎉</div>';
+    else {
+      if (myTr.length) h += `<div class="klb">${myTr.length === 1 ? 'Deine Überweisung' : 'Deine Überweisungen'}</div>` + myTr.map(trRow).join('');
+      if (othTr.length) h += fold('tr', othTr.length === 1 ? (myTr.length ? 'Eine weitere Überweisung' : 'Eine Überweisung') : `${myTr.length ? 'Weitere' : 'Alle'} Überweisungen · ${othTr.length}`, othTr.map(trRow).join(''));
+    }
+    // 3) Wer steht wo? Balken von der Mitte aus (aufklappbar)
     const max = Math.max(1, ...who.map(u => Math.abs(b[u] || 0)));
-    h += `<div class="klb">Wer steht wo?<span><span class="neg">◀ zahlt</span> · <span class="pos">bekommt ▶</span></span></div>` +
+    h += fold('bal', `Wer steht wo? · ${who.length} ${who.length === 1 ? 'Person' : 'Personen'}`, `<div class="klb kleg"><span><span class="neg">◀ zahlt</span> · <span class="pos">bekommt ▶</span></span></div>` +
       who.sort((x, y) => (b[y] || 0) - (b[x] || 0)).map(u => { const v = b[u] || 0, w = v ? Math.max(3, Math.abs(v) / max * 50) : 0;
         return `<div class="brow"><span class="stack">${avatar(u)}</span><div class="sname"><b>${nm(u)}</b><small>bezahlt: ${eur0(S.paid[u] || 0)}</small></div>
           <div class="kbar">${w ? `<i style="${v > 0 ? 'left' : 'right'}:50%;width:${w.toFixed(1)}%;background:${v > 0 ? 'var(--acb)' : 'var(--negb)'}"></i>` : ''}</div>
-          <span class="bval ${v > 0 ? 'pos' : v < 0 ? 'neg' : ''}">${v > 0 ? '+' : v < 0 ? '−' : '±'}${eur(Math.abs(v)).replace(/,00\s?€/, ' €')}</span></div>`; }).join('');
-    // 3) So gleichen wir aus: Pfeile zwischen den Profil-Kreisen, eigene zuerst
-    if (!tr.length) h += '<div class="klb">So gleichen wir aus</div><div class="none">Alles ausgeglichen 🎉</div>';
-    else { const isMine = t => t.from === me || t.to === me;
-      h += `<div class="klb">So gleichen wir aus · ${tr.length} ${tr.length === 1 ? 'Überweisung' : 'Überweisungen'}</div>` +
-        [...tr].sort((x, y) => isMine(y) - isMine(x)).map(t => `<div class="srow trf${isMine(t) ? ' mine' : ' oth'}"><span class="stack">${avatar(t.from)}<span class="arr">→</span>${avatar(t.to)}</span>
-          <div class="sname"><b>${nm(t.from)} → ${nmAkk(t.to)}</b><span class="amt">${eur(t.amt)}</span></div><button class="tx nw" data-settle="${esc(t.from)}|${esc(t.to)}|${t.amt}">✓ Erledigt</button></div>`).join(''); }
+          <span class="bval ${v > 0 ? 'pos' : v < 0 ? 'neg' : ''}">${v > 0 ? '+' : v < 0 ? '−' : '±'}${eur(Math.abs(v)).replace(/,00\s?€/, ' €')}</span></div>`; }).join(''));
     if (!costForm) h += '<button class="tx" data-cfpay="1">Andere Überweisung eintragen</button>';
   }
   h += '</div>';
@@ -1075,6 +1079,14 @@ $('list').onclick = async e => {
   if (b.dataset.cfsave) { saveCost(); return; }
   if (b.dataset.cdel) { const c = acts.find(x => x.id === b.dataset.cdel); if (!c || !canDelCost(c) || !(await ask({ t: 'Ausgabe löschen?', m: `${esc(c.title || 'Ausgabe')} · ${eur(c.amt || 0)}`, ok: 'Löschen', danger: true }))) return;
     try { await deleteDoc(doc(db, 'activities', c.id)); render(true); toast('Ausgabe gelöscht'); } catch (err) { toast(FAIL, 1); } return; }
+  if (b.dataset.kfold) { const k = b.dataset.kfold, sel = `#list [data-kfold="${CSS.escape(k)}"]`;
+    if (kOpen.has(k)) { b.classList.add('cl'); const box = b.closest('.kfold'); if (box) await slideHeight(box, box.offsetHeight, b.offsetHeight, 240); kOpen.delete(k); render(true); }
+    else { const from = b.offsetHeight; chevMark('k' + k); kOpen.add(k); render(true); const t = document.querySelector(sel), nb = t && t.closest('.kfold'); if (!nb) return;
+      // wie bei den Kommentaren: liegt das Aufgeklappte unterhalb des Bildschirms, gleitet die Seite mit (Kopfzeile bleibt im Bild)
+      const H = nb.offsetHeight, top = nb.getBoundingClientRect().top, over = top + H - (innerHeight - 20);
+      if (over > 0) glideScroll(Math.max(0, Math.min(over, top - 110)), slideMs(from, H, 320));
+      await slideHeight(nb, from, H, 320); }
+    return; }
   if (b.dataset.settle) { const [from, to, amt] = b.dataset.settle.split('|');
     if (!(await ask({ t: 'Als erledigt markieren?', m: `${from === me ? 'Hast du' : esc(ppl[from] || 'Jemand') + ' hat'} ${to === me ? 'dir' : esc(ppl[to] || 'Jemand')} ${eur(+amt)} gegeben?`, ok: '✓ Erledigt' }))) return;
     // in der Zwischenzeit schon von jemand anderem erledigt? Dann nicht nochmal buchen
