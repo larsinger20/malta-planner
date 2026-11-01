@@ -94,7 +94,7 @@ button.tx{background:none;color:var(--ac);padding:8px 0;font-size:15px;min-heigh
 button.tx[data-cmt],button.tx[data-sugt],button.tx[data-shop],button.tx[data-kfold],button.tx[data-dfold],button.tx[data-archt]{display:flex;align-items:center;width:100%;min-height:44px;text-align:left;justify-content:flex-start}.chev{display:inline-flex;margin-left:5px;transition:rotate .24s ease}.chev svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}.op .chev{rotate:180deg}.op .chev.an{animation:chevO .32s cubic-bezier(.3,1.35,.5,1)}.op.cl .chev{rotate:0deg}@keyframes chevO{from{rotate:0deg}}.cd .rih{display:inline-flex;align-items:center}.rih .chev{margin-left:4px;translate:0 1.5px}.rih .chev svg{width:12px;height:12px;stroke-width:2.6}.chev.anc{animation:chevC .26s ease}@keyframes chevC{from{rotate:180deg}}.sgl{display:block;font-size:13px;color:var(--mu);margin:-6px 0 6px}.sug>button.tx.sgt{margin:0 -12px;padding:0 12px;width:calc(100% + 24px)}
 .resf{display:flex;flex-wrap:wrap;gap:8px}.resf .rvf{flex-basis:100%;width:100%}.rvf{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.rvf>div{min-width:0}.two.rvf input{width:100%;min-width:0;max-width:100%;flex:none;margin:0 0 4px}.two.rvf input[type=time]{padding-left:12px;padding-right:10px;overflow:hidden}
 /* iPhone/Safari: leeres Uhrzeitfeld hat keinen Inhalt und schrumpft in der Höhe; Uhrzeit sonst mittig statt links */
-input[type=time]{min-height:49px;text-align:left}
+input[type=time],input[type=date]{min-height:49px;text-align:left}input[type=date]::-webkit-date-and-time-value{text-align:left}.cfdt{display:block;width:100%;min-width:0;max-width:100%;padding-left:14px}
 /* Safari zeigt in leeren Uhrzeitfeldern keinen Hinweis: eigener grauer Hinweis wie „z. B. 4“; Chromes „--:--“ dafür ausgeblendet */
 .tfield{position:relative}.tph{position:absolute;left:12px;top:50%;translate:0 -50%;margin-top:-2px;color:var(--mu);font-size:17px;pointer-events:none;white-space:nowrap}
 .tfield.has .tph,.tfield:focus-within .tph{display:none}.tfield:not(.has):not(:focus-within) input::-webkit-datetime-edit{color:transparent}.tfield:not(.has):not(:focus-within) input::-webkit-calendar-picker-indicator{opacity:0}.two.rvf input{height:49px;box-sizing:border-box}input[type=time]::-webkit-date-and-time-value{min-height:1.47em;text-align:left}.rvf .flb{margin-top:0}#rvf{margin-bottom:8px}.info .resf{width:100%;margin-top:4px}.resf input{width:auto;flex:1;min-width:110px;margin:0}
@@ -701,6 +701,10 @@ const nm = uid => uid === me ? 'Du' : esc(ppl[uid] || 'Jemand');
 const nmDat = uid => uid === me ? 'dir' : esc(ppl[uid] || 'Jemand');   // "von dir"
 const nmAkk = uid => uid === me ? 'dich' : esc(ppl[uid] || 'Jemand');  // "für dich"
 const ddmm = t => new Date(t).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+const isoDay = t => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+const DAY_OK = v => /^\d{4}-\d{2}-\d{2}$/.test(v || '');
+const cDay = c => DAY_OK(c.dt) ? c.dt : isoDay(c.ts || 0);   // Ausgaben: gewähltes Datum (dt), sonst Tag des Eintragens
+const cDate = c => ddmm(Date.parse(cDay(c) + 'T12:00'));
 function balances() {
   const b = {};
   COSTS().forEach(c => { const f = (c.for || []).filter(Boolean); if (!f.length || !c.amt) return;
@@ -768,35 +772,36 @@ function costView() {
   everyone.splice(0, everyone.length, ...everyone.filter(u => ppl[u]));
   if (costForm && costForm.pay) {
     const F = costForm, opt = sel => everyone.map(u => `<option value="${esc(u)}"${u === sel ? ' selected' : ''}>${u === me ? 'Ich' : esc(ppl[u])}</option>`).join('');
-    h += `<div class="c shc"><div class="ah"><h2>💸 Überweisung eintragen</h2><button class="x" data-cfx="1" aria-label="Schließen">×</button></div>
+    h += `<div class="c shc cfc"><div class="ah"><h2>💸 Überweisung eintragen</h2><button class="x" data-cfx="1" aria-label="Schließen">×</button></div>
       <p>Für Geld, das schon überwiesen wurde, auch wenn es oben nicht (mehr) so vorgeschlagen ist.</p>
       <div class="two"><div><label class="tlb" for="cf-by">Von</label><select id="cf-by">${opt(F.by)}</select></div><div><label class="tlb" for="cf-to">An</label><select id="cf-to"><option value="">Bitte wählen</option>${opt(F.to)}</select></div></div>
       <label class="tlb" for="cf-amt">Betrag</label><input id="cf-amt" inputmode="decimal" placeholder="0,00 €" value="${esc(F.amt || '')}">
       <div class="efb"><button data-cfsave="1">Speichern</button></div></div>`;
   } else if (costForm) {
     const F = costForm, opt = everyone.map(u => `<option value="${esc(u)}"${u === F.by ? ' selected' : ''}>${u === me ? 'Ich' : esc(ppl[u])}</option>`).join('');
-    h += `<div class="c shc"><div class="ah"><h2>💶 ${F.edit ? 'Ausgabe bearbeiten' : 'Neue Ausgabe'}</h2><button class="x" data-cfx="1" aria-label="Schließen">×</button></div>
+    h += `<div class="c shc cfc"><div class="ah"><h2>💶 ${F.edit ? 'Ausgabe bearbeiten' : 'Neue Ausgabe'}</h2><button class="x" data-cfx="1" aria-label="Schließen">×</button></div>
       <input id="cf-t" maxlength="60" placeholder="Wofür? z. B. Einkauf Supermarkt" value="${esc(F.t || '')}">
-      <div class="two"><div><label class="tlb">Betrag</label><input id="cf-amt" inputmode="decimal" placeholder="0,00 €" value="${esc(F.amt || '')}"></div>
-      <div><label class="tlb">Bezahlt von</label><select id="cf-by">${opt}</select></div></div>
+      <div class="two"><div><label class="tlb" for="cf-amt">Betrag</label><input id="cf-amt" inputmode="decimal" placeholder="0,00 €" value="${esc(F.amt || '')}"></div>
+      <div><label class="tlb" for="cf-by">Bezahlt von</label><select id="cf-by">${opt}</select></div></div>
+      <label class="tlb" for="cf-dt">Datum</label><input id="cf-dt" class="cfdt" type="date" value="${esc(DAY_OK(F.dt) ? F.dt : isoDay(Date.now()))}">
       <label class="tlb">Für wen? <span class="none">(${F.for.size} von ${everyone.length})</span></label>
       <div class="chips" style="margin-bottom:12px">${everyone.map(u => `<button class="chip${F.for.has(u) ? ' on' : ''}" data-cff="${esc(u)}">${F.for.has(u) ? '✓ ' : ''}${nm(u)}</button>`).join('')}</div>
       <div class="efb"><button data-cfsave="1">Speichern</button></div></div>`;
   } else h += '<button class="addb" data-cfopen="1">+ Ausgabe eintragen</button>';
   const forAll = f => everyone.every(u => f.includes(u));
-  if (list.length) h += `<div class="c shc"><div class="shh"><h2>🧾 Alle Ausgaben</h2></div>${list.map(c => {
+  if (list.length) h += `<div class="c shc"><div class="shh"><h2>🧾 Alle Ausgaben</h2></div>${[...list].sort((x, y) => cDay(y).localeCompare(cDay(x)) || (y.ts || 0) - (x.ts || 0)).map(c => {
     const del = canDelCost(c) ? `<button class="x" data-cdel="${esc(c.id)}" aria-label="Löschen">×</button>` : '';
     const nl = isNewCost(c), nb = nl ? `<span class="nb">${nl}</span>` : '';
     if (c.kind === 'pay') return `<div class="srow" data-cseen="${esc(c.id)}"><span class="tic">💸</span><div class="sname"><b>${nb}${nm(c.by)} → ${nm((c.for || [])[0])}</b><small>Ausgleich · ${ddmm(c.ts)}</small></div><span class="amt">${eur(c.amt)}</span>${del}</div>`;
     const f = c.for || [], miss = everyone.filter(u => !f.includes(u)), forTxt = forAll(f) ? 'alle' : miss.length <= 3 && f.length > miss.length + 2 ? 'alle außer ' + miss.map(u => u === me ? 'dir' : esc(ppl[u] || 'Jemand')).map((n, i, L) => i === 0 ? n : (i === L.length - 1 ? ' und ' : ', ') + n).join('') : f.map(nmAkk).join(', ');   // fast alle: „alle außer Lisa, Tim und Kiki“ statt langer Liste
     const t = esc(c.title), sp = t.lastIndexOf(' ');   // Stift klebt am letzten Wort, rutscht nie allein in die nächste Zeile
-    const inner = `<b>${nb}${!canEditCost(c) ? t : t.length - sp > 18 ? t + IC_EDIT : `${t.slice(0, sp + 1)}<span class="nw">${t.slice(sp + 1)}${IC_EDIT}</span>`}</b><small>${nm(c.by)} · für ${forTxt} · ${ddmm(c.ts)}</small>`;
+    const inner = `<b>${nb}${!canEditCost(c) ? t : t.length - sp > 18 ? t + IC_EDIT : `${t.slice(0, sp + 1)}<span class="nw">${t.slice(sp + 1)}${IC_EDIT}</span>`}</b><small>${nm(c.by)} · für ${forTxt} · ${cDate(c)}</small>`;
     return `<div class="srow" data-cseen="${esc(c.id)}"><span class="stack">${avatar(c.by)}</span>${canEditCost(c) ? `<button class="sname cedit" data-cedit="${esc(c.id)}" aria-label="${esc(c.title)} bearbeiten">${inner}</button>` : `<div class="sname">${inner}</div>`}<span class="amt">${eur(c.amt)}</span>${del}</div>`;
   }).join('')}</div>`;
   return h;
 }
 const keepForm = () => { if (!costForm) return; const g = id => $(id) ? $(id).value : undefined;
-  if (g('cf-t') !== undefined) costForm.t = g('cf-t'); if (g('cf-amt') !== undefined) costForm.amt = g('cf-amt'); if (g('cf-by') !== undefined) costForm.by = g('cf-by'); if (g('cf-to') !== undefined) costForm.to = g('cf-to'); };
+  if (g('cf-t') !== undefined) costForm.t = g('cf-t'); if (g('cf-amt') !== undefined) costForm.amt = g('cf-amt'); if (g('cf-by') !== undefined) costForm.by = g('cf-by'); if (g('cf-to') !== undefined) costForm.to = g('cf-to'); if (g('cf-dt') !== undefined) costForm.dt = g('cf-dt'); };
 // Betrag in Cent: „12,50“, „12.5“, „1.234,56“, „2.000“ (Tausenderpunkt), „€ 7“. Alles Unklare → NaN statt raten
 const parseAmt = v => { let s = String(v || '').replace(/[\s\u00a0€]|eur/gi, '');
   if (!/^(\d{1,3}(\.\d{3})+(,\d{1,2})?|\d+([.,]\d{1,2})?)$/.test(s)) return NaN;
@@ -815,16 +820,34 @@ async function saveCost() {
     if (!F.for.size) { toast('Bitte mindestens eine Person bei „Für wen?“ auswählen.', 1); return; }
     data = { cat: 'cost', title: (F.t || '').trim() || 'Ausgabe', amt, by: F.by || me, for: [...F.for], ts: F.ts || Date.now(), cby: F.cby || me };
     if (F.act) data.act = F.act;
+    if (DAY_OK(F.dt) && F.dt !== isoDay(data.ts)) data.dt = F.dt;   // nur wenn anders als der Tag des Eintragens (ts bleibt für „Neu“ und Reihenfolge)
     if (F.edit) { const c = acts.find(x => x.id === F.id);
       if (!c) { costForm = null; render(true); toast('Diese Ausgabe wurde gerade gelöscht.', 1); return; }
       if (!canEditCost(c)) return; data.ets = Date.now(); data.eby = me; }
   }
   // feste ID je Formular + Formular sofort schließen: doppeltes Tippen (schlechtes Netz) bucht nie doppelt
   const id = F.id || (F.id = 'x' + Date.now() + Math.random().toString(36).slice(2, 5));
-  costBusy = true; costForm = null; render(true); toast(F.edit ? 'Änderung gespeichert ✓' : `${eur(amt)} eingetragen ✓`);
-  try { await setDoc(doc(db, 'activities', id), data); }
+  costBusy = true; costForm = null;
+  const w = setDoc(doc(db, 'activities', id), data); toast(F.edit ? 'Änderung gespeichert ✓' : `${eur(amt)} eingetragen ✓`);
+  await cfShut();
+  try { await w; }
   catch (err) { costForm = F; render(true); toast(FAIL, 1); }
   finally { costBusy = false; }
+}
+// Ausgaben-Formular gleitet wie „Neue Aktivität vorschlagen“ aus dem Knopf auf und wieder in ihn zurück
+const cfCard = () => document.querySelector('#list .cfc');
+async function cfOpen(form, focusId) {
+  const open = cfCard(), btn = document.querySelector('#list [data-cfopen]'), from = btn ? btn.offsetHeight : 0;
+  costForm = form; freshForm = true; render(true);
+  const c = cfCard(), i = $(focusId); if (i) i.focus({ preventScroll: true });
+  if (c && from && !open) await slideHeight(c, from, c.offsetHeight, 340);
+  return c;
+}
+async function cfShut() {   // costForm ist schon null; Karte gleitet zu, dann erscheint der Knopf wieder
+  const c = cfCard(); if (c && !c.dataset.shut) { c.dataset.shut = 1; c.style.pointerEvents = 'none'; await slideHeight(c, c.offsetHeight, 52, 260); }
+  await new Promise(r => setTimeout(r, 0));   // aufgeschobenes Live-Update zuerst, sonst ersetzt es den einblendenden Knopf
+  render(true); const b = document.querySelector('#list [data-cfopen]');
+  if (b && !calm() && b.animate) b.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180, easing: 'ease-out' });
 }
 const costChip = a => { const c = COSTS().filter(x => x.act === a.id && x.kind !== 'pay'); if (!c.length) return '';
   const by = [...new Set(c.map(x => x.by))]; return `<span class="cst">💶 ${eur(c.reduce((n, x) => n + x.amt, 0))} bezahlt von ${by.map(nmDat).join(', ')}</span>`; };
@@ -1115,14 +1138,14 @@ $('list').onclick = async e => {
     } catch (err) { toast('Löschen hat nicht geklappt.', 1); b.disabled = false; }
     return;
   }
-  if (b.dataset.cfopen) { costForm = { t: '', amt: '', by: me, for: new Set(Object.keys(ppl).filter(u => ppl[u])) }; freshForm = true; render(true); const i = $('cf-t'); if (i) i.focus(); return; }
-  if (b.dataset.cfx) { costForm = null; render(true); return; }
+  if (b.dataset.cfopen) { await cfOpen({ t: '', amt: '', by: me, dt: isoDay(Date.now()), for: new Set(Object.keys(ppl).filter(u => ppl[u])) }, 'cf-t'); return; }
+  if (b.dataset.cfx) { if (!costForm) return; keepForm(); costForm = null; await cfShut(); return; }
   if (b.dataset.cedit) { const c = acts.find(x => x.id === b.dataset.cedit); if (!c || !canEditCost(c)) return;
-    costForm = { edit: true, id: c.id, t: c.title || '', amt: ((c.amt || 0) / 100).toFixed(2).replace('.', ','), by: c.by, for: new Set(c.for || []), act: c.act, ts: c.ts, cby: c.cby };
-    freshForm = true; render(true); const f = $('cf-t'); if (f) f.closest('.c').scrollIntoView({ behavior: calm() ? 'auto' : 'smooth', block: 'center' }); return; }
+    const card = cfOpen({ edit: true, id: c.id, t: c.title || '', amt: ((c.amt || 0) / 100).toFixed(2).replace('.', ','), by: c.by, dt: cDay(c), for: new Set(c.for || []), act: c.act, ts: c.ts, cby: c.cby }, '');
+    const f = cfCard(); if (f) f.scrollIntoView({ behavior: calm() ? 'auto' : 'smooth', block: 'center' }); await card; return; }
   if (b.dataset.cfpay) { const t = settle(balances()).find(x => x.from === me || x.to === me);
-    costForm = { pay: true, amt: '', by: me, to: t ? (t.from === me ? t.to : t.from) : '' }; freshForm = true; render(true); const i = $('cf-amt'); if (i) i.focus(); return; }
-  if (b.dataset.cff) { keepForm(); const u = b.dataset.cff; costForm.for.has(u) ? costForm.for.delete(u) : costForm.for.add(u); render(true); return; }
+    await cfOpen({ pay: true, amt: '', by: me, to: t ? (t.from === me ? t.to : t.from) : '' }, 'cf-amt'); return; }
+  if (b.dataset.cff) { if (!costForm) return; keepForm(); const u = b.dataset.cff; costForm.for.has(u) ? costForm.for.delete(u) : costForm.for.add(u); render(true); return; }
   if (b.dataset.cfsave) { saveCost(); return; }
   if (b.dataset.cdel) { const c = acts.find(x => x.id === b.dataset.cdel); if (!c || !canDelCost(c) || !(await ask({ t: 'Ausgabe löschen?', m: `${esc(c.title || 'Ausgabe')} · ${eur(c.amt || 0)}`, ok: 'Löschen', danger: true }))) return;
     try { await deleteDoc(doc(db, 'activities', c.id)); render(true); toast('Ausgabe gelöscht'); } catch (err) { toast(FAIL, 1); } return; }
@@ -1164,7 +1187,7 @@ $('list').onclick = async e => {
     try { await w; } catch (err) { render(true); toast(FAIL, 1); } return; }
   if (b.dataset.cost) { const a = acts.find(x => x.id === b.dataset.cost); if (!a) return;
     const s = sig.filter(x => x.act === a.id).map(x => x.uid).filter(u => ppl[u]);
-    setTab('cost'); costForm = { t: a.title, amt: '', by: me, act: a.id, for: new Set(s.length ? s : Object.keys(ppl).filter(u => ppl[u])) };
+    setTab('cost'); costForm = { t: a.title, amt: '', by: me, dt: isoDay(Date.now()), act: a.id, for: new Set(s.length ? s : Object.keys(ppl).filter(u => ppl[u])) };
     freshForm = true; render(true); scrollTo({ top: 0, behavior: 'smooth' }); const i = $('cf-amt'); if (i) i.focus(); return; }
   if (b.dataset.cm) { const id = b.dataset.cm; if (!cmOpen.has(id)) { const t = document.querySelector(`#list [data-cmt="${CSS.escape(id)}"]`); await openComments(id, t ? t.offsetHeight : 0, true); } else { const i = $('cmin-' + id); if (i) i.focus({ preventScroll: true }); } return; }
   if (b.dataset.cmt) { const id = b.dataset.cmt;
