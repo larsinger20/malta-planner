@@ -766,7 +766,7 @@ function costView() {
         return `<div class="brow"><span class="stack">${avatar(u)}</span><div class="sname"><b>${nm(u)}</b><small>bezahlt: ${eur0(S.paid[u] || 0)}</small></div>
           <div class="kbar">${w ? `<i style="${v > 0 ? 'left' : 'right'}:50%;width:${w.toFixed(1)}%;background:${v > 0 ? 'var(--acb)' : 'var(--negb)'}"></i>` : ''}</div>
           <span class="bval ${v > 0 ? 'pos' : v < 0 ? 'neg' : ''}">${v > 0 ? '+' : v < 0 ? '−' : '±'}${eur(Math.abs(v)).replace(/,00\s?€/, ' €')}</span></div>`; }).join(''));
-    if (!costForm) h += '<button class="tx" data-cfpay="1">Andere Überweisung eintragen</button>';
+    h += '<button class="tx" data-cfpay="1">Andere Überweisung eintragen</button>';   // immer da: würde sie beim Öffnen verschwinden, springt alles darunter
   }
   h += '</div>';
   everyone.splice(0, everyone.length, ...everyone.filter(u => ppl[u]));
@@ -836,15 +836,25 @@ async function saveCost() {
 }
 // Ausgaben-Formular gleitet wie „Neue Aktivität vorschlagen“ aus dem Knopf auf und wieder in ihn zurück
 const cfCard = () => document.querySelector('#list .cfc');
+// Formular-Oberkante direkt unter die Reiter-Leiste holen (sonst öffnet es am unteren Rand, die Tastatur verdeckt es); auch für „Vorschlag bearbeiten“
+function underTabs(c, ms) { if (!c) return; let y = 0; for (let e = c; e; e = e.offsetParent) y += e.offsetTop;   // Lage ohne laufende Einblend-Bewegungen
+  const dy = Math.min(y - ($('tabs').offsetHeight + 6), document.documentElement.scrollHeight - innerHeight) - scrollY;
+  if (Math.abs(dy) < 8) return; if (calm() || !ms) scrollBy(0, dy); else glideScroll(dy, ms); }
+let cfY = null;   // Scrollstand vor dem Öffnen: beim Schließen gleitet die Seite dorthin zurück (gleicher Weg hin und zurück)
 async function cfOpen(form, focusId) {
   const open = cfCard(), btn = document.querySelector('#list [data-cfopen]'), from = btn ? btn.offsetHeight : 0;
+  if (!open) cfY = scrollY;
   costForm = form; freshForm = true; render(true);
   const c = cfCard(), i = $(focusId); if (i) i.focus({ preventScroll: true });
-  if (c && from && !open) await slideHeight(c, from, c.offsetHeight, 340);
+  if (c && from && !open) { underTabs(c, slideMs(from, c.offsetHeight, 340)); await slideHeight(c, from, c.offsetHeight, 340); }
+  else underTabs(c, 340);
   return c;
 }
 async function cfShut() {   // costForm ist schon null; Karte gleitet zu, dann erscheint der Knopf wieder
-  const c = cfCard(); if (c && !c.dataset.shut) { c.dataset.shut = 1; c.style.pointerEvents = 'none'; await slideHeight(c, c.offsetHeight, 52, 260); }
+  const c = cfCard(); if (c && !c.dataset.shut) { c.dataset.shut = 1; c.style.pointerEvents = 'none'; const h = c.offsetHeight;
+    if (cfY !== null) { if (calm()) scrollTo(0, cfY); else glideScroll(cfY - scrollY, slideMs(h, 52, 260)); } cfY = null;
+    await slideHeight(c, h, 52, 260);
+    c.style.height = '52px'; c.style.overflow = 'hidden'; [...c.children].slice(1).forEach(k => k.style.opacity = 0); }   // nicht für ein Bild wieder aufspringen, bis der Knopf kommt
   await new Promise(r => setTimeout(r, 0));   // aufgeschobenes Live-Update zuerst, sonst ersetzt es den einblendenden Knopf
   render(true); const b = document.querySelector('#list [data-cfopen]');
   if (b && !calm() && b.animate) b.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180, easing: 'ease-out' });
@@ -1142,7 +1152,7 @@ $('list').onclick = async e => {
   if (b.dataset.cfx) { if (!costForm) return; keepForm(); costForm = null; await cfShut(); return; }
   if (b.dataset.cedit) { const c = acts.find(x => x.id === b.dataset.cedit); if (!c || !canEditCost(c)) return;
     const card = cfOpen({ edit: true, id: c.id, t: c.title || '', amt: ((c.amt || 0) / 100).toFixed(2).replace('.', ','), by: c.by, dt: cDay(c), for: new Set(c.for || []), act: c.act, ts: c.ts, cby: c.cby }, '');
-    const f = cfCard(); if (f) f.scrollIntoView({ behavior: calm() ? 'auto' : 'smooth', block: 'center' }); await card; return; }
+    await card; return; }
   if (b.dataset.cfpay) { const t = settle(balances()).find(x => x.from === me || x.to === me);
     await cfOpen({ pay: true, amt: '', by: me, to: t ? (t.from === me ? t.to : t.from) : '' }, 'cf-amt'); return; }
   if (b.dataset.cff) { if (!costForm) return; keepForm(); const u = b.dataset.cff; costForm.for.has(u) ? costForm.for.delete(u) : costForm.for.add(u); render(true); return; }
@@ -1188,7 +1198,7 @@ $('list').onclick = async e => {
   if (b.dataset.cost) { const a = acts.find(x => x.id === b.dataset.cost); if (!a) return;
     const s = sig.filter(x => x.act === a.id).map(x => x.uid).filter(u => ppl[u]);
     setTab('cost'); costForm = { t: a.title, amt: '', by: me, dt: isoDay(Date.now()), act: a.id, for: new Set(s.length ? s : Object.keys(ppl).filter(u => ppl[u])) };
-    freshForm = true; render(true); scrollTo({ top: 0, behavior: 'smooth' }); const i = $('cf-amt'); if (i) i.focus(); return; }
+    freshForm = true; render(true); const i = $('cf-amt'); if (i) i.focus({ preventScroll: true }); underTabs(cfCard(), 0); return; }
   if (b.dataset.cm) { const id = b.dataset.cm; if (!cmOpen.has(id)) { const t = document.querySelector(`#list [data-cmt="${CSS.escape(id)}"]`); await openComments(id, t ? t.offsetHeight : 0, true); } else { const i = $('cmin-' + id); if (i) i.focus({ preventScroll: true }); } return; }
   if (b.dataset.cmt) { const id = b.dataset.cmt;
     // Weich auf- und zuklappen: Höhe vom Knopf bis zur ganzen Liste und zurück
@@ -1265,7 +1275,7 @@ $('list').onclick = async e => {
     } catch (err) { toast(FAIL, 1); }
     return;
   }
-  if (b.dataset.edit) { editAct = b.dataset.edit; editRes = null; editPlace = null; freshForm = true; render(true); const i = $('et'); if (i) i.focus(); return; }
+  if (b.dataset.edit) { editAct = b.dataset.edit; editRes = null; editPlace = null; freshForm = true; render(true); const i = $('et'); if (i) { i.focus({ preventScroll: true }); underTabs(i.closest('.c'), 340); } return; }
   if (b.dataset.ecancel) { editAct = null; render(true); return; }
   if (b.dataset.esave) {
     const a = acts.find(x => x.id === b.dataset.esave); if (!a || !canEdit(a)) return;
