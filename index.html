@@ -72,7 +72,7 @@ textarea{resize:vertical;max-width:100%;min-height:70px}
 .hd2{display:flex;align-items:flex-start;gap:8px;position:relative}.tt{flex:1;min-width:0}.tt h2{font-size:20px}
 .mn{width:32px;height:32px;margin:-4px -6px 0 0;padding:0;flex-shrink:0;border-radius:50%;background:var(--fill);color:var(--mu);font-size:18px;line-height:1;letter-spacing:1px;display:flex;align-items:center;justify-content:center}
 .menu{position:absolute;right:-6px;top:34px;z-index:6;min-width:240px;background:var(--pop);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);border-radius:22px;padding:0;overflow:hidden;box-shadow:var(--lgring),0 0 0 .5px var(--bd),0 12px 40px rgba(0,0,0,.22);transform-origin:top right;animation:pop .22s cubic-bezier(.3,1.3,.5,1)}
-.menu.up{top:auto;bottom:calc(100% + 6px);transform-origin:bottom right}.menu button{display:block;width:100%;text-align:left;background:none;color:var(--tx);padding:12px 16px;border-radius:0;font-size:17px}.menu button+button{box-shadow:inset 0 .5px 0 var(--bd)}.menu button:active{transform:none;background:var(--fill)}.menu .dz{color:var(--rd)}
+.menu.up{top:auto;bottom:calc(100% + 6px);transform-origin:bottom right}.menu button{display:block;width:100%;text-align:left;background:none;color:var(--tx);padding:12px 16px;border-radius:0;font-size:17px}.menu button+button{box-shadow:inset 0 .5px 0 var(--bd)}.menu button:active{transform:none;background:var(--fill)}.menu .dz{color:var(--rd)}.menu .ic{width:20px;height:20px;margin-right:12px;vertical-align:-4px;stroke-width:1.8}
 @keyframes pop{from{opacity:0;transform:scale(.85)}}
 .ds{margin:10px 0 0!important;color:var(--tx2)!important;font-size:15px!important}
 .card .info{margin-top:12px}.info a.lk{position:relative}.info a.lk::after{content:'';position:absolute;inset:-7px -6px}.card>.tx{margin-top:6px}
@@ -141,7 +141,7 @@ input[type=time]{min-height:49px;text-align:left}
 .brow{display:flex;align-items:center;gap:10px;padding:7px 0}.brow .sname{flex:0 0 92px}.brow .sname b{font-size:15px}.brow .sname small{font-size:12px}
 .kbar{flex:1;position:relative;height:14px;min-width:40px}.kbar::before{content:'';position:absolute;left:50%;top:-3px;bottom:-3px;border-left:1.5px solid var(--bd)}.kbar i{position:absolute;top:2px;height:10px;border-radius:5px}
 .bval{flex:0 0 auto;min-width:64px;text-align:right;font-weight:600;font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
-.trf .stack i{margin-left:0}.trf .stack{align-items:center}.trf .arr{color:var(--mu);font-size:15px;margin:0 5px}.trf .sname b{font-size:15px}.trf .sname .amt{display:block;font-size:17px;color:var(--tx)}.trf.oth{opacity:.72}.srow .x{background:none;width:28px;height:28px;font-size:18px}
+.trf .stack i{margin-left:0}.trf .stack{align-items:center}.trf .arr{color:var(--mu);font-size:15px;margin:0 5px}.trf .sname b{font-size:15px}.trf .sname .amt{display:block;font-size:17px;color:var(--tx)}.trf.oth{opacity:.72}.srow .x{background:none;width:28px;height:28px;font-size:18px}.stl{position:relative;flex-shrink:0}.stl::after{content:'';position:absolute;inset:-6px -4px}
 .cst{font-size:14px;color:var(--mu)}button.cedit{display:block;flex:1;min-width:0;min-height:44px;padding:0;background:none;color:inherit;text-align:left;border-radius:0}button.cedit:active{transform:none;opacity:.5}.ced{width:14px;height:14px;margin-left:6px;color:var(--mu);vertical-align:-.1em}
 .cmts{margin-top:6px}.cmi{display:flex;gap:10px;align-items:flex-start;padding:8px 0;box-shadow:inset 0 .5px 0 var(--bd)}.cmi .stack i{width:26px;height:26px}.cmb{flex:1;min-width:0;font-size:15px;overflow-wrap:anywhere;line-height:1.35}.cmb small{color:var(--mu);font-size:12px}.cmb b{font-weight:600}.cmi .x{background:none;width:26px;height:26px;font-size:18px}
 .plmore{position:relative;display:block;margin:-4px 0 10px 2px;padding:6px 0;background:none;color:var(--ac);font-size:15px;font-weight:500;text-align:left}.plmore::after{content:'';position:absolute;inset:-6px -8px}.plmore:active{transform:none;opacity:.6}
@@ -485,19 +485,30 @@ const placeForm = (a, add) => { const more = add ? [] : morePl(a);
   <div class="plb">${!add && a.place ? `<button class="tx dz" data-pldel="${esc(a.id)}">${more.length ? 'Diesen Ort entfernen' : 'Ort entfernen'}</button>` : ''}<span></span><button class="tx mu" data-plcancel="1">Abbrechen</button><button class="sm2" data-plsave="${esc(a.id)}"${add ? ' data-pladd="1"' : ''}>${add ? 'Hinzufügen' : 'Speichern'}</button></div></div>`; };
 const resForm = a => { const r = a.res || {}; return `<div class="resf"><div class="two rvf"><div><label class="flb" for="ert">Uhrzeit</label><div class="tfield${r.t ? ' has' : ''}"><input type="time" id="ert" value="${esc(r.t || '')}"><span class="tph" aria-hidden="true">z. B. 19:30</span></div></div><div><label class="flb" for="erp">Personen</label><input type="number" id="erp" min="1" max="99" inputmode="numeric" placeholder="z. B. 4" value="${esc(r.p || '')}"></div></div><button data-ressave="${esc(a.id)}">Speichern</button>${a.res ? `<button class="o" data-resdel="${esc(a.id)}">Entfernen</button>` : ''}<button class="o" data-rescancel="1">Abbrechen</button></div>`; };
 
+// Linien-Symbole fürs ⋯-Menü (Emojis nur in Inhalten)
+const MI = {
+  EDIT: '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10.5-10.5a2.828 2.828 0 1 0-4-4L4 16v4"/><path d="M13.5 6.5l4 4"/></svg>',
+  PLADD: '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0-6 0"/><path d="M12.794 21.322a2 2 0 0 1-2.207-.422l-4.244-4.243a8 8 0 1 1 13.59-4.69"/><path d="M16 19h6"/><path d="M19 16v6"/></svg>',
+  PHONE: '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5-2.5l5 2v4a2 2 0 0 1-2 2a16 16 0 0 1-15-15a2 2 0 0 1 2-2"/></svg>',
+  CM: '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20l1.3-3.9c-2.324-3.437-1.426-7.872 2.1-10.374c3.526-2.501 8.59-2.296 11.845.48c3.255 2.777 3.695 7.266 1.029 10.501c-2.666 3.235-7.615 4.215-11.574 2.293l-4.7 1"/></svg>',
+  COST: '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 8v-3a1 1 0 0 0-1-1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1-1 1h-12a2 2 0 0 1-2-2v-12"/><path d="M20 12v4h-4a2 2 0 0 1 0-4h4"/></svg>',
+  DONE: '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5l10-10"/></svg>',
+  UNDO: '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14l-4-4l4-4"/><path d="M5 10h11a4 4 0 1 1 0 8h-1"/></svg>',
+  DEL: '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12"/><path d="M9 7v-3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/></svg>',
+};
 // ⋯-Menü pro Karte: seltene Aktionen gebündelt
 function cardMenu(a) {
   if (menuOpen !== a.id) return '';
   const id = esc(a.id), it = [];
-  if (canEdit(a)) it.push(`<button data-edit="${id}">✏️ Bearbeiten</button>`);
-  it.push(`<button data-pl="${id}">📍 ${!a.place ? 'Ort eintragen' : morePl(a).length ? 'Orte ändern' : 'Ort ändern'}</button>`);
-  if (a.place && allPl(a).length < MAX_PL) it.push(`<button data-pladd="${id}">➕ Weiteren Ort hinzufügen</button>`);
-  if (a.kind === 'rest') it.push(`<button data-res="${id}">📞 ${a.res ? 'Reservierung ändern' : 'Reservierung eintragen'}</button>`);
-  it.push(`<button data-cm="${id}">💬 Kommentar schreiben</button>`);
-  it.push(`<button data-cost="${id}">💶 Ausgabe eintragen</button>`);
-  it.push(`<button data-done="${id}">${a.done ? '↩️ Wieder offen' : '✓ Als erledigt markieren'}</button>`);   // alle dürfen abhaken
+  if (canEdit(a)) it.push(`<button data-edit="${id}">${MI.EDIT}Bearbeiten</button>`);
+  it.push(`<button data-pl="${id}">${IC_PIN}${!a.place ? 'Ort eintragen' : morePl(a).length ? 'Orte ändern' : 'Ort ändern'}</button>`);
+  if (a.place && allPl(a).length < MAX_PL) it.push(`<button data-pladd="${id}">${MI.PLADD}Weiteren Ort hinzufügen</button>`);
+  if (a.kind === 'rest') it.push(`<button data-res="${id}">${MI.PHONE}${a.res ? 'Reservierung ändern' : 'Reservierung eintragen'}</button>`);
+  it.push(`<button data-cm="${id}">${MI.CM}Kommentar schreiben</button>`);
+  it.push(`<button data-cost="${id}">${MI.COST}Ausgabe eintragen</button>`);
+  it.push(`<button data-done="${id}">${a.done ? MI.UNDO + 'Wieder offen' : MI.DONE + 'Als erledigt markieren'}</button>`);   // alle dürfen abhaken
   // Löschen dürfen der Ersteller und der Admin (wie Bearbeiten)
-  if (canEdit(a)) it.push(`<button class="dz" data-del="${id}">🗑 Löschen</button>`);
+  if (canEdit(a)) it.push(`<button class="dz" data-del="${id}">${MI.DEL}Löschen</button>`);
   return `<div class="menu" role="menu">${it.join('')}</div>`;
 }
 
@@ -527,7 +538,7 @@ function renderPlan() {
       const n = sig.filter(x => x.act === a.id).length, meal = a.cat === 'food';
       const sub = [KIND[a.kind], meal ? (n === 1 ? '1 Stimme' : `${n} Stimmen`) : `${n} dabei`, a.res && `Reserviert für ${esc(a.res.p)}`].filter(Boolean).map(x => `<span class="nw">${x}</span>`).join(' · ');
       const links = (villaChip(a) || placeChips(a)) + (a.kind === 'rest' ? linkChip(a) : '');
-      return `<div class="tli${a.time === 'Ganztags' ? ' all' : ''}${meal ? ' meal' : ''}${a.done ? ' dn' : ''}" data-goto="${esc(a.id)}" role="button" tabindex="0" aria-label="${esc(a.title)} öffnen"><div class="pt">${esc(a.res && a.res.t ? a.res.t + ' Uhr' : a.time ? TIME_TXT(a.time) : 'Offen')}</div><div class="tlc"><span class="tl">${a.done ? '✓ ' : ''}${esc(a.title)}</span><div class="meta">${sub}</div>${links ? `<div class="info">${links}</div>` : ''}</div></div>`;
+      return `<div class="tli${a.time === 'Ganztags' ? ' all' : ''}${meal ? ' meal' : ''}${a.done ? ' dn' : ''}" data-goto="${esc(a.id)}" role="button" tabindex="0" aria-label="${esc(a.title)} öffnen"><div class="pt">${esc(a.res && a.res.t ? a.res.t + ' Uhr' : a.time ? TIME_TXT(a.time) : 'Flexibel')}</div><div class="tlc"><span class="tl">${a.done ? '✓ ' : ''}${esc(a.title)}</span><div class="meta">${sub}</div>${links ? `<div class="info">${links}</div>` : ''}</div></div>`;
     }).join('')}</div></div>`; }).join('');
 }
 
@@ -733,7 +744,7 @@ function costView() {
     // Bei 10 Leuten wird es lang: eigene Überweisungen sichtbar, der Rest aufklappbar
     const fold = (k, label, body) => { const o = kOpen.has(k); return `<div class="kfold"><button class="tx${o ? ' op' : ''}" data-kfold="${k}">${label}${chev('k' + k, o)}</button>${o ? body : ''}</div>`; };   // Zeilen direkt in der Hülle: blenden gestaffelt ein
     const isMine = t => t.from === me || t.to === me, trRow = t => `<div class="srow trf${isMine(t) ? ' mine' : ' oth'}"><span class="stack">${avatar(t.from)}<span class="arr">→</span>${avatar(t.to)}</span>
-          <div class="sname"><b>${nm(t.from)} → ${nmAkk(t.to)}</b><span class="amt">${eur(t.amt)}</span></div><button class="tx nw" data-settle="${esc(t.from)}|${esc(t.to)}|${t.amt}">✓ Erledigt</button></div>`;
+          <div class="sname"><b>${nm(t.from)} → ${nmAkk(t.to)}</b><span class="amt">${eur(t.amt)}</span></div><button class="o sm2 nw stl" data-settle="${esc(t.from)}|${esc(t.to)}|${t.amt}">${t.to === me ? 'Erhalten' : 'Bezahlt'}</button></div>`;
     // 2) Überweisungen: eigene direkt, die der anderen aufklappbar
     const myTr = tr.filter(isMine), othTr = tr.filter(t => !isMine(t));
     if (!tr.length) h += '<div class="klb">So gleichen wir aus</div><div class="none">Alles ausgeglichen 🎉</div>';
@@ -774,7 +785,7 @@ function costView() {
     const del = canDelCost(c) ? `<button class="x" data-cdel="${esc(c.id)}" aria-label="Löschen">×</button>` : '';
     const nl = isNewCost(c), nb = nl ? `<span class="nb">${nl}</span>` : '';
     if (c.kind === 'pay') return `<div class="srow" data-cseen="${esc(c.id)}"><span class="tic">💸</span><div class="sname"><b>${nb}${nm(c.by)} → ${nm((c.for || [])[0])}</b><small>Ausgleich · ${ddmm(c.ts)}</small></div><span class="amt">${eur(c.amt)}</span>${del}</div>`;
-    const f = c.for || [], forTxt = forAll(f) ? 'alle' : f.map(nmAkk).join(', ');
+    const f = c.for || [], miss = everyone.filter(u => !f.includes(u)), forTxt = forAll(f) ? 'alle' : miss.length <= 3 && f.length > miss.length + 2 ? 'alle außer ' + miss.map(u => u === me ? 'dir' : esc(ppl[u] || 'Jemand')).map((n, i, L) => i === 0 ? n : (i === L.length - 1 ? ' und ' : ', ') + n).join('') : f.map(nmAkk).join(', ');   // fast alle: „alle außer Lisa, Tim und Kiki“ statt langer Liste
     const t = esc(c.title), sp = t.lastIndexOf(' ');   // Stift klebt am letzten Wort, rutscht nie allein in die nächste Zeile
     const inner = `<b>${nb}${!canEditCost(c) ? t : t.length - sp > 18 ? t + IC_EDIT : `${t.slice(0, sp + 1)}<span class="nw">${t.slice(sp + 1)}${IC_EDIT}</span>`}</b><small>${nm(c.by)} · für ${forTxt} · ${ddmm(c.ts)}</small>`;
     return `<div class="srow" data-cseen="${esc(c.id)}"><span class="stack">${avatar(c.by)}</span>${canEditCost(c) ? `<button class="sname cedit" data-cedit="${esc(c.id)}" aria-label="${esc(c.title)} bearbeiten">${inner}</button>` : `<div class="sname">${inner}</div>`}<span class="amt">${eur(c.amt)}</span>${del}</div>`;
@@ -1027,7 +1038,7 @@ function renderList() {
     const m = meta(a), fav = food && top1 > 0 && soloTop && s.length === top1;
     // Einheitlich: vorher hell mit Rahmen, nach dem Mitmachen/Abstimmen grün gefüllt
     const btn = a.done ? '' : food ? `<button class="mb th${mine ? '' : ' o'}" data-a="${esc(a.id)}" aria-pressed="${mine}" aria-label="${mine ? 'Stimme zurücknehmen' : 'Dafür stimmen'}" title="${mine ? 'Stimme zurücknehmen' : 'Dafür stimmen'}">👍</button>`
-      : `<button class="mb${mine ? '' : ' o'}" data-a="${esc(a.id)}" aria-pressed="${mine}" title="${mine ? 'Nochmal tippen zum Austragen' : 'Mitmachen'}">🙋 Ich bin dabei</button>`;
+      : `<button class="mb${mine ? '' : ' o'}" data-a="${esc(a.id)}" aria-pressed="${mine}" title="${mine ? 'Nochmal tippen zum Austragen' : 'Mitmachen'}">${mine ? '✓ Du bist dabei' : '🙋 Ich bin dabei'}</button>`;
     const names = s.map(x => x.uid === me ? '<b>Du</b>' : esc(ppl[x.uid] || 'Jemand')).join(', ');
     const count = food ? `${s.length} ${s.length === 1 ? 'Stimme' : 'Stimmen'}` : `${s.length} ${a.done ? 'waren dabei' : 'dabei'}`;
     // bis 4 Leute alle Kreise, darüber 3 Kreise + „+N“, damit man sieht, dass mehr dabei sind
@@ -1135,11 +1146,11 @@ $('list').onclick = async e => {
       await slideHeight(nb, from, H, 320); }
     return; }
   if (b.dataset.settle) { const [from, to, amt] = b.dataset.settle.split('|');
-    if (!(await ask({ t: 'Als erledigt markieren?', m: `${from === me ? 'Hast du' : esc(ppl[from] || 'Jemand') + ' hat'} ${to === me ? 'dir' : esc(ppl[to] || 'Jemand')} ${eur(+amt)} gegeben?`, ok: '✓ Erledigt' }))) return;
+    if (!(await ask({ t: to === me ? 'Geld erhalten?' : 'Als bezahlt abhaken?', m: `${from === me ? 'Hast du' : esc(ppl[from] || 'Jemand') + ' hat'} ${to === me ? 'dir' : esc(ppl[to] || 'Jemand')} ${eur(+amt)} gegeben?`, ok: to === me ? 'Erhalten' : 'Bezahlt' }))) return;
     // in der Zwischenzeit schon von jemand anderem erledigt? Dann nicht nochmal buchen
     if (!settle(balances()).some(x => x.from === from && x.to === to && x.amt === +amt)) { render(true); toast('Das wurde gerade schon erledigt.'); return; }
     const w = setDoc(doc(db, 'activities', 'x' + Date.now() + Math.random().toString(36).slice(2, 5)), { cat: 'cost', kind: 'pay', title: 'Ausgleich', amt: +amt, by: from, for: [to], ts: Date.now(), cby: me });
-    render(true); toast('Als erledigt markiert ✓');
+    render(true); toast('Abgehakt ✓');
     try { await w; } catch (err) { toast(FAIL, 1); } return; }
   if (b.dataset.cost) { const a = acts.find(x => x.id === b.dataset.cost); if (!a) return;
     const s = sig.filter(x => x.act === a.id).map(x => x.uid).filter(u => ppl[u]);
