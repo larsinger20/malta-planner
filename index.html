@@ -141,7 +141,7 @@ input[type=time]{min-height:49px;text-align:left}
 .brow{display:flex;align-items:center;gap:10px;padding:7px 0}.brow .sname{flex:0 0 92px}.brow .sname b{font-size:15px}.brow .sname small{font-size:12px}
 .kbar{flex:1;position:relative;height:14px;min-width:40px}.kbar::before{content:'';position:absolute;left:50%;top:-3px;bottom:-3px;border-left:1.5px solid var(--bd)}.kbar i{position:absolute;top:2px;height:10px;border-radius:5px}
 .bval{flex:0 0 auto;min-width:64px;text-align:right;font-weight:600;font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
-.trf .stack i{margin-left:0}.trf .stack{align-items:center}.trf .arr{color:var(--mu);font-size:15px;margin:0 5px}.trf .sname b{font-size:15px}.trf .sname .amt{display:block;font-size:17px;color:var(--tx)}.trf.oth{opacity:.72}.srow .x{background:none;width:28px;height:28px;font-size:18px}.stl{position:relative;flex-shrink:0}.stl::after{content:'';position:absolute;inset:-6px -4px}
+.trf .stack i{margin-left:0}.trf .stack{align-items:center}.trf .arr{color:var(--mu);font-size:15px;margin:0 5px}.trf .sname b{font-size:15px}.trf .sname .amt{display:block;font-size:17px;color:var(--tx)}.trf.oth{opacity:.72}.srow .x{background:none;width:28px;height:28px;font-size:18px}.stc{position:relative;width:26px;height:26px;margin-right:2px}.stc::after{content:'';position:absolute;inset:-10px}.stc:active{background:var(--fill)}.stc.on{background:var(--acb);box-shadow:none;animation:tick .3s cubic-bezier(.3,1.6,.5,1)}.khint{font-size:13px;color:var(--mu);margin:-1px 0 4px}
 .cst{font-size:14px;color:var(--mu)}button.cedit{display:block;flex:1;min-width:0;min-height:44px;padding:0;background:none;color:inherit;text-align:left;border-radius:0}button.cedit:active{transform:none;opacity:.5}.ced{width:14px;height:14px;margin-left:6px;color:var(--mu);vertical-align:-.1em}
 .cmts{margin-top:6px}.cmi{display:flex;gap:10px;align-items:flex-start;padding:8px 0;box-shadow:inset 0 .5px 0 var(--bd)}.cmi .stack i{width:26px;height:26px}.cmb{flex:1;min-width:0;font-size:15px;overflow-wrap:anywhere;line-height:1.35}.cmb small{color:var(--mu);font-size:12px}.cmb b{font-weight:600}.cmi .x{background:none;width:26px;height:26px;font-size:18px}
 .plmore{position:relative;display:block;margin:-4px 0 10px 2px;padding:6px 0;background:none;color:var(--ac);font-size:15px;font-weight:500;text-align:left}.plmore::after{content:'';position:absolute;inset:-6px -8px}.plmore:active{transform:none;opacity:.6}
@@ -744,12 +744,12 @@ function costView() {
     // Bei 10 Leuten wird es lang: eigene Überweisungen sichtbar, der Rest aufklappbar
     const fold = (k, label, body) => { const o = kOpen.has(k); return `<div class="kfold"><button class="tx${o ? ' op' : ''}" data-kfold="${k}">${label}${chev('k' + k, o)}</button>${o ? body : ''}</div>`; };   // Zeilen direkt in der Hülle: blenden gestaffelt ein
     const isMine = t => t.from === me || t.to === me, trRow = t => `<div class="srow trf${isMine(t) ? ' mine' : ' oth'}"><span class="stack">${avatar(t.from)}<span class="arr">→</span>${avatar(t.to)}</span>
-          <div class="sname"><b>${nm(t.from)} → ${nmAkk(t.to)}</b><span class="amt">${eur(t.amt)}</span></div><button class="o sm2 nw stl" data-settle="${esc(t.from)}|${esc(t.to)}|${t.amt}">${t.to === me ? 'Erhalten' : 'Bezahlt'}</button></div>`;
+          <div class="sname"><b>${nm(t.from)} → ${nmAkk(t.to)}</b><span class="amt">${eur(t.amt)}</span></div><button class="sc stc" data-settle="${esc(t.from)}|${esc(t.to)}|${t.amt}" aria-label="${t.to === me ? 'Geld erhalten, abhaken' : 'Als bezahlt abhaken'}"></button></div>`;
     // 2) Überweisungen: eigene direkt, die der anderen aufklappbar
     const myTr = tr.filter(isMine), othTr = tr.filter(t => !isMine(t));
     if (!tr.length) h += '<div class="klb">So gleichen wir aus</div><div class="none">Alles ausgeglichen 🎉</div>';
     else {
-      if (myTr.length) h += `<div class="klb">${myTr.length === 1 ? 'Deine Überweisung' : 'Deine Überweisungen'}</div>` + myTr.map(trRow).join('');
+      if (myTr.length) h += `<div class="klb">${myTr.length === 1 ? 'Deine Überweisung' : 'Deine Überweisungen'}</div><div class="khint">Abhaken, sobald das Geld da ist</div>` + myTr.map(trRow).join('');
       if (othTr.length) h += fold('tr', othTr.length === 1 ? (myTr.length ? 'Eine weitere Überweisung' : 'Eine Überweisung') : `${myTr.length ? 'Weitere' : 'Alle'} Überweisungen · ${othTr.length}`, othTr.map(trRow).join(''));
     }
     // 3) Wer steht wo? Balken von der Mitte aus (aufklappbar)
@@ -1146,12 +1146,19 @@ $('list').onclick = async e => {
       await slideHeight(nb, from, H, 320); }
     return; }
   if (b.dataset.settle) { const [from, to, amt] = b.dataset.settle.split('|');
-    if (!(await ask({ t: to === me ? 'Geld erhalten?' : 'Als bezahlt abhaken?', m: `${from === me ? 'Hast du' : esc(ppl[from] || 'Jemand') + ' hat'} ${to === me ? 'dir' : esc(ppl[to] || 'Jemand')} ${eur(+amt)} gegeben?`, ok: to === me ? 'Erhalten' : 'Bezahlt' }))) return;
+    if (!(await ask({ t: to === me ? 'Geld erhalten?' : 'Als bezahlt abhaken?', m: `${from === me ? 'Hast du' : esc(ppl[from] || 'Jemand') + ' hat'} ${to === me ? 'dir' : esc(ppl[to] || 'Jemand')} ${eur(+amt)} gegeben?`, ok: to === me ? 'Ja, ist da' : 'Ja, bezahlt' }))) return;
     // in der Zwischenzeit schon von jemand anderem erledigt? Dann nicht nochmal buchen
     if (!settle(balances()).some(x => x.from === from && x.to === to && x.amt === +amt)) { render(true); toast('Das wurde gerade schon erledigt.'); return; }
+    // wie in der Einkaufsliste: Kreis füllt sich mit Häkchen, dann gleitet die Zeile weg (Live-Updates warten so lange)
+    const row = b.closest('.srow'); b.classList.add('on'); b.textContent = '✓'; slides++;
+    await new Promise(r => setTimeout(r, calm() ? 150 : 420));
+    if (row && !calm() && row.animate) { row.style.overflow = 'hidden'; const pd = getComputedStyle(row).paddingTop;   // samt Innenabstand auf 0, sonst springt am Ende ein Rest weg
+      await row.animate([{ height: row.offsetHeight + 'px', paddingTop: pd, paddingBottom: pd, opacity: 1, transform: 'none' }, { height: '0px', paddingTop: '0px', paddingBottom: '0px', opacity: 0, transform: 'translateX(-14px)' }], { duration: 260, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' }).finished.catch(() => {}); }
+    else if (row) row.style.display = 'none';
     const w = setDoc(doc(db, 'activities', 'x' + Date.now() + Math.random().toString(36).slice(2, 5)), { cat: 'cost', kind: 'pay', title: 'Ausgleich', amt: +amt, by: from, for: [to], ts: Date.now(), cby: me });
-    render(true); toast('Abgehakt ✓');
-    try { await w; } catch (err) { toast(FAIL, 1); } return; }
+    toast('Abgehakt ✓'); await Promise.race([w, new Promise(r => setTimeout(r, 80))]);
+    if (--slides <= 0) { slides = 0; slideWait = false; } render(true);
+    try { await w; } catch (err) { render(true); toast(FAIL, 1); } return; }
   if (b.dataset.cost) { const a = acts.find(x => x.id === b.dataset.cost); if (!a) return;
     const s = sig.filter(x => x.act === a.id).map(x => x.uid).filter(u => ppl[u]);
     setTab('cost'); costForm = { t: a.title, amt: '', by: me, act: a.id, for: new Set(s.length ? s : Object.keys(ppl).filter(u => ppl[u])) };
