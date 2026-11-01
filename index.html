@@ -286,14 +286,16 @@ html.noscroll,html.noscroll body{overflow:hidden}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 /* Größere Tippflächen (mind. 44 px) für kleine Knöpfe, ohne dass sie größer aussehen */.mn,.av,.x[data-sdel],.x[data-cmdel],.x[data-cdel],.x[data-shide]{position:relative}.mn::after,.av::after,.x[data-sdel]::after,.x[data-cmdel]::after,.x[data-cdel]::after,.x[data-shide]::after{content:'';position:absolute;inset:-8px;border-radius:50%}.av::after{inset:-4px}button.sc[data-stog]{border:10px solid transparent;margin:-10px;background-clip:padding-box!important;width:44px;height:44px;flex:0 0 44px}
 /* Rückblick nach dem Urlaub: Zahlen in eigener Zeile, gleich breit */.cdt.rb{flex-wrap:wrap}.cd .cdt.rb>.ut{flex:1 0 100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px;margin-top:2px}
+/* Platzhalter beim Laden: Reiter-Leiste + zwei Kacheln, sanft pulsierend */.boot .bt{height:58px;border-radius:999px;background:var(--fill);margin:18px 0 16px}.boot .bc{height:190px}.boot .bc i{display:block;height:14px;border-radius:7px;background:var(--fill);margin-bottom:12px;width:70%}.boot .bc i:first-child{height:22px;width:50%;margin-bottom:18px}.boot .bc i:last-child{width:40%}.boot{animation:bootp 1.2s ease-in-out infinite alternate}@keyframes bootp{from{opacity:.55}to{opacity:1}}
 </style></head><body><main>
 <div class="hd"><h1><img class="flag" src="flag.png?v=3" alt=""><span class="ttl"><small>31.10. – 07.11.2026</small><span>Malta</span></span></h1><div class="pf" id="me" hidden></div></div>
-<p class="s" id="sub">Schlag Ideen vor und trag dich bei denen ein, auf die du Lust hast.</p>
+<p class="s" id="sub" hidden>Schlag Ideen vor und trag dich bei denen ein, auf die du Lust hast.</p>
 <div class="cd" id="cd"><div class="cdt" id="cdt" role="button" tabindex="0" aria-expanded="false" aria-controls="trip"></div><div class="cdx"><div class="cdi"><div class="cdin" id="trip"></div></div></div></div>
 <div class="c colcard" id="colCard" hidden></div>
 <div class="c stats" id="stats" hidden></div>
 <div class="tabs" id="tabs" hidden><div class="seg"><span class="ind" id="ind"></span><button class="tb on" data-tab="act"><span class="ti"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7l6-3l6 3l6-3v13l-6 3l-6-3l-6 3v-13"/><path d="M9 4v13"/><path d="M15 7v13"/></svg></span><span>Aktivitäten<b class="n" id="n-act"></b></span></button><button class="tb" data-tab="food"><span class="ti"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3v12h-5c-.023-3.681.184-7.406 5-12m0 12v6h-1v-3m-10-14v17m-3-17v3a3 3 0 1 0 6 0v-3"/></svg></span><span>Essen<b class="n" id="n-food"></b></span></button><button class="tb" data-tab="cost"><span class="ti"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 8v-3a1 1 0 0 0-1-1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1-1 1h-12a2 2 0 0 1-2-2v-12"/><path d="M20 12v4h-4a2 2 0 0 1 0-4h4"/></svg></span><span>Kosten<b class="n" id="n-cost"></b></span></button><button class="tb" data-tab="plan"><span class="ti"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-12a2 2 0 0 1-2-2v-12z"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M4 11h16"/></svg></span><span>Mein Plan<b class="n" id="n-plan"></b></span></button></div></div>
 
+<div class="boot" id="boot" aria-hidden="true"><div class="bt"></div><div class="c bc"><i></i><i></i><i></i></div><div class="c bc"><i></i><i></i><i></i></div></div>
 <div class="c" id="ask" hidden><h2>Wie heißt du?</h2>
 <p>Lege einen PIN fest (4–8 Ziffern). Damit kommst du später mit demselben Namen und PIN wieder in dein Profil, auch nach dem Löschen der Cookies oder auf einem neuen Handy.</p>
 <input id="n" placeholder="Dein Name" maxlength="30">
@@ -387,6 +389,7 @@ const isAdmin = () => (ppl[me] || '').trim().toLowerCase() === ADMIN;
 const canEdit = a => a.by === me || isAdmin();
 
 function top() {
+  const bt = $('boot'); if (bt) bt.remove();   // Platzhalter nur bis zu den ersten Daten (sonst sah es kurz wie die Anmeldung aus)
   const n = ppl[me];
   const show = !!n && !editing;
   $('ask').hidden = show; $('nc').hidden = !(editing && ppl[me]);
@@ -1062,7 +1065,7 @@ function renderList() {
 }
 
 onSnapshot(collection(db, 'people'), q => { ppl = {}; pins = {}; seen = {}; pcol = {}; pdat = {}; q.docs.forEach(d => { pdat[d.id] = d.data(); ppl[d.id] = d.data().name; pins[d.id] = d.data().ph || ''; seen[d.id] = d.data().seen || 0; pcol[d.id] = d.data().col || ''; }); top(); render(); countVisit(); markSeen(); renderStats(); maybeTour(); },
-  e => { $('list').hidden = false; $('list').innerHTML = '<div class="m">Verbindung zur Datenbank fehlgeschlagen. Prüfe Config und Regeln.</div>'; console.error(e); });
+  e => { const bt = $('boot'); if (bt) bt.remove(); $('list').hidden = false; $('list').innerHTML = '<div class="m">Verbindung zur Datenbank fehlgeschlagen. Prüfe Config und Regeln.</div>'; console.error(e); });
 onSnapshot(collection(db, 'activities'), q => { acts = q.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.ts || 0) - (b.ts || 0)); render(); renderTrip(); renderStats(); if (mapOpen && !infoOpen) renderMap(false); });
 onSnapshot(collection(db, 'signups'), q => { sig = q.docs.map(d => d.data()); render(); if (mapOpen && !infoOpen) renderMap(false); });
 
@@ -1334,9 +1337,9 @@ async function addShopItems(id, texts) {
   if (!shown(id, Object.keys(shop)[0])) render(true); toast(texts.length === 1 ? `${texts[0]} hinzugefügt ✓` : `${texts.length} Sachen hinzugefügt ✓`);
   try { await w; } catch (err) { toast(FAIL, 1); }
 }
-async function addShop(id) {
+async function addShop(id, quiet) {
   const i = $('sin-' + id); if (!i) return;
-  const t = i.value.trim(); if (!t) { i.focus(); return; }
+  const t = i.value.trim(); if (!t) { if (!quiet) i.focus(); return; }
   if (!alive(id)) { toast(GONE, 1); return; }
   i.value = '';   // sofort leeren: zweites Enter bei langsamem Netz legt nichts doppelt an
   const [item, entry] = shopEntry(id, t, Date.now(), new Set()); markAdded([item]);
@@ -1345,7 +1348,7 @@ async function addShop(id) {
   const w = setDoc(doc(db, 'activities', id), { shop: { [item]: entry }, ...extra }, { merge: true });
   await Promise.race([w.catch(() => {}), new Promise(r => setTimeout(r, 80))]);   // lokale Änderung kommt sofort, die Server-Antwort evtl. erst später
   if (!shown(id, item)) render(true);   // nur neu zeichnen, wenn die Zeile noch fehlt (sonst bricht die Animation ab)
-  const n = $('sin-' + id); if (n) n.focus();
+  const n = $('sin-' + id); if (n && !quiet) n.focus();
   try { await w; } catch (err) { toast(FAIL, 1); const n2 = $('sin-' + id); if (n2 && !n2.value) n2.value = t; }
 }
 $('list').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.dataset.sinp) { e.preventDefault(); addShop(e.target.dataset.sinp); }
@@ -1354,6 +1357,10 @@ $('list').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.d
   if (e.key === 'Enter' && (e.target.id === 'cf-amt' || e.target.id === 'cf-t')) { e.preventDefault(); saveCost(); } });
 // Updates, die während des Tippens kamen, nachholen, sobald das Feld verlassen wird
 $('list').addEventListener('focusout', () => setTimeout(() => { if (pending) render(); }, 0));
+// Einkaufsliste: Getipptes nicht verlieren, wenn das Feld ohne Enter verlassen wird (z. B. „Fertig“ über der iPhone-Tastatur, App gewechselt)
+$('list').addEventListener('focusout', e => { const id = e.target.dataset && e.target.dataset.sinp; if (!id) return;
+  setTimeout(() => { const i = $('sin-' + id); if (i && document.activeElement !== i && i.value.trim()) addShop(id, true); }, 250); });   // „Hinzufügen“-Knopf ist schneller und leert das Feld vorher
+document.addEventListener('visibilitychange', () => { const i = document.activeElement; if (document.hidden && i && i.dataset && i.dataset.sinp && i.value.trim()) addShop(i.dataset.sinp, true); });
 
 function formFields() {
   const rest = tab === 'food' && $('k').value === 'rest';
