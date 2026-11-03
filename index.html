@@ -1047,27 +1047,30 @@ async function rowOut(el) {
   el.style.overflow = 'hidden';
   await el.animate([{ height: el.offsetHeight + 'px', minHeight: '0px', opacity: 1, transform: 'translateX(0)' }, { height: '0px', minHeight: '0px', opacity: 0, transform: 'translateX(-14px)' }], { duration: 240, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' }).finished.catch(() => {});
 }
-// Ganze Kachel weich schließen/öffnen: Höhe, Innen-/Außenabstand und Rahmen gehen gemeinsam auf 0 bzw. von 0 auf
-// (sonst schrumpft sie nur bis zum Innenabstand und der Rest springt am Ende weg); Dauer wächst mit der Höhe wie beim Aufklappen
-const BOX0 = { height: '0px', paddingTop: '0px', paddingBottom: '0px', marginTop: '0px', marginBottom: '0px', borderTopWidth: '0px', borderBottomWidth: '0px' };
-const boxOf = el => { const s = getComputedStyle(el); return { height: el.offsetHeight + 'px', paddingTop: s.paddingTop, paddingBottom: s.paddingBottom, marginTop: s.marginTop, marginBottom: s.marginBottom, borderTopWidth: s.borderTopWidth, borderBottomWidth: s.borderBottomWidth }; };
-// hält `slides` (Live-Updates warten) und gibt true zurück: der Aufrufer gibt erst nach seinem eigenen Neuaufbau frei,
-// sonst baut die zurückkommende eigene Änderung die Liste dazwischen neu auf (Sprung bzw. Kachel blitzt kurz voll auf)
-function cardOut(el) {
-  if (!el || calm() || !el.animate) { if (el) el.style.display = 'none'; return Promise.resolve(false); }
-  const ms = Math.round(slideMs(el.offsetHeight, 0, 300) * 1.25); el.style.overflow = 'hidden'; el.style.pointerEvents = 'none'; slides++;   // ganze Kachel: etwas ruhiger als eine Zeile   // Live-Updates warten
-  const an = el.animate([{ ...boxOf(el), opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(.98)', offset: .55 }, { ...BOX0, opacity: 0, transform: 'scale(.98)' }],
-    { duration: ms, easing: `cubic-bezier(${EASE_CLOSE})`, fill: 'forwards' });   // bleibt zu, bis der Neuaufbau sie ersetzt
-  return Promise.race([an.finished.catch(() => {}), new Promise(r => setTimeout(r, ms + 60))]).then(() => true);
+// Erledigt / Wieder offen wie iOS beim Löschen einer Zeile: Liste wird EINMAL neu angeordnet, danach bewegt sich nur noch
+// Lage + Deckkraft (transform/opacity, läuft flüssig auf dem iPhone): Kacheln gleiten von alter zu neuer Stelle,
+// die gehende Kachel blendet als „Geist“ an ihrer alten Stelle aus, eine neue blendet weich ein (FLIP)
+const flipKey = el => el.dataset && el.dataset.card ? 'c:' + el.dataset.card : el.classList && el.classList.contains('dfold') ? 'dfold' : null;
+const flipEls = () => [...document.querySelectorAll('#list > *, #list .dfold > .card')].filter(flipKey);
+const flipPos = () => new Map(flipEls().map(el => [flipKey(el), el.getBoundingClientRect().top]));
+const FLIP_MS = 520, FLIP_EASE = 'cubic-bezier(.25,.1,.25,1)';   // gleichmäßig, weiches Auslaufen (Spitzentempo nur 2,3× Mittel)
+function flipGhost(el) {   // Kopie an der alten Stelle, die über dem Neuaufbau ausblendet
+  const r = el.getBoundingClientRect(), g = el.cloneNode(true);
+  g.removeAttribute('data-card'); g.querySelectorAll('[id]').forEach(x => x.removeAttribute('id')); g.setAttribute('aria-hidden', 'true');
+  Object.assign(g.style, { position: 'fixed', top: r.top + 'px', left: r.left + 'px', width: r.width + 'px', height: r.height + 'px', margin: '0', zIndex: '3', pointerEvents: 'none' });
+  return g;
 }
-const slidesFree = () => { if (--slides <= 0) { slides = 0; slideWait = false; } };   // nach eigenem render(true): Nachzügler sind schon drin
-function cardIn(el) {
-  if (!el || calm() || !el.animate) return;
-  const ms = Math.round(slideMs(0, el.offsetHeight, 340) * 1.25); el.style.overflow = 'hidden'; slides++;
-  const an = el.animate([{ ...BOX0, opacity: 0, transform: 'scale(.98)' }, { opacity: 0, transform: 'scale(.98)', offset: .35 }, { ...boxOf(el), opacity: 1, transform: 'scale(1)' }],
-    { duration: ms, easing: `cubic-bezier(${EASE_OPEN})`, fill: 'backwards' });
-  Promise.race([an.finished.catch(() => {}), new Promise(r => setTimeout(r, ms + 60))]).then(() => { an.cancel(); el.style.overflow = '';
-    if (--slides <= 0) { slides = 0; if (slideWait) { slideWait = false; setTimeout(() => render(), 0); } } });
+function flipRun(before, ghost, fresh) {
+  const anims = [], vis = r => r.bottom > -60 && r.top < innerHeight + 60;
+  // erst alle Lagen messen, dann starten (sonst misst die Kachel in der gleitenden Erledigt-Liste deren Bewegung doppelt mit)
+  const now = flipEls().map(el => [el, flipKey(el), el.getBoundingClientRect()]), dyOf = new Map(now.filter(([, k]) => before.has(k)).map(([, k, r]) => [k, before.get(k) - r.top]));
+  now.forEach(([el, k, r]) => { if (!vis(r)) return;
+    if (before.has(k)) { let dy = dyOf.get(k); if (el.parentElement.classList.contains('dfold') && dyOf.has('dfold') && vis(r)) dy -= dyOf.get('dfold');   // nur der eigene Anteil
+      if (Math.abs(dy) > .5) anims.push(el.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: FLIP_MS, easing: FLIP_EASE })); }
+    else if (k === fresh || k === 'dfold') anims.push(el.animate([{ opacity: 0, transform: 'scale(.97)' }, { opacity: 1, transform: 'none' }], { duration: 340, delay: 110, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'backwards' })); });
+  if (ghost) { $('list').appendChild(ghost);   // in der Liste, damit alle Kachel-Stile greifen
+    anims.push(ghost.animate([{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(.96)' }], { duration: 240, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' })); }
+  return Promise.race([Promise.all(anims.map(x => x.finished.catch(() => {}))), new Promise(r => setTimeout(r, FLIP_MS + 300))]).then(() => { if (ghost) ghost.remove(); });
 }
 function growNew() {
   if (calm()) return;
@@ -1188,17 +1191,21 @@ $('list').onclick = async e => {
   if (b.dataset.done) { const a = acts.find(x => x.id === b.dataset.done); if (!a || !alive(a.id)) { render(true); return; }
     if (!a.done && !(await ask({ t: 'Als erledigt markieren?', m: `„${esc(a.title)}“ rutscht für alle nach unten zu „✓ Erledigt“.`, ok: '✓ Erledigt' }))) { render(true); return; }
     if (!alive(a.id)) { render(true); toast(GONE, 1); return; }
-    const c = document.querySelector(`#list [data-card="${CSS.escape(a.id)}"]`), fold0 = document.querySelector(`#list [data-dfold="${tab}"]`);
-    const anchor = () => { const x = document.querySelector(`#list [data-dfold="${tab}"]`); return x ? x.getBoundingClientRect().top : null; };
-    const held = c ? await cardOut(c) : false;   // Kachel schließt sich weich an ihrer Stelle
+    const c = document.querySelector(`#list [data-card="${CSS.escape(a.id)}"]`), key = 'c:' + a.id, anim = !calm() && !!document.body.animate;
+    const before = anim ? flipPos() : null, ghost = anim && c ? flipGhost(c) : null;
+    // Ruhepunkt: erstes sichtbares Element, das bleibt (für „Wieder offen“ mit Platz über dem Bildschirm)
+    const pin = before && [...before].find(([k, y]) => k !== key && y >= 0 && y < innerHeight);
+    slides++;   // Live-Updates warten, bis alles gelaufen ist (sonst baut die zurückkommende eigene Änderung dazwischen neu auf)
     const w = a.done ? updateDoc(doc(db, 'activities', a.id), { done: deleteField(), dby: deleteField() }) : setDoc(doc(db, 'activities', a.id), { done: Date.now(), dby: me }, { merge: true });
     toast(a.done ? 'Wieder offen' : 'Als erledigt markiert ✓'); await Promise.race([w, new Promise(r => setTimeout(r, 80))]);
-    const y0 = anchor(); render(true);
-    // Wieder offen: Kachel taucht an ihrem Platz in der Liste weich auf; liegt der über dem Bildschirm, bleibt die Ansicht ruhig stehen
-    const n = document.querySelector(`#list > [data-card="${CSS.escape(a.id)}"]`);
-    if (n) { const r = n.getBoundingClientRect(); if (r.bottom > 0 && r.top < innerHeight) cardIn(n); else if (r.bottom <= 0 && y0 !== null) { const y1 = anchor(); if (y1 !== null && y1 !== y0) scrollBy(0, y1 - y0); } }
-    const f = document.querySelector(`#list [data-dfold="${tab}"]`); if (f && !fold0) { const box = f.closest('.dfold') || f; const r = box.getBoundingClientRect(); if (r.top < innerHeight) cardIn(box); }   // erste erledigte: Zeile „✓ Erledigt“ erscheint weich
-    if (held) slidesFree();
+    render(true);
+    if (anim) {
+      const n = flipEls().find(el => flipKey(el) === key), nr = n && n.getBoundingClientRect();
+      if (nr && nr.bottom <= 0 && pin) { const p2 = flipEls().find(el => flipKey(el) === pin[0]); if (p2) scrollBy(0, p2.getBoundingClientRect().top - pin[1]); }   // Platz liegt oben: Ansicht bleibt stehen
+      const stays = n && (() => { const r = n.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight && before.has(key); })();
+      await flipRun(before, stays ? null : ghost, key);   // gleitet die Kachel sichtbar an ihren neuen Platz (z. B. offene „Erledigt“-Liste), braucht es keinen Geist
+    }
+    if (--slides <= 0) { slides = 0; if (slideWait) { slideWait = false; render(); } }
     try { await w; } catch (err) { render(true); toast(FAIL, 1); } return; }
   if (b.dataset.dfold) { const k = b.dataset.dfold, sel = `#list [data-dfold="${CSS.escape(k)}"]`;
     if (dOpen.has(k)) { b.classList.add('cl'); const box = b.closest('.dfold'); if (box) await slideHeight(box, box.offsetHeight, b.offsetHeight, 240); dOpen.delete(k); render(true); }
