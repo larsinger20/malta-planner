@@ -286,6 +286,10 @@ html.noscroll,html.noscroll body{overflow:hidden}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 /* Größere Tippflächen (mind. 44 px) für kleine Knöpfe, ohne dass sie größer aussehen */.mn,.av,.x[data-sdel],.x[data-cmdel],.x[data-cdel],.x[data-shide]{position:relative}.mn::after,.av::after,.x[data-sdel]::after,.x[data-cmdel]::after,.x[data-cdel]::after,.x[data-shide]::after{content:'';position:absolute;inset:-8px;border-radius:50%}.av::after{inset:-4px}button.sc[data-stog]{border:10px solid transparent;margin:-10px;background-clip:padding-box!important;width:44px;height:44px;flex:0 0 44px}
 /* Rückblick nach dem Urlaub: Zahlen in eigener Zeile, gleich breit */.cdt.rb{flex-wrap:wrap}.cd .cdt.rb>.ut{flex:1 0 100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px;margin-top:2px}
+/* Erinnerungs-Modus (Reise abgeschlossen): alles zum Ändern ist ausgeblendet */
+.ronote{display:none}html.ro .ronote{display:block;margin:0 4px 14px;font-size:14px;line-height:1.4;color:var(--mu);text-align:center}
+html.ro #addOpen,html.ro #add,html.ro #me,html.ro #ask,html.ro #pinCard,html.ro #colCard,html.ro .mn[data-menu],html.ro .mb[data-a],html.ro .sa,html.ro .sadd,html.ro .sug,html.ro [data-sarc],html.ro [data-sback],html.ro [data-sdel],html.ro [data-shide],html.ro [data-cmdel],html.ro [data-cdel],html.ro [data-cfopen],html.ro [data-cfpay],html.ro .khint,html.ro .nb{display:none!important}
+html.ro .sc{pointer-events:none}html.ro .tb.hasnew .ti::after{display:none}
 /* Platzhalter beim Laden: Reiter-Leiste + zwei Kacheln, sanft pulsierend */.boot .bt{height:58px;border-radius:999px;background:var(--fill);margin:18px 0 16px}.boot .bc{height:190px}.boot .bc i{display:block;height:14px;border-radius:7px;background:var(--fill);margin-bottom:12px;width:70%}.boot .bc i:first-child{height:22px;width:50%;margin-bottom:18px}.boot .bc i:last-child{width:40%}.boot{animation:bootp 1.2s ease-in-out infinite alternate}@keyframes bootp{from{opacity:.55}to{opacity:1}}
 </style></head><body><main>
 <div class="hd"><h1><img class="flag" src="flag.png?v=3" alt=""><span class="ttl"><small>31.10. – 07.11.2026</small><span>Malta</span></span></h1><div class="pf" id="me" hidden></div></div>
@@ -324,6 +328,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
 <div class="two rvf" id="rvf" hidden><div><label class="flb" for="rt">Uhrzeit</label><div class="tfield"><input type="time" id="rt"><span class="tph" aria-hidden="true">z. B. 19:30</span></div></div><div><label class="flb" for="rp">Personen</label><input type="number" id="rp" min="1" max="99" inputmode="numeric" placeholder="z. B. 4"></div></div>
 <div class="efb"><button id="go">Vorschlagen</button></div></div>
 
+<div class="ronote" id="ronote">Unsere Reise ist vorbei. Hier bleibt alles als Erinnerung, ändern lässt sich nichts mehr.</div>
 <div id="list" hidden><div class="m">Lädt…</div></div>
 </main>
 <div class="mapv moff" id="mapv"><div class="mapbar"><div class="mapf mglass" id="mapf"></div><div class="mbtns"><button class="x mglass" id="mapx" aria-label="Karte schließen">×</button><button class="x mth mglass" id="mapth" aria-label="Kartenansicht hell/dunkel umschalten">🌙</button></div></div><div id="mapc"></div><div class="mapmiss mglass" id="mapmiss"></div></div>
@@ -332,7 +337,11 @@ html.noscroll,html.noscroll body{overflow:hidden}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, deleteField, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, doc, setDoc as _setDoc, updateDoc as _updateDoc, deleteDoc as _deleteDoc, deleteField, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// Erinnerungs-Modus: Die Reise ist abgeschlossen, die Datenbank steht auf „nur lesen“. Nichts wird mehr gespeichert, alle Bearbeiten-Knöpfe sind ausgeblendet (CSS html.ro), ansehen geht ohne Anmeldung.
+const RO = true;
+const setDoc = RO ? async () => {} : _setDoc, updateDoc = RO ? async () => {} : _updateDoc, deleteDoc = RO ? async () => {} : _deleteDoc;
+if (RO) document.documentElement.classList.add('ro');
 
 // ====== HIER DEINE FIREBASE-DATEN EINFÜGEN (siehe Anleitung) ======
 const firebaseConfig = {
@@ -387,19 +396,19 @@ catch (e) { me = 'u' + Math.random().toString(36).slice(2, 10); }
 let acts = [], sig = [], ppl = {}, pins = {}, pcol = {}, pdat = {}, editing = false, tab = 'act', editRes = null, editPlace = null, editAct = null, addOpen = false, pending = false, menuOpen = null;
 const shopOpen = new Set(), kOpen = new Set(), dOpen = new Set(), archOpen = new Set();   // dOpen: „✓ Erledigt“ aufgeklappt (je Reiter)   // kOpen: aufgeklappte Teile der Kosten-Ansicht
 const ADMIN = 'lars';
-const isAdmin = () => (ppl[me] || '').trim().toLowerCase() === ADMIN;
-const canEdit = a => a.by === me || isAdmin();
+const isAdmin = () => !RO && (ppl[me] || '').trim().toLowerCase() === ADMIN;
+const canEdit = a => !RO && (a.by === me || isAdmin());
 
 function top() {
   const bt = $('boot'); if (bt) bt.remove();   // Platzhalter nur bis zu den ersten Daten (sonst sah es kurz wie die Anmeldung aus)
-  const n = ppl[me];
+  const n = ppl[me] || (RO ? 'Gast' : undefined);   // Erinnerungs-Modus: auch ohne Profil ansehen
   const show = !!n && !editing;
   $('ask').hidden = show; $('nc').hidden = !(editing && ppl[me]);
   $('ask').querySelector('h2').textContent = editing && ppl[me] ? 'Name ändern' : 'Wie heißt du?'; const noAdd = tab === 'plan' || tab === 'cost' || (tab === 'food' && foodView === 'shop');
   // Jeder soll eine eigene Farbe haben: solange keine gewählt ist (und noch eine frei ist), kommt zuerst die Farbwahl
-  const needCol = show && !PALETTE.includes(pcol[me]) && PALETTE.some(c => !takenBy(c));
+  const needCol = !RO && show && !PALETTE.includes(pcol[me]) && PALETTE.some(c => !takenBy(c));
   const app = show && !needCol;
-  $('add').hidden = !app || noAdd || !addOpen; $('addOpen').hidden = !app || noAdd || addOpen; $('list').hidden = !app; $('me').hidden = !show; $('tabs').hidden = !app; $('pinCard').hidden = !(show && !pins[me]);
+  $('add').hidden = !app || noAdd || !addOpen; $('addOpen').hidden = !app || noAdd || addOpen; $('list').hidden = !app; $('me').hidden = !show; $('tabs').hidden = !app; $('pinCard').hidden = RO || !(show && !pins[me]);
   $('colCard').hidden = !needCol; $('sub').hidden = show;   // Erklärsatz nur vor der Anmeldung, danach erklärt die Tour
   $('mapBtn').hidden = !app || tab === 'cost' || (tab === 'food' && foodView === 'shop'); $('fseg').hidden = !app || tab !== 'food';
   if (needCol) $('colCard').innerHTML = `<h2>🎨 Such dir deine Farbe aus</h2><p>Damit dich alle auf einen Blick erkennen, bekommt jeder seine eigene Farbe. Vergebene Farben sind mit dem Buchstaben der Person markiert.</p><div class="sw big">${swatches()}</div>`;
@@ -529,7 +538,7 @@ const myActs = () => acts.filter(a => (a.cat || 'act') === 'act' && a.title && s
 function renderPlan() {
   // Essen mit festem Tag ist für die ganze Gruppe geplant, deshalb steht es bei allen im Plan (unabhängig von der Stimme)
   const meals = acts.filter(a => a.cat === 'food' && a.title && DAYS.includes(a.day)), mine = myActs();
-  if (!mine.length && !meals.length) { $('list').innerHTML = '<div class="m">Du hast dich noch nirgends eingetragen.<br>Schau bei Aktivitäten vorbei und tipp auf „🙋 Ich bin dabei“.</div>'; return; }
+  if (!mine.length && !meals.length) { $('list').innerHTML = RO ? '<div class="m">Hier stand dein persönlicher Plan.<br>Auf diesem Gerät ist kein Profil gespeichert, deshalb ist er leer.</div>' : '<div class="m">Du hast dich noch nirgends eingetragen.<br>Schau bei Aktivitäten vorbei und tipp auf „🙋 Ich bin dabei“.</div>'; return; }
   const all = [...mine, ...meals];
   const groups = [...DAYS, ''].map(d => ({ d, items: all.filter(a => (DAYS.includes(a.day) ? a.day : '') === d).sort((x, y) => slotOf(x) - slotOf(y) || ((x.res && x.res.t) || '').localeCompare((y.res && y.res.t) || '')) })).filter(g => g.items.length);
   // Wochentag -> Datum der Reise (Samstag = Anreisetag 31.10.; am Rückflug-Samstag um 07:15 plant keiner mehr)
@@ -737,8 +746,8 @@ const payText = t => t.from === me ? `Du zahlst ${nm(t.to)}` : t.to === me ? `${
 const GONE = 'Dieser Vorschlag wurde gerade gelöscht.';
 const alive = id => id === GEN || acts.some(x => x.id === id && x.title);
 // Ausgaben (nicht Ausgleichszahlungen) bearbeiten: wer sie eingetragen oder bezahlt hat, und der Admin alle
-const canEditCost = c => c.kind !== 'pay' && (c.cby === me || c.by === me || isAdmin());
-const canDelCost = c => c.cby === me || c.by === me || isAdmin() || (c.kind === 'pay' && (c.for || []).includes(me));
+const canEditCost = c => !RO && c.kind !== 'pay' && (c.cby === me || c.by === me || isAdmin());
+const canDelCost = c => !RO && (c.cby === me || c.by === me || isAdmin() || (c.kind === 'pay' && (c.for || []).includes(me)));
 function costView() {
   const list = COSTS(), b = balances(), tr = settle(b), everyone = Object.keys(ppl);
   const total = list.filter(c => c.kind !== 'pay').reduce((n, c) => n + (c.amt || 0), 0), mine = b[me] || 0;
@@ -1020,7 +1029,7 @@ function tabDots() {
   const k = document.querySelector('.tb[data-tab="cost"]'); if (k) k.classList.toggle('hasnew', acts.some(costNew));
 }
 function render(force) {
-  if (!ppl[me]) return;
+  if (!ppl[me] && !RO) return;
   if (!force && slides) { slideWait = true; return; }
   const ae = document.activeElement;
   if (!force && ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && $('list').contains(ae)) { pending = true; return; }
@@ -1128,7 +1137,7 @@ function renderList() {
 
 onSnapshot(collection(db, 'people'), q => { ppl = {}; pins = {}; seen = {}; pcol = {}; pdat = {}; q.docs.forEach(d => { pdat[d.id] = d.data(); ppl[d.id] = d.data().name; pins[d.id] = d.data().ph || ''; seen[d.id] = d.data().seen || 0; pcol[d.id] = d.data().col || ''; }); top(); render(); countVisit(); markSeen(); renderStats(); maybeTour(); },
   e => { const bt = $('boot'); if (bt) bt.remove(); $('list').hidden = false; $('list').innerHTML = '<div class="m">Verbindung zur Datenbank fehlgeschlagen. Prüfe Config und Regeln.</div>'; console.error(e); });
-onSnapshot(collection(db, 'activities'), q => { acts = q.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.ts || 0) - (b.ts || 0)); render(); renderTrip(); renderStats(); if (mapOpen && !infoOpen) renderMap(false); });
+onSnapshot(collection(db, 'activities'), q => { acts = q.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (a.ts || 0) - (b.ts || 0)); render(); renderTrip(); renderStats(); if (RO) countdown(); if (mapOpen && !infoOpen) renderMap(false); });
 onSnapshot(collection(db, 'signups'), q => { sig = q.docs.map(d => d.data()); render(); if (mapOpen && !infoOpen) renderMap(false); });
 
 $('ns').onclick = async () => {
@@ -2037,8 +2046,8 @@ const TIPS = {
 let tourOn = false, tourStep = 0, tourTried = false, tourTimer = null;
 const appShown = () => !$('tabs').hidden && !$('list').hidden;
 function maybeTour() {   // einmal pro Seitenaufruf prüfen, ob die Person die Tour noch nicht kennt
-  if (tourTried || tourOn || !ppl[me] || !pdat[me] || pdat[me].tour || !appShown()) return;
-  tourTried = true; setTimeout(() => { if (appShown() && !pdat[me].tour && !mapOpen) startTour(); }, 700);
+  if (RO || tourTried || tourOn || !ppl[me] || !pdat[me] || pdat[me].tour || !appShown()) return;
+  tourTried = true; setTimeout(() => { if (!RO && appShown() && !pdat[me].tour && !mapOpen) startTour(); }, 700);
 }
 function startTour() {
   if (tourOn) return; hideTip(); closeMap(); if (tab !== 'act') setTab('act');
@@ -2117,7 +2126,7 @@ document.addEventListener('keydown', e => { if (tourOn && e.key === 'Escape') en
 function hideTip() { const t = $('tip'); if (t) t.remove(); }
 function showTip(k) {
   hideTip(); const P = pdat[me];
-  if (!TIPS[k] || tourOn || !P || !P.tour || (P.tips && P.tips[k])) return;
+  if (RO || !TIPS[k] || tourOn || !P || !P.tour || (P.tips && P.tips[k])) return;
   P.tips = { ...(P.tips || {}), [k]: true };   // gilt als gesehen, sobald er einmal da war
   setDoc(doc(db, 'people', me), { tips: { [k]: true } }, { merge: true }).catch(() => {});
   const box = k === 'map' ? $('mapv') : document.body;
@@ -2177,7 +2186,7 @@ function renderStats() {
 const TRIP = 'tripinfo';
 let tripOpen = false, tripEdit = false;
 const trip = () => acts.find(a => a.id === TRIP) || {};
-const rih = () => ppl[me] ? `<span class="rihs"><small class="rih${tripOpen ? ' op' : ''}">ℹ️ Reise-Info${chev('trip', tripOpen)}</small>${wxChip()}</span>` : wxChip();
+const rih = () => (ppl[me] || RO) ? `<span class="rihs"><small class="rih${tripOpen ? ' op' : ''}">ℹ️ Reise-Info${chev('trip', tripOpen)}</small>${wxChip()}</span>` : wxChip();
 const villaUrl = T => mapUrl({ place: T.vaddr, pid: T.vpid });
 const TF = [['vname', '🏡 Name der Unterkunft', 'z. B. Villa Bella Vista'], ['vaddr', '📍 Adresse', 'Adresse der Villa'], ['vlink', '🔗 Airbnb-Link', 'https://www.airbnb.de/rooms/…'], ['cin', '🔑 Check-in', 'z. B. Sa 31.10. ab 15 Uhr'], ['cout', '🧳 Check-out', 'z. B. Sa 7.11. bis 10 Uhr'],
   ['fout', '✈️ Hinflug', 'z. B. Sa 31.10. · KM 307 · München → Malta · 11:00 Uhr'], ['fback', '🛬 Rückflug', 'z. B. Sa 07.11. · KM 306 · Malta → München · 07:15 Uhr']];
@@ -2185,7 +2194,7 @@ const TF = [['vname', '🏡 Name der Unterkunft', 'z. B. Villa Bella Vista'], ['
 const flightLink = t => { if (!t) return ''; const m = String(t).match(/\b([A-Z]{2}|[A-Z]\d|\d[A-Z])\s?(\d{1,4})\b/);
   return m ? `<a class="lk" href="https://www.flightradar24.com/data/flights/${(m[1] + m[2]).toLowerCase()}" target="_blank" rel="noopener noreferrer">${esc(t)} ↗</a>` : esc(t); };
 function renderTrip(force) {
-  const box = $('trip'), show = tripOpen && !!ppl[me], ae = document.activeElement;
+  const box = $('trip'), show = tripOpen && (!!ppl[me] || RO), ae = document.activeElement;
   $('cd').classList.toggle('open', show); $('cdt').setAttribute('aria-expanded', show);
   if (!show) return;
   // Während jemand im Formular tippt, nicht neu aufbauen (sonst wären die Eingaben weg)

@@ -1,5 +1,7 @@
 # Malta Planner
 
+**Reise abgeschlossen (10.11.2026): Die Seite läuft im Erinnerungs-Modus.** `const RO = true` in `index.html`: Schreiben ist abgeschaltet (`setDoc`/`updateDoc`/`deleteDoc` tun nichts), alle Bearbeiten-Knöpfe sind per CSS `html.ro` ausgeblendet, ansehen geht ohne Anmeldung (Gast), keine Tour/Tipps/„Neu“. Die Firestore-Regeln stellt Lars auf „nur lesen“. Sicherungskopie aller Daten hat Lars (JSON vom 10.11.2026). Nachfolger für neue Reisen: Repository `larsinger20/outbnd`.
+
 Gemeinsame Reiseplanungs-Seite einer Urlaubsgruppe (Malta, 31.10.–07.11.2026, ~10 Leute). Vorschläge für Aktivitäten und Essen, eintragen/abstimmen, Kommentare, Einkaufslisten, Kosten teilen, alles in Echtzeit. **Wird live benutzt.** Die Gruppe plant meist spontan: Die meisten Vorschläge haben keinen Tag/keine Uhrzeit. Die Seite ist Ideensammlung + Abstimmung, kein Terminkalender.
 
 ## Über Lars
